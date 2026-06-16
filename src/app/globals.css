@@ -1,0 +1,329 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Alabaster/Warm Off-White Backgrounds */
+  --background: 45 25% 96%;
+  --foreground: 145 45% 15%;
+  --card: 145 20% 95%;
+  --card-foreground: 145 45% 15%;
+  
+  /* Forest Green/Deep Moss Primary - Main Theme */
+  --primary: 145 45% 20%;
+  --primary-foreground: 45 25% 96%;
+  
+  /* Forest Green Secondary Variants */
+  --secondary: 145 35% 28%;
+  --secondary-foreground: 45 25% 96%;
+  
+  /* Forest Green Muted tones */
+  --muted: 145 15% 90%;
+  --muted-foreground: 145 25% 40%;
+  
+  /* Forest Green Accent */
+  --accent: 145 40% 25%;
+  --accent-foreground: 45 25% 96%;
+  
+  /* Forest Green Borders */
+  --border: 145 20% 75%;
+  --input: 145 15% 88%;
+  --ring: 145 45% 20%;
+  
+  /* Custom forest theme colors */
+  --forest-light: 145 35% 35%;
+  --forest-dark: 145 50% 15%;
+  --moss: 145 30% 25%;
+  --cream: 45 25% 96%;
+}
+
+.dark {
+  /* Charcoal/Obsidian with Forest Green accents */
+  --background: 145 15% 8%;
+  --foreground: 145 8% 82%;
+  --card: 145 20% 12%;
+  --card-foreground: 145 8% 82%;
+  
+  /* Forest Green primary in dark - bright but darkened */
+  --primary: 145 50% 42%;
+  --primary-foreground: 145 15% 8%;
+  
+  /* Deep forest secondary - vibrant but darkened */
+  --secondary: 145 40% 32%;
+  --secondary-foreground: 145 8% 82%;
+  
+  /* Dark forest muted */
+  --muted: 145 15% 18%;
+  --muted-foreground: 145 12% 68%;
+  
+  /* Forest accent in dark - vibrant but darkened */
+  --accent: 145 45% 38%;
+  --accent-foreground: 145 15% 8%;
+  
+  /* Dark forest borders */
+  --border: 145 18% 28%;
+  --input: 145 15% 22%;
+  --ring: 145 50% 42%;
+  
+  /* Custom forest theme colors for dark mode - vibrant but darkened */
+  --forest-light: 145 40% 48%;
+  --forest-dark: 145 55% 28%;
+  --moss: 145 35% 42%;
+  --cream: 145 8% 82%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  background:
+    radial-gradient(circle at top left, rgba(88, 107, 68, 0.15), transparent 50%),
+    radial-gradient(circle at top right, rgba(68, 92, 52, 0.12), transparent 40%),
+    linear-gradient(180deg, #f8faf7 0%, #f2f6f0 60%, #edf3ea 100%);
+}
+
+.dark body {
+  background:
+    radial-gradient(circle at top left, rgba(88, 107, 68, 0.25), transparent 40%),
+    radial-gradient(circle at top right, rgba(68, 92, 52, 0.35), transparent 35%),
+    linear-gradient(180deg, #0f1810 0%, #0a130c 60%, #050a06 100%);
+}
+
+/* Spacing & Layout System */
+.page-shell {
+  @apply mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8;
+}
+
+/* Premium Typography */
+.display-font {
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: -0.01em;
+}
+
+.label-font {
+  @apply text-[10px] font-bold uppercase tracking-[0.3em] text-forest/80;
+}
+
+/* Premium Theme Classes */
+.panel-forest {
+  background: linear-gradient(145deg, rgba(88, 107, 68, 0.95), rgba(68, 82, 52, 0.98));
+  border: 1px solid rgba(88, 107, 68, 0.3);
+  box-shadow: 0 8px 32px rgba(88, 107, 68, 0.2);
+}
+
+.panel-moss {
+  background: linear-gradient(145deg, rgba(68, 92, 52, 0.90), rgba(56, 72, 42, 0.95));
+  border: 1px solid rgba(88, 107, 68, 0.25);
+  box-shadow: 0 12px 40px rgba(68, 92, 52, 0.15);
+}
+
+.panel-alabaster {
+  background: rgba(248, 250, 247, 0.90);
+  border: 1px solid rgba(88, 107, 68, 0.15);
+  box-shadow: 0 12px 48px rgba(88, 107, 68, 0.08);
+  backdrop-filter: blur(20px);
+}
+
+.accent-forest {
+  color: hsl(var(--primary));
+}
+
+.bg-moss {
+  background-color: hsl(var(--moss));
+}
+
+.bg-forest {
+  background-color: hsl(var(--primary));
+}
+
+.text-forest {
+  color: hsl(var(--primary));
+}
+
+.text-moss {
+  color: hsl(var(--moss));
+}
+
+/* Artisan Panels & Containers */
+.panel-premium {
+  @apply border border-forest/15 bg-gradient-to-br from-cream/95 to-forest-light/5 shadow-2xl shadow-forest/10;
+}
+
+.panel-moss {
+  background: linear-gradient(145deg, rgba(68, 92, 52, 0.95), rgba(56, 72, 42, 0.98));
+  border: 1px solid rgba(88, 107, 68, 0.25);
+  box-shadow: 0 8px 32px rgba(68, 92, 52, 0.3);
+}
+
+/* Premium Button Styles */
+.btn-artisan-forest {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-forest text-cream px-8 py-4 text-sm font-bold uppercase tracking-widest transition-all duration-300 hover:bg-forest-light hover:shadow-lg hover:shadow-forest/25;
+}
+
+.btn-artisan-outline {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-forest text-forest px-8 py-4 text-sm font-bold uppercase tracking-widest transition-all duration-300 hover:bg-forest hover:text-cream;
+}
+
+/* Premium Card Styles */
+.card-artisan {
+  @apply relative overflow-hidden rounded-3xl border border-forest/20 bg-gradient-to-br from-cream/90 to-forest-light/10 transition-all duration-500 hover:shadow-2xl hover:shadow-forest/20;
+}
+
+.forest-gradient-overlay {
+  @apply absolute inset-0 bg-gradient-to-t from-forest/60 via-forest/20 to-transparent;
+}
+
+.forest-inner-border {
+  @apply absolute inset-2 rounded-2xl border border-forest/30 pointer-events-none;
+}/* Opti
+mized Typography Colors for Forest Green Theme */
+
+/* Primary Text Colors */
+.text-primary-dark {
+  color: hsl(145 50% 12%);  /* Very dark forest for maximum contrast */
+}
+
+.text-primary-medium {
+  color: hsl(145 45% 20%);  /* Main forest green for headings */
+}
+
+.text-primary-light {
+  color: hsl(145 35% 35%);  /* Lighter forest for secondary text */
+}
+
+/* Secondary Text Colors */
+.text-secondary-dark {
+  color: hsl(145 40% 25%);  /* Deep moss for important secondary text */
+}
+
+.text-secondary-medium {
+  color: hsl(145 30% 40%);  /* Medium moss for body text */
+}
+
+.text-secondary-light {
+  color: hsl(145 20% 55%);  /* Light moss for muted text */
+}
+
+/* Accent Text Colors */
+.text-accent-warm {
+  color: hsl(38 60% 45%);   /* Warm gold for highlights */
+}
+
+.text-accent-bright {
+  color: hsl(145 50% 25%);  /* Bright forest for CTAs */
+}
+
+/* Context-Specific Text Colors */
+.text-on-light {
+  color: hsl(145 50% 15%);  /* Dark text on light backgrounds */
+}
+
+.text-on-dark {
+  color: hsl(45 25% 92%);   /* Light text on dark backgrounds */
+}
+
+.text-on-forest {
+  color: hsl(45 25% 96%);   /* Cream text on forest backgrounds */
+}
+
+.text-muted-light {
+  color: hsl(145 15% 60%);  /* Subtle text on light backgrounds */
+}
+
+.text-muted-dark {
+  color: hsl(145 10% 70%);  /* Subtle text on dark backgrounds */
+}
+
+/* Interactive Text Colors */
+.text-interactive {
+  @apply text-forest hover:text-forest-light transition-colors duration-200;
+}
+
+.text-interactive-inverse {
+  @apply text-cream hover:text-cream/80 transition-colors duration-200;
+}
+
+/* Brand Text Colors */
+.text-brand-primary {
+  color: hsl(145 45% 20%);
+  font-weight: 600;
+}
+
+.text-brand-secondary {
+  color: hsl(145 30% 25%);
+  font-weight: 500;
+}
+
+/* Status Text Colors */
+.text-success {
+  color: hsl(145 60% 30%);
+}
+
+.text-warning {
+  color: hsl(38 70% 40%);
+}
+
+.text-error {
+  color: hsl(0 65% 45%);
+}
+
+.text-info {
+  color: hsl(145 40% 35%);
+}/* A
+uth & Panel Styles */
+.panel-soft {
+  background: rgba(248, 250, 247, 0.95);
+  border: 1px solid rgba(88, 107, 68, 0.12);
+  box-shadow: 0 20px 60px rgba(88, 107, 68, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.dark .panel-soft {
+  background: rgba(15, 24, 16, 0.95);
+  border: 1px solid rgba(88, 107, 68, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}/*
+ Dark Mode Typography Overrides */
+.dark .text-primary-dark {
+  color: hsl(145 45% 62%);  /* Bright forest but darkened for comfort */
+}
+
+.dark .text-primary-medium {
+  color: hsl(145 40% 58%);  /* Vibrant but darkened forest */
+}
+
+.dark .text-secondary-medium {
+  color: hsl(145 35% 60%);  /* Bright moss but darkened */
+}
+
+.dark .text-secondary-light {
+  color: hsl(145 25% 55%);  /* Visible forest but darkened */
+}
+
+.dark .text-muted-light {
+  color: hsl(145 20% 58%);  /* Subtle but visible text */
+}
+
+.dark .text-interactive {
+  @apply text-primary hover:text-accent transition-colors duration-200;
+}
+
+/* Dark Mode Brand Colors - Vibrant but Darkened */
+.dark .text-brand-primary {
+  color: hsl(145 45% 58%);
+  font-weight: 600;
+}
+
+.dark .text-brand-secondary {
+  color: hsl(145 35% 55%);
+  font-weight: 500;
+}
+
+/* Auth Page Specific Dark Mode */
+.dark .panel-soft {
+  background: linear-gradient(145deg, rgba(15, 24, 16, 0.95), rgba(10, 16, 11, 0.98));
+  border: 1px solid rgba(88, 107, 68, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
