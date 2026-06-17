@@ -1,17 +1,20 @@
 import type React from "react";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { getSiteSettings } from "@/actions/settings";
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = await getSiteSettings();
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <Header siteName={settings.siteName} logoUrl={settings.logoUrl} />
       <main className="flex-1">{children}</main>
-      <Footer />
+      <Footer siteName={settings.siteName} />
     </div>
   );
 }

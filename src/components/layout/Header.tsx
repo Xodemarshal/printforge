@@ -5,7 +5,13 @@ import { Search, ShoppingCart, User, Leaf, Box, HelpCircle, Hammer } from "lucid
 import { NAV_LINKS } from "@/lib/constants";
 import { useCart } from "@/hooks/useCart";
 
-export function Header() {
+export function Header({
+  siteName = "Forest Foundry",
+  logoUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=groot&backgroundColor=2c3e2d"
+}: {
+  siteName?: string;
+  logoUrl?: string;
+}) {
   const { openCart, getTotalItems } = useCart();
   const totalItems = getTotalItems();
 
@@ -39,12 +45,17 @@ export function Header() {
         <div className="page-shell flex items-center justify-between py-4 lg:py-6">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group shrink-0">
-            <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-forest text-white group-hover:scale-105 transition-transform">
-               <img src="https://api.dicebear.com/7.x/bottts/svg?seed=groot&backgroundColor=2c3e2d" alt="Mascot" className="w-full h-full p-1" />
+            <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-forest text-white group-hover:scale-105 transition-transform overflow-hidden">
+               <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col">
               <span className="display-font text-xl font-bold tracking-tight text-forest leading-none">
-                Forest<br />Foundry
+                {(siteName || "Forest Foundry").split(" ").map((part, index, arr) => (
+                  <span key={index}>
+                    {part}
+                    {index < arr.length - 1 && <br />}
+                  </span>
+                ))}
               </span>
             </div>
           </Link>

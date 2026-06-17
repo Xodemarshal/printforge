@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { TreePine } from "lucide-react";
 
-export function Footer() {
+export function Footer({ siteName = "PrintForge" }: { siteName?: string }) {
   return (
     <footer className="mt-16 border-t border-forest/15 bg-muted/30 dark:bg-card/80">
       <div className="page-shell grid gap-8 py-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
@@ -10,7 +10,7 @@ export function Footer() {
             <span className="grid h-10 w-10 place-items-center rounded-2xl bg-forest text-cream shadow-md shadow-forest/20">
               <TreePine size={18} />
             </span>
-            <p className="display-font text-2xl font-semibold text-primary-dark">PrintForge</p>
+            <p className="display-font text-2xl font-semibold text-primary-dark">{siteName || "PrintForge"}</p>
           </div>
           <p className="max-w-sm text-sm leading-6 text-secondary-medium">
             Premium design services, custom manufacturing, and a complete marketplace for creative products.
@@ -43,7 +43,7 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-forest/15 py-4 text-center text-xs text-muted-light">
-        &copy; {new Date().getFullYear()} PrintForge. All rights reserved.
+        &copy; {new Date().getFullYear()} {siteName || "PrintForge"}. All rights reserved.
       </div>
     </footer>
   );

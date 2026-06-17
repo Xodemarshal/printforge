@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import { DESIGN_IMAGES } from "@/lib/design";
+import type { HeroSectionSettings } from "@/actions/settings";
 
 const FEATURED_ITEMS = [
   { img: DESIGN_IMAGES.collection1, label: "Fantasy Resin Mask", tag: "Classical Resin" },
@@ -9,7 +10,15 @@ const FEATURED_ITEMS = [
   { img: DESIGN_IMAGES.collection4, label: "Hand-carved Wood", tag: "Limited Series" }
 ];
 
-export function HeroBanner() {
+export function HeroBanner({ settings }: { settings?: HeroSectionSettings }) {
+  const title = settings?.title || "Ideas";
+  const coloredTitle = settings?.coloredTitle || "Take Shape.";
+  const subtitle = settings?.subtitle || "Premium Products";
+  const description = settings?.description || "Transform your ideas into stunning physical products with our premium design services and marketplace.";
+  const buttonText = settings?.buttonText || "Explore Products";
+  const imageUrl = settings?.imageUrl || DESIGN_IMAGES.heroCharacter;
+  const showcaseTitle = settings?.showcaseTitle || "Custom Product";
+  const showcaseItalic = settings?.showcaseItalic || "Design Made Easy";
   return (
     <section className="relative overflow-hidden pt-6 pb-12 lg:pt-10 lg:pb-20">
       <div className="page-shell">
@@ -18,7 +27,7 @@ export function HeroBanner() {
             {/* Main Showcase */}
             <div className="group relative min-h-[500px] overflow-hidden rounded-[40px] bg-cream lg:min-h-[660px]">
               <img
-                src={DESIGN_IMAGES.heroCharacter}
+                src={imageUrl}
                 alt="PrintForge product showcase"
                 className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
               />
@@ -30,8 +39,8 @@ export function HeroBanner() {
                   <span className="label-font">Product Showcase</span>
                 </div>
                 <h2 className="display-font mt-4 text-4xl text-on-dark leading-tight lg:text-5xl font-bold">
-                  Custom Product <br />
-                  <span className="text-accent-warm italic">Design Made Easy</span>
+                  {showcaseTitle} <br />
+                  <span className="text-accent-warm italic">{showcaseItalic}</span>
                 </h2>
               </div>
             </div>
@@ -41,20 +50,20 @@ export function HeroBanner() {
               <div className="space-y-6">
                 <span className="inline-flex items-center gap-2 rounded-full border border-forest/20 bg-cream/90 px-5 py-2 text-[11px] font-bold uppercase tracking-[0.25em] text-primary-medium">
                   <span className="h-2 w-2 rounded-full bg-forest animate-pulse" />
-                  Premium Products
+                  {subtitle}
                 </span>
                 <h1 className="display-font text-5xl leading-[0.85] text-primary-dark md:text-7xl lg:text-8xl font-bold">
-                  Ideas <br />
-                  <span className="text-primary-medium">Take Shape.</span>
+                  {title} <br />
+                  <span className="text-primary-medium">{coloredTitle}</span>
                 </h1>
                 <p className="max-w-md text-lg leading-relaxed text-secondary-medium font-medium">
-                  Transform your ideas into stunning physical products with our premium design services and marketplace.
+                  {description}
                 </p>
               </div>
               
               <div className="flex flex-wrap gap-5">
                 <Link href="/shop" className="btn-artisan-forest min-w-[200px] text-center">
-                  Explore Products
+                  {buttonText}
                 </Link>
               </div>
 

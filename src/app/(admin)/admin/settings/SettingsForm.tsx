@@ -1,0 +1,260 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { updateSiteSettingsAction } from "@/actions/settings";
+import { useToast } from "@/hooks/useToast";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import { Card, CardHeader, CardContent } from "@/components/ui/Card";
+import type { SiteSettings } from "@/actions/settings";
+import { Image as ImageIcon, Sparkles, UploadCloud } from "lucide-react";
+
+interface SettingsFormProps {
+  initialSettings: SiteSettings;
+}
+
+export function SettingsForm({ initialSettings }: SettingsFormProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const { success, error } = useToast();
+  const router = useRouter();
+
+  // Dynamic preview states for images
+  const [logoPreview, setLogoPreview] = useState<string>(initialSettings.logoUrl);
+  const [heroPreview, setHeroPreview] = useState<string>(initialSettings.hero.imageUrl);
+
+  function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLogoPreview(URL.createObjectURL(file));
+    }
+  }
+
+  function handleHeroChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setHeroPreview(URL.createObjectURL(file));
+    }
+  }
+
+  async function clientAction(formData: FormData) {
+    setIsLoading(true);
+    try {
+      const result = await updateSiteSettingsAction(formData);
+      if (result && result.error) {
+        error("Update Failed", result.error);
+      } else if (result && result.success) {
+        success("Settings Updated", result.message || "Settings updated successfully");
+        router.refresh();
+      }
+    } catch (err) {
+      console.error("Error updating settings:", err);
+      error("Update Failed", err instanceof Error ? err.message : "Failed to update settings");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  return (
+    <form action={clientAction} className="space-y-8 max-w-5xl pb-16">
+      {/* General Settings Card */}
+      <Card className="bg-[#121212] border-gray-800 shadow-xl">
+        <CardHeader className="border-gray-800">
+          <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+            <Sparkles className="text-accent-warm h-5 w-5" /> Store Branding
+          </h2>
+          <p className="text-sm text-gray-400 mt-1">
+            Configure your storefront general branding properties such as the store name and logo.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6 pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300">Site Name</label>
+              <Input
+                name="siteName"
+                defaultValue={initialSettings.siteName}
+                placeholder="e.g. Forest Foundry"
+                className="bg-black border-gray-700 text-white placeholder:text-gray-500 focus:border-forest"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300">Logo Image</label>
+              <div className="flex items-center gap-4">
+                <div className="relative w-16 h-16 rounded-xl bg-gray-900 border border-gray-700 overflow-hidden flex items-center justify-center shrink-0">
+                  {logoPreview ? (
+                    <img src={logoPreview} alt="Logo preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <ImageIcon className="text-gray-600 h-8 w-8" />
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <Input
+                    name="logoFile"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoChange}
+                    className="bg-black border-gray-700 text-white file:bg-gray-800 file:border-gray-600 file:text-gray-300 text-xs"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Recommended: Square image (PNG, SVG, or WEBP) with transparent background.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Hero Section Content Card */}
+      <Card className="bg-[#121212] border-gray-800 shadow-xl">
+        <CardHeader className="border-gray-800">
+          <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+            <ImageIcon className="text-accent-warm h-5 w-5" /> Homepage Hero Section Content
+          </h2>
+          <p className="text-sm text-gray-400 mt-1">
+            Modify the texts, headers, description, and primary call-to-action button of the home hero block.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6 pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300">Section Subtitle / Tag</label>
+              <Input
+                name="heroSubtitle"
+                defaultValue={initialSettings.hero.subtitle}
+                placeholder="e.g. Premium Products"
+                className="bg-black border-gray-700 text-white placeholder:text-gray-500"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300">Primary Button Text</label>
+              <Input
+                name="heroButtonText"
+                defaultValue={initialSettings.hero.buttonText}
+                placeholder="e.g. Explore Products"
+                className="bg-black border-gray-700 text-white placeholder:text-gray-500"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300">Hero Main Title (Plain)</label>
+              <Input
+                name="heroTitle"
+                defaultValue={initialSettings.hero.title}
+                placeholder="e.g. Ideas"
+                className="bg-black border-gray-700 text-white placeholder:text-gray-500"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300">Hero Title (Colored / Highlighted)</label>
+              <Input
+                name="heroColoredTitle"
+                defaultValue={initialSettings.hero.coloredTitle}
+                placeholder="e.g. Take Shape."
+                className="bg-black border-gray-700 text-white placeholder:text-gray-500"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Hero Description</label>
+            <Textarea
+              name="heroDescription"
+              defaultValue={initialSettings.hero.description}
+              placeholder="Write a compelling introductory description for your storefront..."
+              rows={4}
+              className="bg-black border-gray-700 text-[#f4ecd9] placeholder:text-[#c7b798]"
+              required
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Hero Showcase Card */}
+      <Card className="bg-[#121212] border-gray-800 shadow-xl">
+        <CardHeader className="border-gray-800">
+          <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+            <UploadCloud className="text-accent-warm h-5 w-5" /> Homepage Hero Image & Showcase
+          </h2>
+          <p className="text-sm text-gray-400 mt-1">
+            Update the primary high-quality showcase image and its text overlay visible on the left side of the hero.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6 pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300">Showcase Title</label>
+              <Input
+                name="heroShowcaseTitle"
+                defaultValue={initialSettings.hero.showcaseTitle}
+                placeholder="e.g. Custom Product"
+                className="bg-black border-gray-700 text-white placeholder:text-gray-500"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300">Showcase Title Italic / Accent</label>
+              <Input
+                name="heroShowcaseItalic"
+                defaultValue={initialSettings.hero.showcaseItalic}
+                placeholder="e.g. Design Made Easy"
+                className="bg-black border-gray-700 text-white placeholder:text-gray-500"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Hero Character/Showcase Image</label>
+            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
+              <div className="relative w-full max-w-[200px] aspect-[14/16] rounded-2xl bg-gray-900 border border-gray-700 overflow-hidden flex items-center justify-center shrink-0 shadow-lg">
+                {heroPreview ? (
+                  <img src={heroPreview} alt="Hero showcase preview" className="w-full h-full object-cover" />
+                ) : (
+                  <ImageIcon className="text-gray-600 h-12 w-12" />
+                )}
+              </div>
+              <div className="flex-1 space-y-3">
+                <Input
+                  name="heroFile"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleHeroChange}
+                  className="bg-black border-gray-700 text-white file:bg-gray-800 file:border-gray-600 file:text-gray-300"
+                />
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  Recommended: High-resolution vertical layout showcase image (aspect ratio roughly 14:16 or 3:4).
+                  Uploading a new file will automatically replace the existing background image.
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Form Submit Footer */}
+      <div className="flex justify-end gap-4">
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="min-w-[150px] bg-forest text-cream hover:bg-forest-light py-3 font-semibold text-sm"
+        >
+          {isLoading ? "Saving Changes..." : "Save Settings"}
+        </Button>
+      </div>
+    </form>
+  );
+}

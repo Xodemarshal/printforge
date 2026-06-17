@@ -10,7 +10,8 @@ import {
   Warehouse,
   Ticket,
   Star,
-  BarChart3
+  BarChart3,
+  Settings
 } from "lucide-react";
 
 const ICONS: Record<string, React.ComponentType<{ size?: number | string }>> = {
@@ -21,7 +22,8 @@ const ICONS: Record<string, React.ComponentType<{ size?: number | string }>> = {
   Inventory: Warehouse,
   Coupons: Ticket,
   Reviews: Star,
-  Analytics: BarChart3
+  Analytics: BarChart3,
+  Settings: Settings
 };
 
 export function AdminSidebar() {

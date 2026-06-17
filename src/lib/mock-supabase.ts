@@ -331,7 +331,26 @@ const MOCK_DATA: Record<string, Row[]> = {
   analytics_events: [],
   notifications: [],
   support_tickets: [],
-  settings: []
+  settings: [
+    {
+      id: "setting-site-settings",
+      key: "site_settings",
+      value: {
+        siteName: "Forest Foundry",
+        logoUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=groot&backgroundColor=2c3e2d",
+        hero: {
+          title: "Ideas",
+          coloredTitle: "Take Shape.",
+          subtitle: "Premium Products",
+          description: "Transform your ideas into stunning physical products with our premium design services and marketplace.",
+          buttonText: "Explore Products",
+          imageUrl: "https://picsum.photos/seed/wooden-guardian-hero/1400/1600",
+          showcaseTitle: "Custom Product",
+          showcaseItalic: "Design Made Easy"
+        }
+      }
+    }
+  ]
 };
 
 function clone<T>(value: T): T {
@@ -443,7 +462,11 @@ class MockQuery {
     if (this.mode === "upsert") {
       const items = Array.isArray(this.payload) ? this.payload : [this.payload as Row];
       for (const item of items) {
-        const index = rows.findIndex((row) => row.id === item.id);
+        const index = rows.findIndex((row) => {
+          if (item.id && row.id === item.id) return true;
+          if (item.key && row.key === item.key) return true;
+          return false;
+        });
         if (index >= 0) {
           rows[index] = { ...rows[index], ...item };
         } else {

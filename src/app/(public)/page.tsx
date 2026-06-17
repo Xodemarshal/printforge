@@ -10,6 +10,7 @@ import { FAQSection } from "@/components/home/FAQSection";
 import { getBestSellers, getFeaturedProducts } from "@/actions/products";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { mockData } from "@/lib/mock-supabase";
+import { getSiteSettings } from "@/actions/settings";
 
 export const metadata: Metadata = {
   title: "Wooden Guardian",
@@ -24,10 +25,11 @@ export default async function HomePage() {
   const reviewsResult = await supabase.from("reviews").select("id, comment, user_id").limit(3);
   const categories = categoriesResult.error ? mockData.categories : categoriesResult.data;
   const reviews = reviewsResult.error ? mockData.reviews : reviewsResult.data;
+  const settings = await getSiteSettings();
 
   return (
     <>
-      <HeroBanner />
+      <HeroBanner settings={settings.hero} />
       <TrustBar />
       <FeaturedProducts products={featured} />
       <BestSellers products={bestSellers} />
