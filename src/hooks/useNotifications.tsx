@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { getUserNotifications, markNotificationAsRead as markReadAction, markAllNotificationsAsRead as markAllReadAction } from "@/actions/notifications";
 
 export interface Notification {
   id: string;
@@ -17,44 +18,41 @@ interface NotificationContextType {
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   addNotification: (notification: Omit<Notification, "id" | "read" | "createdAt">) => void;
+  refreshNotifications: () => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
-// Mock notifications for demo
-const mockNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "success",
-    title: "Order Shipped",
-    message: "Your order #ORD-001 has been shipped and is on its way!",
-    read: false,
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000) // 2 hours ago
-  },
-  {
-    id: "2", 
-    type: "info",
-    title: "New Product Available",
-    message: "Check out our latest desk accessories collection.",
-    read: false,
-    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
-  },
-  {
-    id: "3",
-    type: "success", 
-    title: "Payment Confirmed",
-    message: "We've received your payment for order #ORD-002.",
-    read: true,
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
-  }
-];
-
 export function NotificationProvider({ children }: { children: ReactNode }) {
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const refreshNotifications = async () => {
+    try {
+      const data = await getUserNotifications();
+      const mapped = data.map(n => ({
+        id: n.id,
+        type: (n.type || "info") as "info" | "success" | "warning" | "error",
+        title: n.title,
+        message: n.body,
+        read: n.read,
+        createdAt: new Date(n.created_at)
+      }));
+      setNotifications(mapped);
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshNotifications();
+  }, []);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const markAsRead = (id: string) => {
+  const markAsRead = async (id: string) => {
     setNotifications(prev =>
       prev.map(notification =>
         notification.id === id
@@ -62,12 +60,28 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           : notification
       )
     );
+    
+    try {
+      await markReadAction(id);
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+      // Revert on error
+      await refreshNotifications();
+    }
   };
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
     setNotifications(prev =>
       prev.map(notification => ({ ...notification, read: true }))
     );
+    
+    try {
+      await markAllReadAction();
+    } catch (error) {
+      console.error("Failed to mark all notifications as read:", error);
+      // Revert on error
+      await refreshNotifications();
+    }
   };
 
   const addNotification = (notification: Omit<Notification, "id" | "read" | "createdAt">) => {
@@ -86,7 +100,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       unreadCount,
       markAsRead,
       markAllAsRead,
-      addNotification
+      addNotification,
+      refreshNotifications
     }}>
       {children}
     </NotificationContext.Provider>

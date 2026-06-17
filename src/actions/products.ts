@@ -5,14 +5,14 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/guards";
 import { slugify, trackEvent } from "@/lib/utils";
 import { filterProducts, type ProductFilterInput } from "@/lib/product-filters";
-import { mockData } from "@/lib/mock-supabase";
+import { mockData, hasSupabaseConfig } from "@/lib/mock-supabase";
 
 function isMissingTableError(error: unknown) {
   return Boolean(error && typeof error === "object" && "code" in error && (error as { code?: string }).code === "PGRST205");
 }
 
 function isMissingColumnError(error: unknown) {
-  return Boolean(error && typeof error === "object" && "message" in error && 
+  return Boolean(error && typeof error === "object" && "message" in error &&
     typeof (error as { message?: string }).message === "string" &&
     (error as { message: string }).message.includes("image_url"));
 }
@@ -65,6 +65,29 @@ export async function getBestSellers() {
   return data ?? (mockData.products as any[]).filter((product) => product.best_seller && product.active).slice(0, 8);
 }
 
+export async function getCategories() {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .order('name', { ascending: true});
+
+  if (error) {
+    console.error('❌ getCategories error:', error);
+    if (isMissingTableError(error)) {
+      return mockData.categories as any[];
+    }
+    throw error;
+  }
+
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  return data;
+}
+
 export async function searchProducts(input: ProductFilterInput | string, userId: string | null = null) {
   const searchInput =
     typeof input === "string"
@@ -95,7 +118,6 @@ async function maybeUploadImage(file: File | null) {
 
     if (error) {
       console.warn(`Image upload failed: ${error.message}`);
-      // Return null instead of throwing to allow product creation without image
       return null;
     }
 
@@ -103,9 +125,21 @@ async function maybeUploadImage(file: File | null) {
     return data.publicUrl;
   } catch (error) {
     console.warn(`Image upload error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    // Return null to allow product creation without image
     return null;
   }
+}
+
+async function maybeUploadMultipleImages(files: File[]) {
+  if (!files || files.length === 0) {
+    return [];
+  }
+
+  const uploadPromises = files
+    .filter(file => file.size > 0)
+    .map(file => maybeUploadImage(file));
+
+  const urls = await Promise.all(uploadPromises);
+  return urls.filter((url): url is string => url !== null);
 }
 
 export async function createProductAction(formData: FormData) {
@@ -113,7 +147,12 @@ export async function createProductAction(formData: FormData) {
   const supabase = createAdminClient();
   const name = String(formData.get("name") ?? "");
   const slug = slugify(String(formData.get("slug") ?? name));
+
   const imageUrl = await maybeUploadImage(formData.get("image") as File | null);
+  const galleryFiles = formData.getAll("gallery") as File[];
+  const galleryUrls = await maybeUploadMultipleImages(galleryFiles);
+  const videoUrl = String(formData.get("video_url") ?? "");
+
   const colorOptions = String(formData.get("colorOptions") ?? "")
     .split(",")
     .map((item) => item.trim())
@@ -123,9 +162,13 @@ export async function createProductAction(formData: FormData) {
     name,
     slug,
     description: String(formData.get("description") ?? ""),
-    price: Number(formData.get("price") ?? 0),
-    category_id: String(formData.get("category_id") ?? "") || null,
+    price: Math.round(Number(formData.get("price") ?? 0) * 100),
+    category_id: (String(formData.get("category_id") ?? "") && String(formData.get("category_id")).length > 10)
+      ? String(formData.get("category_id"))
+      : null,
     image_url: imageUrl,
+    gallery_urls: galleryUrls,
+    video_url: videoUrl,
     material_info: String(formData.get("material_info") ?? ""),
     color_options: colorOptions,
     active: formData.get("active") === "on"
@@ -150,40 +193,83 @@ export async function updateProductAction(formData: FormData) {
   const supabase = createAdminClient();
   const id = String(formData.get("id") ?? "");
   const productName = String(formData.get("name") ?? "");
-  const imageUrl = await maybeUploadImage(formData.get("image") as File | null);
+  console.log("RAW CATEGORY:", formData.get("category_id"));
+  console.log('=== UPDATE PRODUCT ===');
+  console.log('Product ID:', id);
+  console.log('Product Name:', productName);
+  console.log('Category ID:', formData.get("category_id"));
 
-  const payload: Record<string, unknown> = {
-    name: productName,
-    slug: slugify(String(formData.get("slug") ?? "")),
-    description: String(formData.get("description") ?? ""),
-    price: Number(formData.get("price") ?? 0),
-    category_id: String(formData.get("category_id") ?? "") || null,
-    material_info: String(formData.get("material_info") ?? ""),
-    color_options: String(formData.get("colorOptions") ?? "")
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean),
-    active: formData.get("active") === "on"
-  };
+  try {
+    const imageUrl = await maybeUploadImage(formData.get("image") as File | null);
+    const videoUrl = String(formData.get("video_url") ?? "");
 
-  if (imageUrl) {
-    payload.image_url = imageUrl;
+    console.log('Uploaded image:', imageUrl);
+
+    const payload: Record<string, unknown> = {
+      name: productName,
+      slug: slugify(String(formData.get("slug") ?? productName)),
+      description: String(formData.get("description") ?? ""),
+      price: Math.round(Number(formData.get("price") ?? 0) * 100),
+      category_id: (String(formData.get("category_id") ?? "") && String(formData.get("category_id")).length > 10)
+        ? String(formData.get("category_id"))
+        : null,
+      video_url: videoUrl,
+      material_info: String(formData.get("material_info") ?? ""),
+      color_options: String(formData.get("colorOptions") ?? "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean),
+      active: formData.get("active") === "on"
+    };
+
+    if (imageUrl) {
+      payload.image_url = imageUrl;
+    }
+
+    // Try to handle gallery_urls if column exists
+    try {
+      const galleryFiles = formData.getAll("gallery") as File[];
+      const newGalleryUrls = await maybeUploadMultipleImages(galleryFiles);
+
+      if (newGalleryUrls.length > 0) {
+        const { data: existingProduct } = await supabase
+          .from("products")
+          .select("gallery_urls")
+          .eq("id", id)
+          .single();
+
+        const existingGallery = existingProduct?.gallery_urls || [];
+        payload.gallery_urls = [...existingGallery, ...newGalleryUrls];
+      }
+    } catch (galleryError) {
+      console.warn('Gallery upload failed (column might not exist):', galleryError);
+      // Continue without gallery update
+    }
+
+    const { error } = await supabase.from("products").update(payload).eq("id", id);
+
+    if (error) {
+      console.error('❌ Update error:', error);
+      return { error: error.message };
+    }
+
+    console.log('✅ Product updated successfully');
+
+    await trackEvent("admin_action", null, { action: "update_product", id });
+    revalidatePath("/admin/products");
+    revalidatePath(`/admin/products/edit/${id}`);
+    revalidatePath("/");
+    return {
+      success: true,
+      message: `Product "${productName}" updated successfully`,
+      type: "update" as const
+    };
+  } catch (error) {
+    console.error('❌ Update failed with exception:', error);
+    return {
+      error: error instanceof Error ? error.message : 'Update failed'
+    };
   }
-
-  const { error } = await supabase.from("products").update(payload).eq("id", id);
-  if (error) {
-    return { error: error.message };
-  }
-
-  await trackEvent("admin_action", null, { action: "update_product", id });
-  revalidatePath("/admin/products");
-  revalidatePath(`/admin/products/edit/${id}`);
-  revalidatePath("/");
-  return {
-    success: true,
-    message: `Product "${productName}" updated successfully`,
-    type: "update" as const
-  };
 }
 
 export async function deleteProductAction(formData: FormData) {
@@ -337,25 +423,25 @@ export async function createCategoryAction(formData: FormData) {
   const name = String(formData.get("name") ?? "");
   const slug = slugify(String(formData.get("slug") ?? name));
   const imageUrl = await maybeUploadImage(formData.get("image") as File | null);
-  
+
   // Try with image_url first, fall back without it if column doesn't exist
-  let { error } = await supabase.from("categories").insert({ 
-    name, 
+  let { error } = await supabase.from("categories").insert({
+    name,
     slug,
-    image_url: imageUrl 
+    image_url: imageUrl
   });
-  
+
   if (error && isMissingColumnError(error)) {
     // Retry without image_url for databases that don't have the column yet
     const result = await supabase.from("categories").insert({ name, slug });
     error = result.error;
   }
-  
+
   if (error) return { error: error.message };
   revalidatePath("/admin/categories");
   revalidatePath("/");
-  return { 
-    success: true, 
+  return {
+    success: true,
     message: `Category "${name}" created successfully${imageUrl ? "" : " (without image - please run migrations)"}`,
     type: "create" as const
   };
@@ -379,7 +465,7 @@ export async function updateCategoryAction(formData: FormData) {
 
   // Try with image_url first, fall back without it if column doesn't exist
   let { error } = await supabase.from("categories").update(payload).eq("id", id);
-  
+
   if (error && isMissingColumnError(error) && imageUrl) {
     // Retry without image_url for databases that don't have the column yet
     const fallbackPayload = {
@@ -389,12 +475,12 @@ export async function updateCategoryAction(formData: FormData) {
     const result = await supabase.from("categories").update(fallbackPayload).eq("id", id);
     error = result.error;
   }
-  
+
   if (error) return { error: error.message };
   revalidatePath("/admin/categories");
   revalidatePath("/");
-  return { 
-    success: true, 
+  return {
+    success: true,
     message: `Category "${name}" updated successfully${imageUrl ? "" : " (without image - please run migrations)"}`,
     type: "update" as const
   };
@@ -409,8 +495,8 @@ export async function deleteCategoryAction(formData: FormData) {
   if (error) return { error: error.message };
   revalidatePath("/admin/categories");
   revalidatePath("/");
-  return { 
-    success: true, 
+  return {
+    success: true,
     message: `Category "${categoryName}" deleted successfully`,
     type: "delete" as const
   };

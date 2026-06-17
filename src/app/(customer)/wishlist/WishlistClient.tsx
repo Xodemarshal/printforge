@@ -1,45 +1,57 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useCart } from "@/hooks/useCart";
 import { Heart, ShoppingCart, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { formatCurrency } from "@/lib/utils";
-
-// Mock product data - in real app, you'd fetch this based on wishlist IDs
-const mockProducts = [
-  {
-    id: "prod-1",
-    name: "Desk Lamp",
-    slug: "desk-lamp", 
-    price: 14.99,
-    image_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=center"
-  },
-  {
-    id: "prod-2",
-    name: "Phone Stand",
-    slug: "phone-stand",
-    price: 4.99,
-    image_url: "https://images.unsplash.com/photo-1556656793-08538906a9f8?w=400&h=400&fit=crop&crop=center"
-  }
-];
+import { getProducts } from "@/actions/products";
+import { productImage } from "@/lib/design";
 
 export function WishlistClient() {
   const { items, toggle, clearWishlist } = useWishlist();
   const { addItem } = useCart();
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Filter mock products to only show wishlist items
-  const wishlistProducts = mockProducts.filter(product => items.includes(product.id));
+  // Fetch all products and filter by wishlist IDs
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const result = await getProducts();
+        const allProducts = result.items || [];
+        
+        // Filter products that are in the wishlist
+        const wishlistItems = allProducts.filter(product => items.includes(product.id));
+        setProducts(wishlistItems);
+      } catch (error) {
+        console.error('Failed to fetch wishlist products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleAddToCart = (product: typeof mockProducts[0]) => {
+    fetchProducts();
+  }, [items]);
+
+  // Get image URL with fallback
+  const getImageUrl = (product: any): string => {
+    if (product.image_url) return product.image_url;
+    return productImage(product.slug);
+  };
+
+  const wishlistProducts = products;
+
+  const handleAddToCart = (product: any) => {
     addItem({
       id: product.id,
       productId: product.id,
       name: product.name,
       slug: product.slug,
-      price: product.price,
-      imageUrl: product.image_url
+      price: Number(product.price),
+      imageUrl: getImageUrl(product)
     });
   };
 
@@ -65,7 +77,11 @@ export function WishlistClient() {
         </div>
 
         {/* Wishlist Items */}
-        {wishlistProducts.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16">
+            <p className="text-forest/70">Loading your wishlist...</p>
+          </div>
+        ) : wishlistProducts.length === 0 ? (
           <div className="text-center py-16">
             <Heart size={64} className="text-forest/30 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-forest mb-2">Your wishlist is empty</h3>
@@ -79,12 +95,12 @@ export function WishlistClient() {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {wishlistProducts.map((product) => (
+            {wishlistProducts.map((product: any) => (
               <div key={product.id} className="bg-cream/30 border border-forest/20 rounded-2xl p-4 group">
                 <div className="relative mb-4">
                   <Link href={`/products/${product.slug}`}>
                     <img 
-                      src={product.image_url}
+                      src={getImageUrl(product)}
                       alt={product.name}
                       className="w-full aspect-square object-cover rounded-xl group-hover:scale-105 transition-transform"
                     />

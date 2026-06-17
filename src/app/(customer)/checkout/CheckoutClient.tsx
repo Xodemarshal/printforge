@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/Textarea";
 import { formatCurrency } from "@/lib/utils";
 import { CreditCard, Truck, Shield, ArrowLeft, Smartphone, Wallet } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
+import { createOrderAction, verifyPaymentAction } from "@/actions/checkout";
+import { validateCouponAction } from "@/actions/coupons";
 
 const SHIPPING_COST = 15;
 const FREE_SHIPPING_THRESHOLD = 150;
@@ -19,14 +20,40 @@ type PaymentMethod = "card" | "paypal" | "apple-pay" | "google-pay" | "upi" | "b
 
 export function CheckoutClient() {
   const { items, getTotalPrice, clearCart } = useCart();
-  const { success } = useToast();
+  const { success, error } = useToast();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>("card");
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
 
   const subtotal = getTotalPrice();
   const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
-  const total = subtotal + shippingCost;
+  const totalBeforeDiscount = subtotal + shippingCost;
+  const total = Math.max(0, totalBeforeDiscount - discountAmount);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode) return;
+    setIsValidatingCoupon(true);
+    try {
+      const result = await validateCouponAction(couponCode, subtotal);
+      if (result.valid) {
+        setAppliedCoupon(result.coupon);
+        setDiscountAmount(result.discountAmount || 0);
+        success("Coupon Applied", `You saved ₹${result.discountAmount?.toLocaleString()}!`);
+      } else {
+        error("Invalid Coupon", result.error || "Could not validate coupon");
+        setAppliedCoupon(null);
+        setDiscountAmount(0);
+      }
+    } catch (err) {
+      error("Error", "Failed to apply coupon");
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
 
   const paymentMethods = [
     {
@@ -71,14 +98,105 @@ export function CheckoutClient() {
     event.preventDefault();
     setIsProcessing(true);
 
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    success("Order Placed", `Your order has been placed successfully using ${paymentMethods.find(m => m.id === selectedPayment)?.name}!`);
-    clearCart();
-    router.push("/orders");
-    
-    setIsProcessing(false);
+    try {
+      const formData = new FormData(event.currentTarget);
+      
+      const shippingAddress = {
+        street: formData.get("address") as string,
+        city: formData.get("city") as string,
+        state: formData.get("state") as string,
+        zipCode: formData.get("zipCode") as string,
+        country: formData.get("country") as string
+      };
+
+      const result = await createOrderAction({
+        items: items.map(item => ({
+          productId: item.productId,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity
+        })),
+        shippingAddress,
+        paymentMethod: selectedPayment,
+        subtotal,
+        shippingCost,
+        total,
+        discountAmount,
+        couponId: appliedCoupon?.id
+      });
+
+      if (result.error) {
+        error("Order Failed", result.error);
+        setIsProcessing(false);
+        return;
+      }
+
+      if (!["card", "upi", "bank-transfer"].includes(selectedPayment)) {
+        const paymentMethodName = paymentMethods.find(m => m.id === selectedPayment)?.name;
+        success("Order Placed Successfully!", `Your order #${result.orderId?.slice(0, 8)} has been placed using ${paymentMethodName}.`);
+        clearCart();
+        router.push(`/orders/${result.orderId}`);
+        setIsProcessing(false);
+        return;
+      }
+
+      if (result.razorpayOrderId && result.razorpayKeyId) {
+        const options = {
+          key: result.razorpayKeyId,
+          amount: Math.round(total * 100),
+          currency: "INR",
+          name: "PrintForge",
+          description: `Order #${result.orderId?.slice(0, 8)}`,
+          order_id: result.razorpayOrderId,
+          handler: async function (response: any) {
+            try {
+              const verifyResult = await verifyPaymentAction(
+                result.orderId!,
+                response.razorpay_payment_id,
+                response.razorpay_signature
+              );
+              
+              if (verifyResult.success) {
+                success("Payment Successful!", "Your order has been confirmed.");
+                clearCart();
+                router.push(`/orders/${result.orderId}`);
+              } else {
+                error("Payment Verification Failed", verifyResult.error || "Please contact support.");
+              }
+            } catch (err: any) {
+              error("Verification Error", err.message || "Failed to verify payment.");
+            } finally {
+              setIsProcessing(false);
+            }
+          },
+          prefill: {
+            name: formData.get("firstName") + " " + formData.get("lastName"),
+            email: formData.get("email"),
+            contact: formData.get("phone")
+          },
+          theme: {
+            color: "#2C5F2D"
+          },
+          modal: {
+            ondismiss: function() {
+              setIsProcessing(false);
+              error("Payment Cancelled", "You cancelled the payment. Your order is saved and awaiting payment.");
+            }
+          }
+        };
+
+        const razorpay = new (window as any).Razorpay(options);
+        razorpay.open();
+      } else {
+        success("Order Placed!", `Your order #${result.orderId?.slice(0, 8)} has been placed.`);
+        clearCart();
+        router.push(`/orders/${result.orderId}`);
+        setIsProcessing(false);
+      }
+    } catch (err: any) {
+      error("Order Failed", err.message || "Something went wrong. Please try again.");
+      setIsProcessing(false);
+    }
   };
 
   if (items.length === 0) {
@@ -101,7 +219,6 @@ export function CheckoutClient() {
   return (
     <div className="page-shell py-8">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Link 
             href="/shop"
@@ -113,7 +230,6 @@ export function CheckoutClient() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">
-          {/* Order Form */}
           <div className="space-y-8">
             <div>
               <h1 className="text-3xl font-bold text-forest mb-2">Checkout</h1>
@@ -121,310 +237,81 @@ export function CheckoutClient() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Contact Information */}
               <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
                 <h2 className="text-xl font-semibold text-forest mb-4">Contact Information</h2>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <Input 
-                    name="firstName"
-                    placeholder="First Name"
-                    className="border-forest/30 focus:border-forest"
-                    required
-                  />
-                  <Input 
-                    name="lastName"
-                    placeholder="Last Name"
-                    className="border-forest/30 focus:border-forest"
-                    required
-                  />
+                  <Input name="firstName" placeholder="First Name" required />
+                  <Input name="lastName" placeholder="Last Name" required />
                 </div>
-                <Input 
-                  type="email"
-                  name="email"
-                  placeholder="Email Address"
-                  className="border-forest/30 focus:border-forest mt-4"
-                  required
-                />
-                <Input 
-                  type="tel"
-                  name="phone"
-                  placeholder="Phone Number"
-                  className="border-forest/30 focus:border-forest mt-4"
-                  required
-                />
+                <Input type="email" name="email" placeholder="Email Address" className="mt-4" required />
+                <Input type="tel" name="phone" placeholder="Phone Number" className="mt-4" required />
               </div>
 
-              {/* Shipping Address */}
               <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
                 <h2 className="text-xl font-semibold text-forest mb-4">Shipping Address</h2>
                 <div className="space-y-4">
-                  <Input 
-                    name="address"
-                    placeholder="Street Address"
-                    className="border-forest/30 focus:border-forest"
-                    required
-                  />
+                  <Input name="address" placeholder="Street Address" required />
                   <div className="grid md:grid-cols-3 gap-4">
-                    <Input 
-                      name="city"
-                      placeholder="City"
-                      className="border-forest/30 focus:border-forest"
-                      required
-                    />
-                    <Input 
-                      name="state"
-                      placeholder="State"
-                      className="border-forest/30 focus:border-forest"
-                      required
-                    />
-                    <Input 
-                      name="zipCode"
-                      placeholder="ZIP Code"
-                      className="border-forest/30 focus:border-forest"
-                      required
-                    />
+                    <Input name="city" placeholder="City" required />
+                    <Input name="state" placeholder="State" required />
+                    <Input name="zipCode" placeholder="ZIP Code" required />
                   </div>
-                  <select 
-                    name="country"
-                    className="w-full px-3 py-2 border border-forest/30 rounded-lg focus:border-forest focus:outline-none"
-                    required
-                  >
+                  <select name="country" className="w-full px-3 py-2 border border-forest/30 rounded-lg focus:border-forest focus:outline-none" required>
                     <option value="">Select Country</option>
-                    <option value="US">United States</option>
-                    <option value="CA">Canada</option>
-                    <option value="UK">United Kingdom</option>
-                    <option value="AU">Australia</option>
-                    <option value="DE">Germany</option>
-                    <option value="FR">France</option>
-                    <option value="JP">Japan</option>
                     <option value="IN">India</option>
+                    <option value="US">United States</option>
+                    <option value="UK">United Kingdom</option>
                   </select>
                 </div>
               </div>
 
-              {/* Payment Method Selection */}
               <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
                 <h2 className="text-xl font-semibold text-forest mb-4">Payment Method</h2>
                 <div className="space-y-3">
-                  {paymentMethods.map((method) => (
+                  {paymentMethods.map((method: any) => (
                     <button
                       key={method.id}
                       type="button"
                       onClick={() => setSelectedPayment(method.id)}
                       className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
-                        selectedPayment === method.id
-                          ? "border-forest bg-forest/5"
-                          : "border-forest/20 hover:border-forest/40"
+                        selectedPayment === method.id ? "border-forest bg-forest/5" : "border-forest/20 hover:border-forest/40"
                       }`}
                     >
-                      <div className={`p-2 rounded-lg ${
-                        selectedPayment === method.id ? "bg-forest/10" : "bg-cream/50"
-                      }`}>
-                        {method.icon}
-                      </div>
+                      <div className="p-2 rounded-lg bg-cream/50">{method.icon}</div>
                       <div className="flex-1 text-left">
                         <p className="font-semibold text-forest">{method.name}</p>
                         <p className="text-sm text-forest/60">{method.description}</p>
-                      </div>
-                      <div className={`w-5 h-5 rounded-full border-2 ${
-                        selectedPayment === method.id
-                          ? "border-forest bg-forest"
-                          : "border-forest/30"
-                      }`}>
-                        {selectedPayment === method.id && (
-                          <div className="w-full h-full rounded-full bg-white scale-50"></div>
-                        )}
                       </div>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Payment Details - Show based on selected method */}
-              {selectedPayment === "card" && (
-                <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
-                  <h2 className="text-xl font-semibold text-forest mb-4 flex items-center gap-2">
-                    <CreditCard size={20} />
-                    Card Information
-                  </h2>
-                  <div className="space-y-4">
-                    <Input 
-                      name="cardNumber"
-                      placeholder="Card Number"
-                      className="border-forest/30 focus:border-forest"
-                      required={selectedPayment === "card"}
-                    />
-                    <Input 
-                      name="cardName"
-                      placeholder="Name on Card"
-                      className="border-forest/30 focus:border-forest"
-                      required={selectedPayment === "card"}
-                    />
-                    <div className="grid grid-cols-3 gap-4">
-                      <Input 
-                        name="expiryMonth"
-                        placeholder="MM"
-                        className="border-forest/30 focus:border-forest"
-                        required={selectedPayment === "card"}
-                        maxLength={2}
-                      />
-                      <Input 
-                        name="expiryYear"
-                        placeholder="YY"
-                        className="border-forest/30 focus:border-forest"
-                        required={selectedPayment === "card"}
-                        maxLength={2}
-                      />
-                      <Input 
-                        name="cvv"
-                        placeholder="CVV"
-                        className="border-forest/30 focus:border-forest"
-                        required={selectedPayment === "card"}
-                        maxLength={4}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {selectedPayment === "bank-transfer" && (
-                <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
-                  <h2 className="text-xl font-semibold text-forest mb-4">Bank Transfer Details</h2>
-                  <div className="space-y-3 text-sm text-forest/70">
-                    <p>Please transfer the total amount to the following account:</p>
-                    <div className="bg-white/50 p-4 rounded-lg space-y-2">
-                      <p><span className="font-semibold">Bank Name:</span> PrintForge Bank</p>
-                      <p><span className="font-semibold">Account Number:</span> 1234567890</p>
-                      <p><span className="font-semibold">Routing Number:</span> 987654321</p>
-                      <p><span className="font-semibold">Reference:</span> Use your email as reference</p>
-                    </div>
-                    <p className="text-xs">Your order will be processed once payment is confirmed (usually 1-2 business days).</p>
-                  </div>
-                </div>
-              )}
-
-              {selectedPayment === "upi" && (
-                <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
-                  <h2 className="text-xl font-semibold text-forest mb-4 flex items-center gap-2">
-                    <Smartphone size={20} />
-                    UPI Payment
-                  </h2>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-forest mb-2">
-                        Enter your UPI ID
-                      </label>
-                      <Input 
-                        name="upiId"
-                        placeholder="yourname@paytm / yourname@okaxis"
-                        className="border-forest/30 focus:border-forest"
-                        required={selectedPayment === "upi"}
-                      />
-                      <p className="text-xs text-forest/60 mt-2">
-                        You can use any UPI app (Google Pay, PhonePe, Paytm, BHIM, etc.)
-                      </p>
-                    </div>
-
-                    <div className="bg-white/50 p-4 rounded-lg">
-                      <p className="text-sm font-semibold text-forest mb-3">Or scan this QR Code:</p>
-                      <div className="bg-white p-4 rounded-lg border-2 border-forest/20 inline-block">
-                        <div className="w-48 h-48 bg-gradient-to-br from-forest/10 to-moss/10 flex items-center justify-center rounded">
-                          <div className="text-center">
-                            <Smartphone size={48} className="text-forest/40 mx-auto mb-2" />
-                            <p className="text-xs text-forest/60">UPI QR Code</p>
-                            <p className="text-xs text-forest/40 mt-1">Scan to pay</p>
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-xs text-forest/60 mt-3">
-                        Open any UPI app and scan this QR code to pay {formatCurrency(total)}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-center gap-3 pt-2">
-                      <div className="text-xs text-forest/60 font-semibold">Supported Apps:</div>
-                      <div className="flex gap-2">
-                        <span className="bg-white px-2 py-1 rounded text-xs border border-forest/20">GPay</span>
-                        <span className="bg-white px-2 py-1 rounded text-xs border border-forest/20">PhonePe</span>
-                        <span className="bg-white px-2 py-1 rounded text-xs border border-forest/20">Paytm</span>
-                        <span className="bg-white px-2 py-1 rounded text-xs border border-forest/20">BHIM</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {(selectedPayment === "paypal" || selectedPayment === "apple-pay" || selectedPayment === "google-pay") && (
-                <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
-                  <div className="text-center py-4">
-                    <p className="text-forest/70 mb-4">
-                      You will be redirected to {paymentMethods.find(m => m.id === selectedPayment)?.name} to complete your payment.
-                    </p>
-                    <div className="inline-flex items-center gap-2 text-sm text-forest/60">
-                      <Shield size={16} />
-                      <span>Secure payment powered by {paymentMethods.find(m => m.id === selectedPayment)?.name}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Special Instructions */}
               <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
                 <h2 className="text-xl font-semibold text-forest mb-4">Order Notes (Optional)</h2>
-                <Textarea 
-                  name="instructions"
-                  placeholder="Any special delivery instructions or notes..."
-                  rows={3}
-                  className="border-forest/30 focus:border-forest resize-none"
-                />
+                <Textarea name="instructions" placeholder="Any special delivery instructions..." rows={3} />
               </div>
 
-              {/* Submit Button */}
-              <Button 
-                type="submit"
-                disabled={isProcessing}
-                className="w-full bg-forest hover:bg-forest-dark text-white py-4 text-lg font-semibold"
-              >
+              <Button type="submit" disabled={isProcessing} className="w-full bg-forest hover:bg-forest-dark text-white py-4 text-lg font-semibold">
                 {isProcessing ? "Processing..." : `Place Order - ${formatCurrency(total)}`}
               </Button>
-
-              {/* Payment Badges */}
-              <div className="flex items-center justify-center gap-4 pt-4 border-t border-forest/20">
-                <div className="flex items-center gap-2 text-xs text-forest/60">
-                  <Shield size={14} />
-                  <span>256-bit SSL Encrypted</span>
-                </div>
-                <div className="text-xs text-forest/40">•</div>
-                <div className="text-xs text-forest/60">PCI DSS Compliant</div>
-              </div>
             </form>
           </div>
 
-          {/* Order Summary */}
           <div className="lg:sticky lg:top-8 lg:self-start">
             <div className="bg-cream/50 border border-forest/20 rounded-2xl p-6">
               <h2 className="text-xl font-semibold text-forest mb-6">Order Summary</h2>
-              
-              {/* Items */}
               <div className="space-y-4 mb-6">
-                {items.map((item) => (
+                {items.map((item: any) => (
                   <div key={item.productId} className="flex items-center gap-3 p-3 bg-white/50 border border-forest/10 rounded-lg">
-                    <img 
-                      src={item.imageUrl || `https://picsum.photos/seed/${encodeURIComponent(item.slug)}/80/80`}
-                      alt={item.name}
-                      className="w-16 h-16 rounded-lg object-cover"
-                    />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-forest truncate">{item.name}</p>
                       <p className="text-sm text-forest/60">Qty: {item.quantity}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-forest">{formatCurrency(item.price * item.quantity)}</p>
-                    </div>
+                    <p className="font-semibold text-forest">{formatCurrency(item.price * item.quantity)}</p>
                   </div>
                 ))}
               </div>
-
               {/* Totals */}
               <div className="border-t border-forest/20 pt-4 space-y-2">
                 <div className="flex justify-between text-forest/70">
@@ -435,44 +322,52 @@ export function CheckoutClient() {
                   <span>Shipping</span>
                   <span>{shippingCost === 0 ? 'Free' : formatCurrency(shippingCost)}</span>
                 </div>
+                
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-red-600 font-medium">
+                    <span>Discount {appliedCoupon && `(${appliedCoupon.code})`}</span>
+                    <span>-{formatCurrency(discountAmount)}</span>
+                  </div>
+                )}
+
+                <div className="pt-4 pb-2">
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="Coupon Code" 
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      className="h-10 border-forest/20"
+                      disabled={appliedCoupon || isValidatingCoupon}
+                    />
+                    {appliedCoupon ? (
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => {
+                          setAppliedCoupon(null);
+                          setDiscountAmount(0);
+                          setCouponCode("");
+                        }}
+                        className="h-10 border-red-200 text-red-600 hover:bg-red-50"
+                      >
+                        Remove
+                      </Button>
+                    ) : (
+                      <Button 
+                        type="button" 
+                        onClick={handleApplyCoupon}
+                        disabled={!couponCode || isValidatingCoupon}
+                        className="h-10 bg-forest text-white"
+                      >
+                        {isValidatingCoupon ? "..." : "Apply"}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex justify-between text-lg font-semibold text-forest border-t border-forest/20 pt-2">
                   <span>Total</span>
                   <span>{formatCurrency(total)}</span>
-                </div>
-              </div>
-
-              {/* Shipping Info */}
-              <div className="mt-6 p-4 bg-white/50 border border-forest/10 rounded-lg">
-                <div className="flex items-center gap-2 text-sm text-forest/70">
-                  <Truck size={16} />
-                  <span>
-                    {shippingCost === 0 
-                      ? "Free shipping on this order!" 
-                      : "Standard shipping 5-7 business days"
-                    }
-                  </span>
-                </div>
-              </div>
-
-              {/* We Accept */}
-              <div className="mt-6 pt-6 border-t border-forest/20">
-                <p className="text-xs text-forest/60 mb-3 text-center">We Accept</p>
-                <div className="flex items-center justify-center gap-3 flex-wrap">
-                  <div className="bg-white/70 px-3 py-2 rounded border border-forest/10 text-xs font-semibold text-forest/70">
-                    VISA
-                  </div>
-                  <div className="bg-white/70 px-3 py-2 rounded border border-forest/10 text-xs font-semibold text-forest/70">
-                    Mastercard
-                  </div>
-                  <div className="bg-white/70 px-3 py-2 rounded border border-forest/10 text-xs font-semibold text-forest/70">
-                    PayPal
-                  </div>
-                  <div className="bg-white/70 px-3 py-2 rounded border border-forest/10 text-xs font-semibold text-forest/70">
-                    Apple Pay
-                  </div>
-                  <div className="bg-white/70 px-3 py-2 rounded border border-forest/10 text-xs font-semibold text-forest/70">
-                    Google Pay
-                  </div>
                 </div>
               </div>
             </div>

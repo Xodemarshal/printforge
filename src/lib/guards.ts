@@ -4,7 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export async function requireUser() {
   const supabase = createClient();
   const {
-    data: { user }
+    data: { user },
+    error
   } = await supabase.auth.getUser();
 
   if (!user) {
@@ -16,11 +17,22 @@ export async function requireUser() {
 
 export async function requireAdmin() {
   const user = await requireUser();
+
+  // Use admin client to bypass RLS and check role
   const supabase = createAdminClient();
-  const { data } = await supabase.from("users").select("role").eq("id", user.id).maybeSingle();
+
+  const { data, error } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to fetch user role: ${error.message}`);
+  }
 
   if (data?.role !== "admin") {
-    throw new Error("Forbidden");
+    throw new Error("Access denied: Admin role required");
   }
 
   return user;

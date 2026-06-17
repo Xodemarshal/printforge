@@ -40,3 +40,7 @@ export async function getWishlistAction() {
   if (error) throw error;
   return data ?? [];
 }
+
+export async function getWishlistItems() {
+  return getWishlistAction();
+}

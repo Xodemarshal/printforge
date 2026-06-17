@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { isAdminRoute, isProtectedCustomerRoute } from "@/lib/route-guards";
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 
   if (!supabaseUrl || !supabaseAnonKey) {
     return response;
   }
 
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+  // Get user from cookies with anon key
+  const anonSupabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       get(name) {
         return request.cookies.get(name)?.value;
@@ -27,7 +30,7 @@ export async function middleware(request: NextRequest) {
 
   const {
     data: { user }
-  } = await supabase.auth.getUser();
+  } = await anonSupabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
   if (isProtectedCustomerRoute(pathname) && !user) {
@@ -44,9 +47,24 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    const { data } = await supabase.from("users").select("role").eq("id", user.id).maybeSingle();
-    if (data?.role !== "admin") {
-      return new NextResponse("Forbidden", { status: 403 });
+    // Use service role key to bypass RLS for role check
+    if (serviceRoleKey) {
+      const adminClient = createSupabaseClient(supabaseUrl, serviceRoleKey, {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      });
+      
+      const { data } = await adminClient
+        .from("users")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      
+      if (data?.role !== "admin") {
+        return new NextResponse("Forbidden", { status: 403 });
+      }
     }
   }
 

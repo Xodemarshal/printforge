@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createRazorpayClient } from "@/lib/razorpay";
+import { razorpay } from "@/lib/razorpay";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireUser } from "@/lib/guards";
 
@@ -13,7 +13,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
-    const razorpay = createRazorpayClient();
     const order = await razorpay.orders.create({
       amount: Math.round(amount * 100),
       currency: body.currency ?? "INR",

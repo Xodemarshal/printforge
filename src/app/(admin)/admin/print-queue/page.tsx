@@ -27,7 +27,7 @@ export default async function PrintQueuePage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        {PRODUCTION_SLOTS.map((station) => (
+        {PRODUCTION_SLOTS.map((station: any) => (
           <div key={station.id} className="panel-dark rounded-[28px] p-5">
             <div className="flex items-center justify-between">
               <div>

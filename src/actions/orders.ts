@@ -5,6 +5,7 @@ import { requireAdmin, requireUser } from "@/lib/guards";
 import { sendNotification } from "@/services/notifications";
 import { trackEvent } from "@/lib/utils";
 import { ORDER_STATUSES } from "@/lib/constants";
+import { revalidatePath } from "next/cache";
 
 export async function getCustomerOrders() {
   const user = await requireUser();
@@ -21,7 +22,11 @@ export async function getCustomerOrders() {
 export async function getOrderById(id: string) {
   const user = await requireUser();
   const supabase = createAdminClient();
-  const { data, error } = await supabase.from("orders").select("*, order_items(*)").eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*, order_items(*, products(slug))")
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw error;
   if (!data) return null;
 
@@ -66,8 +71,14 @@ export async function updateOrderStatusAction(formData: FormData) {
   const { error: updateError } = await supabase.from("orders").update({ status }).eq("id", id);
   if (updateError) return { error: updateError.message };
 
-  await sendNotification(order.user_id, "order_update", "Order status updated", `Your order ${id} is now ${status}.`);
+  await sendNotification(order.user_id, "order_update", "Order status updated", `Your order ${id.slice(0, 8)} is now ${status}.`);
   await trackEvent("admin_action", admin.id, { action: "update_order_status", id, status });
+  
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${id}`);
+  revalidatePath("/orders");
+  revalidatePath(`/orders/${id}`);
+  
   return { success: true };
 }
 

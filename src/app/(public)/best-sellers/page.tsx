@@ -1,20 +1,27 @@
 import type { Metadata } from "next";
-import { getBestSellers } from "@/actions/products";
-import { ProductGrid } from "@/components/products/ProductGrid";
+import { getBestSellers, getCategories } from "@/actions/products";
+import { ListingPageClient } from "@/components/products/ListingPageClient";
 
 export const metadata: Metadata = {
-  title: "Best Sellers | PrintForge",
+  title: "Best Sellers | Wooden Guardian",
   description: "Browse the top selling products."
 };
 
 export default async function BestSellersPage() {
-  const products = await getBestSellers();
+  const [products, categories] = await Promise.all([
+    getBestSellers(),
+    getCategories()
+  ]);
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">Best Sellers</h1>
-      <div className="mt-8">
-        <ProductGrid products={products as any[]} />
-      </div>
-    </div>
+    <ListingPageClient 
+      initialProducts={products as any[]}
+      categories={categories}
+      total={products.length}
+      currentPage={1}
+      pageSize={products.length}
+      title="Best Sellers"
+      subtitle="The most popular handcrafted pieces from our artisan workshop."
+    />
   );
 }

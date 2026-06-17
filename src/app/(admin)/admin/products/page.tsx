@@ -86,7 +86,7 @@ export default async function AdminProductsPage({
                   </td>
                   <td className="px-6 py-4 text-sm text-white">{product.name}</td>
                   <td className="px-6 py-4 text-sm text-gray-400">{product.slug}</td>
-                  <td className="px-6 py-4 text-sm text-white">${(product.price / 100).toFixed(2)}</td>
+                  <td className="px-6 py-4 text-sm text-white">₹{Number(product.price).toFixed(2)}</td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                       product.active 

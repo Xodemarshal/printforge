@@ -278,7 +278,7 @@ export function AdminCategoriesClient({ categories }: AdminCategoriesClientProps
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
-              {categories.map((category) => (
+              {categories.map((category: any) => (
                 <CategoryRow key={category.id} category={category} />
               ))}
             </tbody>

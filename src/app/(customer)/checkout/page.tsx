@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CheckoutClient } from "./CheckoutClient";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Checkout - PrintForge",
@@ -7,5 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default function CheckoutPage() {
-  return <CheckoutClient />;
+  return (
+    <>
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      <CheckoutClient />
+    </>
+  );
 }

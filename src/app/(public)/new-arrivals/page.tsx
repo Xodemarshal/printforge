@@ -1,20 +1,27 @@
 import type { Metadata } from "next";
-import { getProducts } from "@/actions/products";
-import { ProductGrid } from "@/components/products/ProductGrid";
+import { getProducts, getCategories } from "@/actions/products";
+import { ListingPageClient } from "@/components/products/ListingPageClient";
 
 export const metadata: Metadata = {
-  title: "New Arrivals | PrintForge",
+  title: "New Arrivals | Wooden Guardian",
   description: "Discover the latest products."
 };
 
 export default async function NewArrivalsPage() {
-  const { items } = await getProducts();
+  const [{ items, total, page, pageSize }, categories] = await Promise.all([
+    getProducts({ page: 1 }),
+    getCategories()
+  ]);
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">New Arrivals</h1>
-      <div className="mt-8">
-        <ProductGrid products={items as any[]} />
-      </div>
-    </div>
+    <ListingPageClient 
+      initialProducts={items as any[]}
+      categories={categories}
+      total={total}
+      currentPage={page}
+      pageSize={pageSize}
+      title="New Arrivals"
+      subtitle="Freshly crafted designs just added to our collection."
+    />
   );
 }

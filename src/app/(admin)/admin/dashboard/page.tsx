@@ -21,7 +21,7 @@ export default async function AdminDashboardPage() {
       {/* Stats Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {[
-          ["Revenue Today", `$${(orders?.reduce((sum: number, order: any) => sum + Number(order.total_amount ?? 0), 0) / 100).toFixed(2)}`],
+          ["Revenue Today", `₹${(orders?.reduce((sum: number, order: any) => sum + Number(order.total_amount ?? 0), 0)).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
           ["Orders Today", orders?.length ?? 0],
           ["Currently Printing", printing ?? 0],
           ["Completed Orders", completed ?? 0],

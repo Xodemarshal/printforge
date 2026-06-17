@@ -1,83 +1,90 @@
 "use client";
 
 import Link from "next/link";
-import { Search, ShoppingCart, User, TreePine } from "lucide-react";
+import { Search, ShoppingCart, User, Leaf, Box, HelpCircle, Hammer } from "lucide-react";
 import { NAV_LINKS } from "@/lib/constants";
-import { ThemeToggle } from "@/components/layout/ThemeToggle";
-import { NotificationBell } from "@/components/layout/NotificationBell";
 import { useCart } from "@/hooks/useCart";
 
 export function Header() {
-  const { items, openCart, getTotalItems } = useCart();
+  const { openCart, getTotalItems } = useCart();
   const totalItems = getTotalItems();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-forest/15 panel-alabaster backdrop-blur-md">
-      <div className="page-shell flex items-center justify-between gap-4 py-4 lg:py-5">
-        <Link href="/" className="flex items-center gap-2 sm:gap-4 group shrink-0">
-          <span className="grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-2xl bg-forest text-cream shadow-lg shadow-forest/20 transition-all duration-500 group-hover:scale-105 group-hover:rotate-3">
-            <TreePine size={20} className="sm:w-6 sm:h-6" />
-          </span>
-          <div className="hidden sm:flex flex-col">
-            <span className="display-font text-lg sm:text-xl font-bold tracking-tight text-brand-primary leading-none">PrintForge</span>
-            <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-secondary-light mt-1 opacity-75">Creative Products</span>
+    <header className="sticky top-0 z-40">
+      {/* Top Banner */}
+      <div className="bg-forest py-2">
+        <div className="page-shell flex items-center justify-between text-alabaster">
+          <div className="flex items-center gap-2">
+            <Leaf size={12} className="text-accent" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
+              Free shipping on orders above $79
+            </span>
           </div>
-        </Link>
-
-        <nav className="hidden xl:flex items-center gap-6 2xl:gap-10 px-4">
-          {NAV_LINKS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href as any}
-              className="text-[10px] 2xl:text-[11px] font-bold uppercase tracking-[0.2em] text-secondary-medium hover:text-primary-medium transition-all duration-300 whitespace-nowrap"
-            >
-              {item.label}
+          <div className="hidden md:flex items-center gap-6">
+            <Link href="/track-order" className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest opacity-80 hover:opacity-100 transition-opacity">
+              <Box size={12} /> Track Order
             </Link>
-          ))}
-        </nav>
+            <Link href="/faq" className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest opacity-80 hover:opacity-100 transition-opacity">
+              <HelpCircle size={12} /> Help Center
+            </Link>
+            <Link href="/workshop" className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest opacity-80 hover:opacity-100 transition-opacity">
+              <Hammer size={12} /> Our Workshop
+            </Link>
+          </div>
+        </div>
+      </div>
 
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <form
-            action="/shop"
-            method="get"
-            className="hidden lg:flex items-center gap-3 rounded-full border border-forest/15 bg-cream/60 px-4 py-2 transition-all duration-500 focus-within:border-forest/40 focus-within:bg-cream/90 focus-within:shadow-lg backdrop-blur-sm"
-          >
-            <Search size={16} className="text-primary-medium" />
-            <input
-              name="q"
-              type="search"
-              placeholder="Search products..."
-              className="w-32 xl:w-44 bg-transparent text-sm font-medium outline-none placeholder:text-secondary-light"
-            />
-          </form>
+      {/* Main Header */}
+      <div className="border-b border-forest/5 bg-alabaster/95 backdrop-blur-md">
+        <div className="page-shell flex items-center justify-between py-4 lg:py-6">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3 group shrink-0">
+            <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-forest text-white group-hover:scale-105 transition-transform">
+               <img src="https://api.dicebear.com/7.x/bottts/svg?seed=groot&backgroundColor=2c3e2d" alt="Mascot" className="w-full h-full p-1" />
+            </div>
+            <div className="flex flex-col">
+              <span className="display-font text-xl font-bold tracking-tight text-forest leading-none">
+                Forest<br />Foundry
+              </span>
+            </div>
+          </Link>
 
-          <div className="h-8 w-px bg-forest/15 mx-1 hidden lg:block" />
+          {/* Navigation - Centered */}
+          <nav className="hidden lg:flex items-center gap-8 px-4">
+            {NAV_LINKS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href as any}
+                className="text-[11px] font-bold uppercase tracking-[0.2em] text-forest/70 hover:text-forest transition-all duration-300 relative group"
+              >
+                {item.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-forest transition-all duration-300 group-hover:w-full" />
+              </Link>
+            ))}
+          </nav>
 
-          <div className="flex items-center gap-1 sm:gap-2">
-            <NotificationBell />
+          {/* Action Icons */}
+          <div className="flex items-center gap-4 sm:gap-6 shrink-0">
+            <button className="text-forest/80 hover:text-forest transition-colors">
+              <Search size={20} />
+            </button>
             
+            <Link href="/dashboard" className="text-forest/80 hover:text-forest transition-colors">
+              <User size={20} />
+            </Link>
+
             <button
               type="button"
               onClick={openCart}
-              className="group relative inline-flex h-10 sm:h-12 items-center gap-2 rounded-full border border-forest/15 bg-cream/60 px-3 sm:px-4 text-sm font-bold text-primary-medium transition-all duration-300 hover:bg-cream/90 backdrop-blur-sm shrink-0"
+              className="relative text-forest/80 hover:text-forest transition-colors"
             >
-              <ShoppingCart size={16} className="text-primary-medium sm:w-5 sm:h-5" />
-              <span className="hidden xl:inline uppercase tracking-widest text-[10px] text-secondary-medium">Cart</span>
-              {totalItems > 0 ? (
-                <span className="absolute -right-1 -top-1 grid h-5 w-5 sm:h-6 sm:w-6 place-items-center rounded-full bg-forest text-[9px] sm:text-[10px] font-black text-cream shadow-xl">
+              <ShoppingCart size={20} />
+              {totalItems > 0 && (
+                <span className="absolute -right-2 -top-2 grid h-4 w-4 place-items-center rounded-full bg-forest text-[8px] font-bold text-alabaster">
                   {totalItems}
                 </span>
-              ) : null}
+              )}
             </button>
-
-            <Link
-              href="/dashboard"
-              className="grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-full border border-forest/15 bg-cream/60 text-primary-medium transition-all duration-300 hover:bg-cream/90 backdrop-blur-sm shrink-0"
-            >
-              <User size={16} className="sm:w-5 sm:h-5" />
-            </Link>
-
-            <ThemeToggle />
           </div>
         </div>
       </div>
