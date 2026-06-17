@@ -30,7 +30,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const refreshNotifications = async () => {
     try {
       const data = await getUserNotifications();
-      const mapped = data.map(n => ({
+      const mapped = data.map((n:any) => ({
         id: n.id,
         type: (n.type || "info") as "info" | "success" | "warning" | "error",
         title: n.title,

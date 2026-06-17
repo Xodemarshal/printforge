@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CheckoutClient } from "./CheckoutClient";
 import Script from "next/script";
-
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Checkout - PrintForge",
   description: "Complete your order and proceed to payment."

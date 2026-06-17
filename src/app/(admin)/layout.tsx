@@ -2,7 +2,7 @@ import type React from "react";
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
 import { requireAdmin } from "@/lib/guards";
 import { ToastProvider } from "@/hooks/useToast";
-
+export const dynamic = "force-dynamic";
 export default async function AdminLayout({
   children
 }: Readonly<{

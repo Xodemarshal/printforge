@@ -2,32 +2,36 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createMockSupabaseClient, hasSupabaseConfig } from "@/lib/mock-supabase";
 
-export function createClient() {
-  if (!hasSupabaseConfig()) {
+export async function createClient() {
+  // Always fallback safe for build / prerender
+  if (typeof window === "undefined" && !hasSupabaseConfig()) {
     return createMockSupabaseClient();
   }
 
-  const cookieStore = cookies();
+  // IMPORTANT: In Next.js 15, cookies() returns a Promise and MUST be awaited
+  let cookieStore;
+  try {
+    cookieStore = await cookies(); 
+  } catch {
+    // during static generation fallback
+    return createMockSupabaseClient();
+  }
+
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
     {
       cookies: {
-        get(name) {
-          return cookieStore.get(name)?.value;
+        getAll() {
+          return cookieStore.getAll();
         },
-        set(name, value, options) {
+        setAll(cookiesToSet) {
           try {
-            cookieStore.set({ name, value, ...options });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
           } catch {
-            // Server components may not allow mutation.
-          }
-        },
-        remove(name, options) {
-          try {
-            cookieStore.set({ name, value: "", ...options, maxAge: 0 });
-          } catch {
-            // Server components may not allow mutation.
+            // ignore in server components / static phase
           }
         }
       }

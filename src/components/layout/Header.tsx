@@ -21,15 +21,15 @@ export function Header() {
             </span>
           </div>
           <div className="hidden md:flex items-center gap-6">
-            <Link href="/track-order" className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest opacity-80 hover:opacity-100 transition-opacity">
+            {/* <Link href="/track-order" className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest opacity-80 hover:opacity-100 transition-opacity">
               <Box size={12} /> Track Order
-            </Link>
+            </Link> */}
             <Link href="/faq" className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest opacity-80 hover:opacity-100 transition-opacity">
               <HelpCircle size={12} /> Help Center
             </Link>
-            <Link href="/workshop" className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest opacity-80 hover:opacity-100 transition-opacity">
+            {/* <Link href="/workshop" className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest opacity-80 hover:opacity-100 transition-opacity">
               <Hammer size={12} /> Our Workshop
-            </Link>
+            </Link> */}
           </div>
         </div>
       </div>

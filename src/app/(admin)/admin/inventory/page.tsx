@@ -3,7 +3,7 @@ import { updateInventoryAction } from "@/actions/inventory";
 import { AdminDataTable } from "@/components/admin/AdminDataTable";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-
+export const dynamic = "force-dynamic";
 export default async function InventoryPage() {
   const supabase = createAdminClient();
   const { data } = await supabase.from("inventory").select("*").limit(50);

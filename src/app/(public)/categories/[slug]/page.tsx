@@ -1,7 +1,8 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import { getCategories, getProducts } from "@/actions/products";
 import { ListingPageClient } from "@/components/products/ListingPageClient";
-
 export async function generateStaticParams() {
   try {
     const categories = await getCategories();

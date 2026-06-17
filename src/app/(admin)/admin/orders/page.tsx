@@ -2,7 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-
+export const dynamic = "force-dynamic";
 export default async function AdminOrdersPage({
   searchParams
 }: {

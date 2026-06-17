@@ -95,7 +95,7 @@ export function WishlistClient() {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {wishlistProducts.map((product: any) => (
+            {wishlistProducts.map((product) => (
               <div key={product.id} className="bg-cream/30 border border-forest/20 rounded-2xl p-4 group">
                 <div className="relative mb-4">
                   <Link href={`/products/${product.slug}`}>

@@ -19,7 +19,7 @@ export async function loginAction(formData: FormData): Promise<ActionResult> {
 
   console.log("Attempting to login user:", parsed.data.email);
   
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
   
   if (error) {
@@ -39,7 +39,7 @@ export async function registerAction(formData: FormData): Promise<ActionResult> 
     return { error: "Invalid registration details." };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const admin = createAdminClient();
   
   console.log("Attempting to register user:", parsed.data.email);
@@ -81,7 +81,7 @@ export async function registerAction(formData: FormData): Promise<ActionResult> 
 }
 
 export async function logoutAction() {
-  const supabase = createClient();
+  const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/login");
 }
@@ -92,7 +92,7 @@ export async function resetPasswordAction(formData: FormData): Promise<ActionRes
     return { error: "Invalid email address." };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/reset-password`
   });

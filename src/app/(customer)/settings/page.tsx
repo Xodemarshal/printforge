@@ -3,7 +3,7 @@ import { updateProfileAction, logoutAction } from "@/actions/auth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { createAdminClient } from "@/lib/supabase/admin";
-
+export const dynamic = "force-dynamic";
 export default async function SettingsPage() {
   const user = await requireUser();
   const supabase = createAdminClient();

@@ -339,7 +339,7 @@ function clone<T>(value: T): T {
 }
 
 class MockQuery {
-  private filters: Array<{ key: string; value: unknown; op: "eq" | "gte" | "lt" }> = [];
+  private filters: Array<{ key: string; value: unknown; op: "eq" | "gte" | "lt" | "ilike" }> = [];
   private limitCount: number | null = null;
   private sort: { key: string; ascending: boolean } | null = null;
   private mode: "select" | "insert" | "update" | "delete" | "upsert" = "select";
@@ -598,9 +598,11 @@ export function createMockSupabaseClient() {
     }
   };
 }
-
 export function hasSupabaseConfig() {
-  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+  return Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
 }
 
 export const mockData = MOCK_DATA;

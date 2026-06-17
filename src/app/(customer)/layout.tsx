@@ -2,7 +2,7 @@ import type React from "react";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { requireUser } from "@/lib/guards";
-
+export const dynamic = "force-dynamic";
 export default async function CustomerLayout({
   children
 }: Readonly<{

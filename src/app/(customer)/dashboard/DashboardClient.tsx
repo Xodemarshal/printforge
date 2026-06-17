@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ShoppingBag, Heart, Upload, Settings, Package } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
-
 interface DashboardClientProps {
   orders: any[];
   recentOrders: any[];
@@ -23,8 +22,8 @@ export function DashboardClient({
   const { items: wishlistItems } = useWishlist();
 
   const dashboardStats = [
-    { label: "Total Orders", value: orders.length.toString(), icon: ShoppingBag, href: "/customer/orders" },
-    { label: "Wishlist Items", value: wishlistItems.length.toString(), icon: Heart, href: "/customer/wishlist" },
+    { label: "Total Orders", value: orders.length.toString(), icon: ShoppingBag, href: "/orders" },
+    { label: "Wishlist Items", value: wishlistItems.length.toString(), icon: Heart, href: "/wishlist" },
     { label: "Uploaded Designs", value: uploadCount.toString(), icon: Upload, href: "/upload-design" },
   ];
 
@@ -68,7 +67,7 @@ export function DashboardClient({
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-forest">Recent Orders</h2>
                 <Link 
-                  href={"/customer/orders" as any}
+                  href={"/orders" as any}
                   className="text-forest/60 hover:text-forest transition-colors text-sm"
                 >
                   View All
@@ -79,7 +78,7 @@ export function DashboardClient({
                 {recentOrders.map((order: any) => (
                   <Link 
                     key={order.id}
-                    href={`/customer/orders/${order.id}` as any}
+                    href={`/orders/${order.id}` as any}
                     className="flex items-center justify-between p-4 bg-white/50 border border-forest/10 rounded-lg hover:bg-white/70 transition-colors"
                   >
                     <div className="flex items-center gap-3">
@@ -134,14 +133,14 @@ export function DashboardClient({
                   <span className="text-forest">Upload Design</span>
                 </Link>
                 <Link 
-                  href={"/customer/wishlist" as any}
+                  href={"/wishlist" as any}
                   className="flex items-center gap-3 p-3 bg-white/50 border border-forest/10 rounded-lg hover:bg-white/70 transition-colors"
                 >
                   <Heart size={20} className="text-forest" />
                   <span className="text-forest">View Wishlist</span>
                 </Link>
                 <Link 
-                  href={"/customer/settings" as any}
+                  href={"/settings" as any}
                   className="flex items-center gap-3 p-3 bg-white/50 border border-forest/10 rounded-lg hover:bg-white/70 transition-colors"
                 >
                   <Settings size={20} className="text-forest" />

@@ -125,7 +125,7 @@ export function NotificationBell() {
           
           <div className="p-3 border-t border-forest/10">
             <Link 
-              href="/notifications" 
+              href="/api/notifications" 
               className="block text-center text-sm text-forest hover:text-forest-dark transition-colors"
               onClick={() => setOpen(false)}
             >

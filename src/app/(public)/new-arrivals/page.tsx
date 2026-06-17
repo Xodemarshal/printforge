@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getProducts, getCategories } from "@/actions/products";
 import { ListingPageClient } from "@/components/products/ListingPageClient";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "New Arrivals | Wooden Guardian",
@@ -14,14 +15,16 @@ export default async function NewArrivalsPage() {
   ]);
 
   return (
-    <ListingPageClient 
-      initialProducts={items as any[]}
-      categories={categories}
-      total={total}
-      currentPage={page}
-      pageSize={pageSize}
-      title="New Arrivals"
-      subtitle="Freshly crafted designs just added to our collection."
-    />
+    <Suspense fallback={<div>Loading...</div>}>
+      <ListingPageClient 
+        initialProducts={items as any[]}
+        categories={categories}
+        total={total}
+        currentPage={page}
+        pageSize={pageSize}
+        title="New Arrivals"
+        subtitle="Freshly crafted designs just added to our collection."
+      />
+    </Suspense>
   );
 }

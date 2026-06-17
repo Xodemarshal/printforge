@@ -8,7 +8,7 @@ import { formatCurrency } from "@/lib/utils";
 import { Package, MapPin, CreditCard, Calendar, Truck, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
-
+export const dynamic = "force-dynamic";
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const order = await getOrderById(id);
@@ -71,7 +71,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <form action={async (formData) => {
                 "use server";
                 await cancelOrderAction(formData);
-                revalidatePath(`/customer/orders/${order.id}`);
+                revalidatePath(`orders/${order.id}`);
               }}>
                 <input type="hidden" name="id" value={order.id} />
                 <Button type="submit" variant="outline" className="border-red-500 text-red-600 hover:bg-red-50">
@@ -162,7 +162,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 <form action={async (formData) => {
                   "use server";
                   await submitReviewAction(formData);
-                  revalidatePath(`/customer/orders/${order.id}`);
+                  revalidatePath(`/orders/${order.id}`);
                 }} className="space-y-4">
                   <input type="hidden" name="orderItemId" value={orderItems[0].id} />
                   <input type="hidden" name="productId" value={orderItems[0].product_id} />

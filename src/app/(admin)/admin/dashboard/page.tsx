@@ -9,7 +9,7 @@ export default async function AdminDashboardPage() {
   const { count: completed } = await supabase.from("orders").select("*", { count: "exact", head: true }).eq("status", "delivered");
   const { count: totalUploads } = await supabase.from("stl_uploads").select("*", { count: "exact", head: true });
   const { count: todayUploads } = await supabase.from("stl_uploads").select("*", { count: "exact", head: true }).gte("created_at", `${today}T00:00:00Z`);
-
+ 
   return (
     <div className="space-y-8">
       {/* Header */}
