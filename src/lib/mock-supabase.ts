@@ -386,7 +386,11 @@ function clone<T>(value: T): T {
 }
 
 class MockQuery {
-  private filters: Array<{ key: string; value: unknown; op: "eq" | "gte" | "lt" | "ilike" }> = [];
+private filters: Array<{
+  key: string;
+  value: unknown;
+  op: "eq" | "gte" | "lt" | "ilike" | "in";
+}> = [];
   private limitCount: number | null = null;
   private sort: { key: string; ascending: boolean } | null = null;
   private mode: "select" | "insert" | "update" | "delete" | "upsert" = "select";
@@ -427,7 +431,15 @@ class MockQuery {
     this.sort = { key, ascending: opts?.ascending ?? true };
     return this;
   }
+in(key: string, values: unknown[]) {
+  this.filters.push({
+    key,
+    value: values,
+    op: "in"
+  });
 
+  return this;
+}
   limit(count: number) {
     this.limitCount = count;
     return this;

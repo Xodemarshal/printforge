@@ -30,152 +30,174 @@ function sanitizePathSegment(value: string) {
   return value.replace(/[^a-zA-Z0-9._-]/g, "-");
 }
 
-export async function uploadSTLAction(formData: FormData) {
-try {
-console.log("=== STL UPLOAD START ===");
+type RequestState = {
+  success: boolean;
+  error: string;
+  request: {
+    id: string;
+    file_url?: string | null;
+  } | null;
+};
 
-const user = await requireUser();
-console.log("User:", user.id);
+export async function uploadSTLAction(
+  formData: FormData
+): Promise<RequestState> {
+  try {
+    console.log("=== STL UPLOAD START ===");
 
-const parsed = ideaRequestSchema.safeParse({
-  instagramHandle: formData.get("instagramHandle"),
-  idea: formData.get("idea")
-});
+    const user = await requireUser();
+    console.log("User:", user.id);
 
-if (!parsed.success) {
-  console.error("Validation failed:", parsed.error.flatten());
-
-  return {
-    error: JSON.stringify(parsed.error.flatten(), null, 2)
-  };
-}
-
-const referenceImages = formData
-  .getAll("referenceImages")
-  .filter(
-    (value): value is File =>
-      value instanceof File && value.size > 0
-  );
-
-console.log(
-  "Reference images:",
-  referenceImages.map((f) => ({
-    name: f.name,
-    size: f.size,
-    type: f.type
-  }))
-);
-
-if (referenceImages.length === 0) {
-  return { error: "Upload at least one inspiration image." };
-}
-
-const supabase = createAdminClient();
-const bucket = supabase.storage.from("stl-uploads");
-
-const uploadedImageUrls: string[] = [];
-const normalizedHandle = normalizeInstagramHandle(
-  parsed.data.instagramHandle
-);
-
-for (const [index, file] of referenceImages.entries()) {
-  const path = [
-    "idea-requests",
-    sanitizePathSegment(user.id),
-    `${Date.now()}-${index}-${sanitizePathSegment(file.name)}`
-  ].join("/");
-
-  console.log("Uploading:", path);
-
-  const { data: uploadData, error: uploadError } =
-    await bucket.upload(path, file, {
-      contentType: file.type || "application/octet-stream",
-      upsert: false
+    const parsed = ideaRequestSchema.safeParse({
+      instagramHandle: formData.get("instagramHandle"),
+      idea: formData.get("idea")
     });
 
-  if (uploadError) {
-    console.error("Upload failed:", uploadError);
+    if (!parsed.success) {
+      console.error("Validation failed:", parsed.error.flatten());
+
+      return {
+        success: false,
+        error: JSON.stringify(parsed.error.flatten(), null, 2),
+        request: null
+      };
+    }
+
+    const referenceImages = formData
+      .getAll("referenceImages")
+      .filter(
+        (value): value is File =>
+          value instanceof File && value.size > 0
+      );
+
+    console.log(
+      "Reference images:",
+      referenceImages.map((f) => ({
+        name: f.name,
+        size: f.size,
+        type: f.type
+      }))
+    );
+
+    if (referenceImages.length === 0) {
+      return {
+        success: false,
+        error: "Upload at least one inspiration image.",
+        request: null
+      };
+    }
+
+    const supabase = createAdminClient();
+    const bucket = supabase.storage.from("stl-uploads");
+
+    const uploadedImageUrls: string[] = [];
+    const normalizedHandle = normalizeInstagramHandle(
+      parsed.data.instagramHandle
+    );
+
+    for (const [index, file] of referenceImages.entries()) {
+      const path = [
+        "idea-requests",
+        sanitizePathSegment(user.id),
+        `${Date.now()}-${index}-${sanitizePathSegment(file.name)}`
+      ].join("/");
+
+      console.log("Uploading:", path);
+
+      const { data: uploadData, error: uploadError } =
+        await bucket.upload(path, file, {
+          contentType: file.type || "application/octet-stream",
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error("Upload failed:", uploadError);
+
+        return {
+          success: false,
+          error: `Storage upload failed: ${uploadError.message}`,
+          request: null
+        };
+      }
+
+      console.log("Upload success:", uploadData);
+
+      const { data: publicUrl } = bucket.getPublicUrl(path);
+
+      uploadedImageUrls.push(publicUrl.publicUrl);
+    }
+
+    console.log("Uploaded URLs:", uploadedImageUrls);
+
+    const coverImage = referenceImages[0];
+    const coverImageUrl = uploadedImageUrls[0] ?? "";
+
+    const { data, error } = await supabase
+      .from("stl_uploads")
+      .insert({
+        user_id: user.id,
+        instagram_handle: normalizedHandle,
+        idea: parsed.data.idea,
+        reference_images: uploadedImageUrls,
+        file_name: coverImage.name,
+        file_url: coverImageUrl,
+        file_type: coverImage.type || "image/jpeg",
+        file_size: coverImage.size,
+        status: "pending_review",
+        print_settings: {
+          instagramHandle: normalizedHandle,
+          idea: parsed.data.idea,
+          referenceImages: uploadedImageUrls.length
+        }
+      })
+      .select("*")
+      .single();
+
+    if (error) {
+      console.error("Database insert failed:", error);
+
+      return {
+        success: false,
+        error: `Database error: ${error.message}`,
+        request: null
+      };
+    }
+
+    console.log("Database insert success:", data.id);
+
+    try {
+      await trackEvent("idea_requested", user.id, {
+        instagramHandle: normalizedHandle,
+        referenceImageCount: uploadedImageUrls.length
+      });
+    } catch (trackError) {
+      console.error("trackEvent failed:", trackError);
+    }
+
+    revalidatePath("/admin/print-queue");
+    revalidatePath("/admin/dashboard");
+    revalidatePath("/dashboard");
+    revalidatePath("/settings");
+
+    console.log("=== STL UPLOAD SUCCESS ===");
 
     return {
-      error: `Storage upload failed: ${uploadError.message}`
+      success: true,
+      error: "",
+      request: data
+    };
+  } catch (err) {
+    console.error("FATAL ERROR:", err);
+
+    return {
+      success: false,
+      error:
+        err instanceof Error
+          ? `${err.message}\n\n${err.stack}`
+          : JSON.stringify(err),
+      request: null
     };
   }
-
-  console.log("Upload success:", uploadData);
-
-  const { data: publicUrl } = bucket.getPublicUrl(path);
-
-  uploadedImageUrls.push(publicUrl.publicUrl);
-}
-
-console.log("Uploaded URLs:", uploadedImageUrls);
-
-const coverImage = referenceImages[0];
-const coverImageUrl = uploadedImageUrls[0] ?? "";
-
-const { data, error } = await supabase
-  .from("stl_uploads")
-  .insert({
-    user_id: user.id,
-    instagram_handle: normalizedHandle,
-    idea: parsed.data.idea,
-    reference_images: uploadedImageUrls,
-    file_name: coverImage.name,
-    file_url: coverImageUrl,
-    file_type: coverImage.type || "image/jpeg",
-    file_size: coverImage.size,
-    status: "pending_review",
-    print_settings: {
-      instagramHandle: normalizedHandle,
-      idea: parsed.data.idea,
-      referenceImages: uploadedImageUrls.length
-    }
-  })
-  .select("*")
-  .single();
-
-if (error) {
-  console.error("Database insert failed:", error);
-
-  return {
-    error: `Database error: ${error.message}`
-  };
-}
-
-console.log("Database insert success:", data.id);
-
-try {
-  await trackEvent("idea_requested", user.id, {
-    instagramHandle: normalizedHandle,
-    referenceImageCount: uploadedImageUrls.length
-  });
-} catch (trackError) {
-  console.error("trackEvent failed:", trackError);
-}
-
-revalidatePath("/admin/print-queue");
-revalidatePath("/admin/dashboard");
-revalidatePath("/dashboard");
-revalidatePath("/settings");
-
-console.log("=== STL UPLOAD SUCCESS ===");
-
-return {
-  success: true,
-  request: data
-};
-
-} catch (err) {
-console.error("FATAL ERROR:", err);
-
-return {
-  error:
-    err instanceof Error
-      ? `${err.message}\n\n${err.stack}`
-      : JSON.stringify(err)
-};
-
-}
 }
 export async function submitIdeaRequestAction(_previousState: unknown, formData: FormData) {
   return uploadSTLAction(formData);

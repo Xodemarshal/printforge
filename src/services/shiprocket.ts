@@ -6,8 +6,12 @@ type AnyRecord = Record<string, any>;
 
 type ShiprocketOrderContext = {
   id: string;
+  created_at?: string | null;
   user_id: string;
+  shiprocket_last_event?: string | null;
+  shiprocket_last_synced_at?: string | null;
   status: string;
+  total_amount?: number | null;
   payment_status: string;
   payment_method?: string | null;
   customer_name?: string | null;
