@@ -39,10 +39,16 @@ export function CollectionsPageClient({
   currentPage,
   pageSize
 }: CollectionsPageClientProps) {
+  const formatRupees = (value: number) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0
+    }).format(value);
   const [view, setView] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("Popular");
   const [priceMin, setPriceMin] = useState(0);
-  const [priceMax, setPriceMax] = useState(1000); // Increased to show more products
+  const [priceMax, setPriceMax] = useState(4000); // Rupee-based upper bound
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>(["all"]);
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
 
@@ -204,17 +210,18 @@ export function CollectionsPageClient({
                   <input
                     type="range"
                     min="0"
-                    max="1000"
+                    max="4000"
+                    step="500"
                     value={priceMax}
                     onChange={(e) => setPriceMax(parseInt(e.target.value))}
                     className="w-full h-1.5 bg-forest/10 rounded-full appearance-none cursor-pointer accent-forest"
                     style={{
-                      background: `linear-gradient(to right, #2c3e2d 0%, #2c3e2d ${(priceMax/1000)*100}%, #e5e5e5 ${(priceMax/1000)*100}%, #e5e5e5 100%)`
+                      background: `linear-gradient(to right, #2c3e2d 0%, #2c3e2d ${(priceMax / 4000) * 100}%, #e5e5e5 ${(priceMax / 4000) * 100}%, #e5e5e5 100%)`
                     }}
                   />
                   <div className="flex items-center justify-between text-sm font-semibold text-forest">
-                    <span>${priceMin}</span>
-                    <span>${priceMax}{priceMax >= 1000 ? '+' : ''}</span>
+                    <span>{formatRupees(priceMin)}</span>
+                    <span>{formatRupees(priceMax)}{priceMax >= 4000 ? '+' : ''}</span>
                   </div>
                 </div>
               </div>

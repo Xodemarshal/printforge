@@ -1,13 +1,13 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { updateOrderStatusAction } from "@/actions/orders";
+import { syncShiprocketOrderAction, updateOrderStatusAction } from "@/actions/orders";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
-import { Separator } from "@/components/ui/Separator";
 import { ORDER_STATUSES } from "@/lib/constants";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { RefreshCcw, Printer, Truck, ExternalLink } from "lucide-react";
 export const dynamic = "force-dynamic";
 export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -53,6 +53,38 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         </div>
         
         <div className="flex items-center gap-3">
+          {order.shiprocket_label_pdf_url && (
+            <a
+              href={order.shiprocket_label_pdf_url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-md border border-gray-700 px-4 py-2 text-sm text-gray-200 hover:border-gray-500 hover:text-white"
+            >
+              <Printer size={16} />
+              Print Label
+            </a>
+          )}
+          {order.shiprocket_tracking_url && (
+            <a
+              href={order.shiprocket_tracking_url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-md border border-gray-700 px-4 py-2 text-sm text-gray-200 hover:border-gray-500 hover:text-white"
+            >
+              <ExternalLink size={16} />
+              Track Shipment
+            </a>
+          )}
+          <form action={async (formData) => {
+            "use server";
+            await syncShiprocketOrderAction(formData);
+          }}>
+            <input type="hidden" name="id" value={order.id} />
+            <Button type="submit" variant="outline" className="border-gray-700 text-gray-200 hover:border-gray-500 hover:text-white">
+              <RefreshCcw size={16} />
+              Sync Shiprocket
+            </Button>
+          </form>
           <form action={async (formData) => {
             "use server";
             await updateOrderStatusAction(formData);
@@ -155,6 +187,53 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                 <p className="text-gray-300 text-sm">{order.notes || 'No notes provided'}</p>
               </div>
             </div>
+          </Card>
+
+          <Card className="bg-gray-900 border-gray-800 p-6">
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex items-center gap-2">
+                <Truck size={18} className="text-forest-green" />
+                <h2 className="text-lg font-medium text-white">Shipping Information</h2>
+              </div>
+              <Badge tone={order.shiprocket_status === "delivered" ? "success" : order.shiprocket_awb_number ? "default" : "warning"}>
+                {order.shiprocket_status || "not_generated"}
+              </Badge>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p className="text-sm text-gray-500 mb-1">AWB Number</p>
+                <p className="text-white font-mono text-sm">{order.shiprocket_awb_number || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Courier</p>
+                <p className="text-white text-sm">{order.shiprocket_courier_name || "Auto-assigned"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Shipping Phone</p>
+                <p className="text-white text-sm">{order.shipping_phone || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Tracking ID</p>
+                <p className="text-white font-mono text-sm">{order.shiprocket_tracking_id || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Pickup Status</p>
+                <p className="text-white text-sm capitalize">{order.shiprocket_pickup_status || "not picked up"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Label PDF</p>
+                <p className="text-white text-sm">{order.shiprocket_label_pdf_url ? "Available" : "Pending"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Last Sync</p>
+                <p className="text-white text-sm">{order.shiprocket_last_synced_at ? new Date(order.shiprocket_last_synced_at).toLocaleString() : "Never"}</p>
+              </div>
+            </div>
+            {order.shiprocket_error && (
+              <div className="mt-4 rounded-lg border border-red-800 bg-red-950/30 p-4 text-sm text-red-200">
+                {order.shiprocket_error}
+              </div>
+            )}
           </Card>
         </div>
 

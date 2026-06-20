@@ -19,6 +19,9 @@ export function HeroBanner({ settings }: { settings?: HeroSectionSettings }) {
   const imageUrl = settings?.imageUrl || DESIGN_IMAGES.heroCharacter;
   const showcaseTitle = settings?.showcaseTitle || "Custom Product";
   const showcaseItalic = settings?.showcaseItalic || "Design Made Easy";
+  const featured = settings?.featuredItems && settings.featuredItems.length === 4
+    ? settings.featuredItems
+    : FEATURED_ITEMS;
   return (
     <section className="relative overflow-hidden pt-6 pb-12 lg:pt-10 lg:pb-20">
       <div className="page-shell">
@@ -81,7 +84,7 @@ export function HeroBanner({ settings }: { settings?: HeroSectionSettings }) {
 
             {/* Collection Grid */}
             <div className="grid grid-cols-2 gap-4">
-              {FEATURED_ITEMS.map((item, idx) => (
+              {featured.map((item, idx) => (
                 <div
                   key={item.label}
                   className={`card-artisan group h-full min-h-[180px] lg:min-h-[240px] ${

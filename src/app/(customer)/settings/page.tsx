@@ -51,7 +51,7 @@ export default async function SettingsPage() {
           <p className="text-3xl font-semibold text-white">{wishlistCount}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400 mb-2">STL Uploads</p>
+          <p className="text-sm text-gray-400 mb-2">Idea Requests</p>
           <p className="text-3xl font-semibold text-white">{uploadCount}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">

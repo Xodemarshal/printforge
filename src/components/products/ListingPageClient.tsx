@@ -5,8 +5,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight, LayoutGrid, List, ChevronDown, Star, SlidersHorizontal } from "lucide-react";
 import { ProductCard } from "./ProductCard";
-import { formatCurrency } from "@/lib/utils";
-
 interface ListingPageClientProps {
   initialProducts: any[];
   categories: any[];
@@ -28,10 +26,16 @@ export function ListingPageClient({
 }: ListingPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const formatRupees = (value: number) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0
+    }).format(value);
   
   const [view, setView] = useState<"grid" | "list">("grid");
   const [selectedMaterial, setSelectedMaterial] = useState<string>("all");
-  const [priceRange, setPriceRange] = useState(1000);
+  const [priceRange, setPriceRange] = useState(4000);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState("popular");
   const [showFilters, setShowFilters] = useState(false);
@@ -47,7 +51,7 @@ export function ListingPageClient({
     }
 
     // Price filter
-    if (product.price > priceRange * 100) {
+    if (product.price > priceRange) {
       return false;
     }
 
@@ -187,14 +191,15 @@ export function ListingPageClient({
                   <input 
                     type="range" 
                     min="0" 
-                    max="1000" 
+                    max="4000" 
+                    step="500"
                     value={priceRange}
                     onChange={(e) => setPriceRange(parseInt(e.target.value))}
                     className="w-full h-1 bg-forest/10 rounded-full appearance-none cursor-pointer accent-forest"
                   />
                   <div className="flex items-center justify-between text-[11px] font-bold text-forest">
-                    <span>$0</span>
-                    <span>${priceRange}+</span>
+                    <span>{formatRupees(0)}</span>
+                    <span>{formatRupees(priceRange)}+</span>
                   </div>
                 </div>
               </div>
@@ -236,11 +241,11 @@ export function ListingPageClient({
               </div>
               
               {/* Reset Filters */}
-              {(selectedMaterial !== "all" || priceRange < 1000 || selectedRating !== null) && (
+              {(selectedMaterial !== "all" || priceRange < 4000 || selectedRating !== null) && (
                 <button
                   onClick={() => {
                     setSelectedMaterial("all");
-                    setPriceRange(1000);
+                    setPriceRange(4000);
                     setSelectedRating(null);
                   }}
                   className="w-full mt-4 px-4 py-2 bg-accent/10 text-accent text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-accent/20 transition-colors"
@@ -325,7 +330,7 @@ export function ListingPageClient({
                 <button
                   onClick={() => {
                     setSelectedMaterial("all");
-                    setPriceRange(1000);
+                    setPriceRange(4000);
                     setSelectedRating(null);
                   }}
                   className="px-6 py-2 bg-forest text-white text-sm font-bold rounded-xl hover:bg-forest/90 transition-colors"

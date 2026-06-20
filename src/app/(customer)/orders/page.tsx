@@ -79,12 +79,28 @@ export default async function OrdersPage() {
                     </div>
                     <p className="text-sm text-forest/60">Placed on {new Date(order.created_at).toLocaleDateString()}</p>
                     <p className="text-sm text-forest/60">{itemCount} {itemCount === 1 ? 'item' : 'items'} • {formatCurrency(order.total_amount)}</p>
+                    {(order.shiprocket_awb_number || order.shiprocket_courier_name) && (
+                      <p className="text-sm text-forest/60">
+                        {order.shiprocket_awb_number ? `AWB ${order.shiprocket_awb_number}` : "AWB pending"}
+                        {order.shiprocket_courier_name ? ` • ${order.shiprocket_courier_name}` : ""}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex flex-col lg:items-end gap-2">
                     <p className="text-sm text-forest/60">
                       {order.status === "delivered" ? estimatedDelivery : `Est. delivery: ${estimatedDelivery}`}
                     </p>
+                    {order.shiprocket_tracking_url && (
+                      <a
+                        href={order.shiprocket_tracking_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm text-forest/70 hover:text-forest transition-colors"
+                      >
+                        Track shipment
+                      </a>
+                    )}
                     <Link 
                       href={`/orders/${order.id}`}
                       className="inline-flex items-center gap-2 text-forest hover:text-forest-dark transition-colors"

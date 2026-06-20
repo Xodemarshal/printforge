@@ -346,12 +346,40 @@ const MOCK_DATA: Record<string, Row[]> = {
           buttonText: "Explore Products",
           imageUrl: "https://picsum.photos/seed/wooden-guardian-hero/1400/1600",
           showcaseTitle: "Custom Product",
-          showcaseItalic: "Design Made Easy"
+          showcaseItalic: "Design Made Easy",
+          featuredItems: [
+            { img: "https://picsum.photos/seed/wooden-guardian-collection-1/900/1200", label: "Fantasy Resin Mask", tag: "Classical Resin" },
+            { img: "https://picsum.photos/seed/wooden-guardian-collection-2/900/1200", label: "Premium Rocin", tag: "Premium Finish" },
+            { img: "https://picsum.photos/seed/wooden-guardian-collection-3/900/1200", label: "Custom Keyboard", tag: "Desk Collectible" },
+            { img: "https://picsum.photos/seed/wooden-guardian-collection-4/900/1200", label: "Hand-carved Wood", tag: "Limited Series" }
+          ]
         }
       }
     }
   ]
 };
+
+MOCK_DATA.products = (MOCK_DATA.products ?? []).map((product) => ({
+  shipping_weight_grams: 250,
+  shipping_length_cm: 20,
+  shipping_width_cm: 15,
+  shipping_height_cm: 10,
+  ...product
+}));
+
+MOCK_DATA.orders = (MOCK_DATA.orders ?? []).map((order) => ({
+  payment_method: "cod",
+  shipping_provider: "shiprocket",
+  shiprocket_status: "not_generated",
+  shiprocket_pickup_status: "not_picked_up",
+  shiprocket_tracking_events: [],
+  shiprocket_payload: {},
+  parcel_weight_grams: 250,
+  parcel_length_cm: 20,
+  parcel_width_cm: 15,
+  parcel_height_cm: 10,
+  ...order
+}));
 
 function clone<T>(value: T): T {
   return structuredClone(value);
@@ -453,6 +481,24 @@ class MockQuery {
       const items = Array.isArray(this.payload) ? this.payload : [this.payload as Row];
       const inserted = items.map((item) => ({
         id: item.id ?? `${this.table}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        ...(this.table === "products" ? {
+          shipping_weight_grams: 250,
+          shipping_length_cm: 20,
+          shipping_width_cm: 15,
+          shipping_height_cm: 10
+        } : {}),
+        ...(this.table === "orders" ? {
+          payment_method: "cod",
+          shipping_provider: "shiprocket",
+          shiprocket_status: "not_generated",
+          shiprocket_pickup_status: "not_picked_up",
+          shiprocket_tracking_events: [],
+          shiprocket_payload: {},
+          parcel_weight_grams: 250,
+          parcel_length_cm: 20,
+          parcel_width_cm: 15,
+          parcel_height_cm: 10
+        } : {}),
         ...item
       }));
       MOCK_DATA[this.table] = [...rows, ...inserted];
@@ -472,6 +518,24 @@ class MockQuery {
         } else {
           rows.push({
             id: item.id ?? `${this.table}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+            ...(this.table === "products" ? {
+              shipping_weight_grams: 250,
+              shipping_length_cm: 20,
+              shipping_width_cm: 15,
+              shipping_height_cm: 10
+            } : {}),
+            ...(this.table === "orders" ? {
+              payment_method: "cod",
+              shipping_provider: "shiprocket",
+              shiprocket_status: "not_generated",
+              shiprocket_pickup_status: "not_picked_up",
+              shiprocket_tracking_events: [],
+              shiprocket_payload: {},
+              parcel_weight_grams: 250,
+              parcel_length_cm: 20,
+              parcel_width_cm: 15,
+              parcel_height_cm: 10
+            } : {}),
             ...item
           });
         }

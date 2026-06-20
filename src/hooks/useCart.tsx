@@ -51,38 +51,34 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items]);
 
   const addItem = (product: Omit<CartItem, 'quantity'> & { quantity?: number }) => {
-    setItems(currentItems => {
-      const existingItem = currentItems.find(item => item.productId === product.productId);
-      
-      if (existingItem) {
-        // Update quantity if item already exists
-        const newQuantity = existingItem.quantity + (product.quantity || 1);
-        success("Cart Updated", `${product.name} quantity updated to ${newQuantity}`);
-        return currentItems.map(item =>
+    const existingItem = items.find(item => item.productId === product.productId);
+    if (existingItem) {
+      const newQuantity = existingItem.quantity + (product.quantity || 1);
+      setItems(currentItems =>
+        currentItems.map(item =>
           item.productId === product.productId
             ? { ...item, quantity: newQuantity }
             : item
-        );
-      } else {
-        // Add new item
-        const newItem: CartItem = {
-          ...product,
-          quantity: product.quantity || 1
-        };
-        success("Added to Cart", `${product.name} added to your cart`);
-        return [...currentItems, newItem];
-      }
-    });
+        )
+      );
+      success("Cart Updated", `${product.name} quantity updated to ${newQuantity}`);
+      return;
+    }
+
+    const newItem: CartItem = {
+      ...product,
+      quantity: product.quantity || 1
+    };
+    setItems(currentItems => [...currentItems, newItem]);
+    success("Added to Cart", `${product.name} added to your cart`);
   };
 
   const removeItem = (productId: string) => {
-    setItems(currentItems => {
-      const item = currentItems.find(item => item.productId === productId);
-      if (item) {
-        info("Item Removed", `${item.name} removed from cart`);
-      }
-      return currentItems.filter(item => item.productId !== productId);
-    });
+    const item = items.find(item => item.productId === productId);
+    setItems(currentItems => currentItems.filter(item => item.productId !== productId));
+    if (item) {
+      info("Item Removed", `${item.name} removed from cart`);
+    }
   };
 
   const updateQuantity = (productId: string, quantity: number) => {

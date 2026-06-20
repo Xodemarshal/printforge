@@ -4,6 +4,7 @@ import { ADMIN_NAV_LINKS } from "@/lib/constants";
 import {
   TreePine,
   LayoutDashboard,
+  Sparkles,
   Package,
   FolderTree,
   ShoppingBag,
@@ -16,6 +17,7 @@ import {
 
 const ICONS: Record<string, React.ComponentType<{ size?: number | string }>> = {
   Dashboard: LayoutDashboard,
+  Requests: Sparkles,
   Products: Package,
   Categories: FolderTree,
   Orders: ShoppingBag,

@@ -24,6 +24,7 @@ export async function POST(request: Request) {
       user_id: user.id,
       status: "pending",
       payment_status: "pending",
+      payment_method: body.paymentMethod ?? "prepaid",
       total_amount: amount,
       razorpay_order_id: order.id
     });

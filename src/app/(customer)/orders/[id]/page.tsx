@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { formatCurrency } from "@/lib/utils";
-import { Package, MapPin, CreditCard, Calendar, Truck, ChevronLeft } from "lucide-react";
+import { Package, CreditCard, Calendar, Truck, ChevronLeft, ClipboardList, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 export const dynamic = "force-dynamic";
@@ -71,7 +71,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <form action={async (formData) => {
                 "use server";
                 await cancelOrderAction(formData);
-                revalidatePath(`orders/${order.id}`);
+                revalidatePath(`/orders/${order.id}`);
               }}>
                 <input type="hidden" name="id" value={order.id} />
                 <Button type="submit" variant="outline" className="border-red-500 text-red-600 hover:bg-red-50">
@@ -88,7 +88,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             {/* Order Timeline */}
             <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
               <h2 className="text-xl font-semibold text-forest mb-4">Order Status</h2>
-              <OrderTimeline status={order.status} />
+              <OrderTimeline status={order.status} shipmentStatus={order.shiprocket_status} />
             </div>
 
             {/* Order Items */}
@@ -218,11 +218,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 <div className="flex justify-between">
                   <span className="text-forest/60">Status</span>
                   <span className={`font-medium ${
-                    order.payment_status === 'completed' 
+                    order.payment_status === 'paid' 
                       ? 'text-green-600' 
                       : 'text-yellow-600'
                   }`}>
-                    {order.payment_status === 'completed' ? 'Paid' : 'Pending'}
+                    {order.payment_status === 'paid' ? 'Paid' : 'Pending'}
                   </span>
                 </div>
                 {order.notes && (
@@ -245,19 +245,80 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             </div>
 
             {/* Shipping Info */}
-            <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
+              <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Truck size={20} className="text-forest" />
                 <h3 className="font-semibold text-forest">Shipping Information</h3>
               </div>
-              <div className="text-sm text-forest/70">
-                {order.shipping_address_id ? (
-                  <p>Shipping address on file</p>
+              <div className="space-y-3 text-sm text-forest/70">
+                {order.shiprocket_awb_number ? (
+                  <div className="rounded-xl border border-forest/10 bg-white/60 p-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-forest/40">AWB</p>
+                    <p className="mt-1 font-mono text-forest">{order.shiprocket_awb_number}</p>
+                  </div>
+                ) : null}
+                {order.shiprocket_courier_name ? (
+                  <div className="rounded-xl border border-forest/10 bg-white/60 p-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-forest/40">Courier</p>
+                    <p className="mt-1 text-forest">{order.shiprocket_courier_name}</p>
+                  </div>
+                ) : null}
+                {order.shiprocket_tracking_url ? (
+                  <a
+                    href={order.shiprocket_tracking_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 text-forest hover:text-forest-dark transition-colors"
+                  >
+                    Track Order <ExternalLink size={14} />
+                  </a>
+                ) : null}
+                {order.shiprocket_label_pdf_url ? (
+                  <a
+                    href={order.shiprocket_label_pdf_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 text-forest hover:text-forest-dark transition-colors"
+                  >
+                    Download Label <ExternalLink size={14} />
+                  </a>
+                ) : null}
+                {order.shipping_line1 ? (
+                  <div className="rounded-xl border border-forest/10 bg-white/60 p-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-forest/40">Delivery Address</p>
+                    <p className="mt-1 text-forest">{order.customer_name || "Customer"}</p>
+                    <p>{order.shipping_line1}</p>
+                    {order.shipping_line2 && <p>{order.shipping_line2}</p>}
+                    <p>{order.shipping_city}, {order.shipping_state} - {order.shipping_postal_code}</p>
+                    <p>{order.shipping_country}</p>
+                  </div>
                 ) : (
                   <p>No shipping address available</p>
                 )}
               </div>
             </div>
+
+            {Array.isArray(order.shiprocket_tracking_events) && order.shiprocket_tracking_events.length > 0 && (
+              <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <ClipboardList size={20} className="text-forest" />
+                  <h3 className="font-semibold text-forest">Tracking Timeline</h3>
+                </div>
+                <div className="space-y-3">
+                  {order.shiprocket_tracking_events.map((event: any, index: number) => (
+                    <div key={`${event.timestamp || index}-${index}`} className="rounded-xl border border-forest/10 bg-white/60 p-3">
+                      <div className="flex items-center justify-between gap-4">
+                        <p className="font-semibold text-forest capitalize">{String(event.raw_status || event.shiprocket_status || "update").replace(/_/g, " ")}</p>
+                        <p className="text-xs text-forest/50">
+                          {event.timestamp ? new Date(event.timestamp).toLocaleString() : "Just now"}
+                        </p>
+                      </div>
+                      {event.payload?.description && <p className="mt-1 text-sm text-forest/70">{event.payload.description}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Help */}
             <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">

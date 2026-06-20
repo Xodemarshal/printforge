@@ -28,6 +28,11 @@ export const stlSettingsSchema = z.object({
   notes: z.string().optional().default("")
 });
 
+export const ideaRequestSchema = z.object({
+  instagramHandle: z.string().trim().min(2).max(80),
+  idea: z.string().trim().min(20).max(2000)
+});
+
 export const couponSchema = z.object({
   code: z.string().min(2),
   total: z.number().nonnegative()
@@ -46,6 +51,18 @@ export const addressSchema = z.object({
   state: z.string().min(2),
   postalCode: z.string().min(4),
   country: z.string().min(2)
+});
+
+export const shiprocketShippingSchema = z.object({
+  customerName: z.string().min(2),
+  customerEmail: z.string().email(),
+  customerPhone: z.string().min(8),
+  line1: z.string().min(2),
+  line2: z.string().optional().default(""),
+  city: z.string().min(2),
+  state: z.string().min(2),
+  postalCode: z.string().regex(/^\d{6}$/, "Enter a 6 digit pincode"),
+  country: z.string().min(2).default("IN")
 });
 
 export const reviewSchema = z.object({

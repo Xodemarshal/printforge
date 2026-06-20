@@ -6,6 +6,7 @@ import { sendNotification } from "@/services/notifications";
 import { trackEvent } from "@/lib/utils";
 import { ORDER_STATUSES } from "@/lib/constants";
 import { revalidatePath } from "next/cache";
+import { queueShiprocketRetry, syncOrderWithShiprocket } from "@/services/shiprocket";
 
 export async function getCustomerOrders() {
   const user = await requireUser();
@@ -76,6 +77,7 @@ export async function updateOrderStatusAction(formData: FormData) {
   
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${id}`);
+  revalidatePath("/admin/shipping/not-picked-up");
   revalidatePath("/orders");
   revalidatePath(`/orders/${id}`);
   
@@ -94,4 +96,32 @@ export async function updatePrintJobAction(formData: FormData) {
   }).eq("id", id);
   if (error) return { error: error.message };
   return { success: true };
+}
+
+export async function syncShiprocketOrderAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const supabase = createAdminClient();
+
+  const { data: order, error } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) return { error: error.message };
+  if (!order) return { error: "Order not found." };
+
+  try {
+    await syncOrderWithShiprocket(id);
+    revalidatePath("/admin/orders");
+    revalidatePath(`/admin/orders/${id}`);
+    revalidatePath("/admin/shipping/not-picked-up");
+    revalidatePath("/orders");
+    revalidatePath(`/orders/${id}`);
+    return { success: true };
+  } catch (shiprocketError: any) {
+    await queueShiprocketRetry(id, shiprocketError?.message || "Shiprocket sync failed");
+    return { error: shiprocketError?.message || "Shiprocket sync failed" };
+  }
 }

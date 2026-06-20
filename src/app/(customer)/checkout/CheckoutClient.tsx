@@ -16,18 +16,19 @@ import { validateCouponAction } from "@/actions/coupons";
 const SHIPPING_COST = 15;
 const FREE_SHIPPING_THRESHOLD = 150;
 
-type PaymentMethod = "card" | "paypal" | "apple-pay" | "google-pay" | "upi" | "bank-transfer";
+type PaymentMethod = "razorpay" | "cod";
 
 export function CheckoutClient() {
   const { items, getTotalPrice, clearCart } = useCart();
   const { success, error } = useToast();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>("card");
+  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>("razorpay");
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  const [checkoutKey] = useState(() => globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`);
 
   const subtotal = getTotalPrice();
   const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
@@ -57,40 +58,16 @@ export function CheckoutClient() {
 
   const paymentMethods = [
     {
-      id: "card" as PaymentMethod,
-      name: "Credit / Debit Card",
+      id: "razorpay" as const,
+      name: "Pay Online",
       icon: <CreditCard size={20} />,
-      description: "Pay securely with your card"
+      description: "Pay securely via Razorpay (UPI, Cards, Netbanking, Wallets)"
     },
     {
-      id: "upi" as PaymentMethod,
-      name: "UPI",
-      icon: <Smartphone size={20} />,
-      description: "Pay via UPI (Google Pay, PhonePe, Paytm)"
-    },
-    {
-      id: "paypal" as PaymentMethod,
-      name: "PayPal",
-      icon: <Wallet size={20} />,
-      description: "Pay with your PayPal account"
-    },
-    {
-      id: "apple-pay" as PaymentMethod,
-      name: "Apple Pay",
-      icon: <Smartphone size={20} />,
-      description: "Quick checkout with Apple Pay"
-    },
-    {
-      id: "google-pay" as PaymentMethod,
-      name: "Google Pay",
-      icon: <Smartphone size={20} />,
-      description: "Quick checkout with Google Pay"
-    },
-    {
-      id: "bank-transfer" as PaymentMethod,
-      name: "Bank Transfer",
-      icon: <CreditCard size={20} />,
-      description: "Direct bank transfer"
+      id: "cod" as const,
+      name: "Cash on Delivery",
+      icon: <Truck size={20} />,
+      description: "Pay when your order is delivered"
     }
   ];
 
@@ -102,6 +79,9 @@ export function CheckoutClient() {
       const formData = new FormData(event.currentTarget);
       
       const shippingAddress = {
+        fullName: `${formData.get("firstName") as string} ${formData.get("lastName") as string}`.trim(),
+        phone: formData.get("phone") as string,
+        email: formData.get("email") as string,
         street: formData.get("address") as string,
         city: formData.get("city") as string,
         state: formData.get("state") as string,
@@ -122,7 +102,8 @@ export function CheckoutClient() {
         shippingCost,
         total,
         discountAmount,
-        couponId: appliedCoupon?.id
+        couponId: appliedCoupon?.id,
+        idempotencyKey: checkoutKey
       });
 
       if (result.error) {
@@ -131,9 +112,8 @@ export function CheckoutClient() {
         return;
       }
 
-      if (!["card", "upi", "bank-transfer"].includes(selectedPayment)) {
-        const paymentMethodName = paymentMethods.find(m => m.id === selectedPayment)?.name;
-        success("Order Placed Successfully!", `Your order #${result.orderId?.slice(0, 8)} has been placed using ${paymentMethodName}.`);
+      if (selectedPayment === "cod") {
+        success("Order Placed Successfully!", `Your order #${result.orderId?.slice(0, 8)} will be processed for cash on delivery.`);
         clearCart();
         router.push(`/orders/${result.orderId}`);
         setIsProcessing(false);
@@ -170,7 +150,7 @@ export function CheckoutClient() {
             }
           },
           prefill: {
-            name: formData.get("firstName") + " " + formData.get("lastName"),
+            name: shippingAddress.fullName,
             email: formData.get("email"),
             contact: formData.get("phone")
           },
@@ -251,17 +231,15 @@ export function CheckoutClient() {
                 <h2 className="text-xl font-semibold text-forest mb-4">Shipping Address</h2>
                 <div className="space-y-4">
                   <Input name="address" placeholder="Street Address" required />
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <Input name="city" placeholder="City" required />
-                    <Input name="state" placeholder="State" required />
-                    <Input name="zipCode" placeholder="ZIP Code" required />
-                  </div>
-                  <select name="country" className="w-full px-3 py-2 border border-forest/30 rounded-lg focus:border-forest focus:outline-none" required>
-                    <option value="">Select Country</option>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <Input name="city" placeholder="City" required />
+                  <Input name="state" placeholder="State" required />
+                  <Input name="zipCode" placeholder="ZIP Code" required />
+                </div>
+                  <select name="country" defaultValue="IN" className="w-full px-3 py-2 border border-forest/30 rounded-lg focus:border-forest focus:outline-none" required>
                     <option value="IN">India</option>
-                    <option value="US">United States</option>
-                    <option value="UK">United Kingdom</option>
                   </select>
+                  <p className="text-xs text-forest/60">Shiprocket shipping is enabled for Indian delivery addresses.</p>
                 </div>
               </div>
 

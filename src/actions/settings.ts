@@ -4,6 +4,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/guards";
 import { revalidatePath } from "next/cache";
 
+export interface FeaturedItem {
+  img: string;
+  label: string;
+  tag: string;
+}
+
 export interface HeroSectionSettings {
   title: string;
   coloredTitle: string;
@@ -13,6 +19,7 @@ export interface HeroSectionSettings {
   imageUrl: string;
   showcaseTitle: string;
   showcaseItalic: string;
+  featuredItems: FeaturedItem[];
 }
 
 export interface SiteSettings {
@@ -32,7 +39,13 @@ const DEFAULT_SETTINGS: SiteSettings = {
     buttonText: "Explore Products",
     imageUrl: "https://picsum.photos/seed/wooden-guardian-hero/1400/1600",
     showcaseTitle: "Custom Product",
-    showcaseItalic: "Design Made Easy"
+    showcaseItalic: "Design Made Easy",
+    featuredItems: [
+      { img: "https://picsum.photos/seed/wooden-guardian-collection-1/900/1200", label: "Fantasy Resin Mask", tag: "Classical Resin" },
+      { img: "https://picsum.photos/seed/wooden-guardian-collection-2/900/1200", label: "Premium Rocin", tag: "Premium Finish" },
+      { img: "https://picsum.photos/seed/wooden-guardian-collection-3/900/1200", label: "Custom Keyboard", tag: "Desk Collectible" },
+      { img: "https://picsum.photos/seed/wooden-guardian-collection-4/900/1200", label: "Hand-carved Wood", tag: "Limited Series" }
+    ]
   }
 };
 
@@ -64,6 +77,11 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         imageUrl: value?.hero?.imageUrl || DEFAULT_SETTINGS.hero.imageUrl,
         showcaseTitle: value?.hero?.showcaseTitle || DEFAULT_SETTINGS.hero.showcaseTitle,
         showcaseItalic: value?.hero?.showcaseItalic || DEFAULT_SETTINGS.hero.showcaseItalic,
+        featuredItems: Array.isArray(value?.hero?.featuredItems) ? value.hero.featuredItems.map((item: any, idx: number) => ({
+          img: item?.img || DEFAULT_SETTINGS.hero.featuredItems[idx]?.img || "",
+          label: item?.label || DEFAULT_SETTINGS.hero.featuredItems[idx]?.label || "",
+          tag: item?.tag || DEFAULT_SETTINGS.hero.featuredItems[idx]?.tag || "",
+        })) : DEFAULT_SETTINGS.hero.featuredItems
       }
     };
   } catch (err) {
@@ -126,6 +144,20 @@ export async function updateSiteSettingsAction(formData: FormData) {
       if (uploadedHero) heroImageUrl = uploadedHero;
     }
 
+    const featuredItems = [];
+    for (let i = 0; i < 4; i++) {
+      const label = String(formData.get(`item${i}Label`) || current.hero.featuredItems[i]?.label || "").trim();
+      const tag = String(formData.get(`item${i}Tag`) || current.hero.featuredItems[i]?.tag || "").trim();
+      
+      const file = formData.get(`item${i}File`) as File | null;
+      let img = current.hero.featuredItems[i]?.img || DEFAULT_SETTINGS.hero.featuredItems[i].img;
+      if (file && file.size > 0) {
+        const uploadedImg = await uploadSettingsImage(file, `featured-${i}`);
+        if (uploadedImg) img = uploadedImg;
+      }
+      featuredItems.push({ img, label, tag });
+    }
+
     const value = {
       siteName: String(formData.get("siteName") || current.siteName).trim(),
       logoUrl,
@@ -138,6 +170,7 @@ export async function updateSiteSettingsAction(formData: FormData) {
         imageUrl: heroImageUrl,
         showcaseTitle: String(formData.get("heroShowcaseTitle") || current.hero.showcaseTitle).trim(),
         showcaseItalic: String(formData.get("heroShowcaseItalic") || current.hero.showcaseItalic).trim(),
+        featuredItems
       }
     };
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ShoppingBag, Heart, Upload, Settings, Package } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -24,7 +23,7 @@ export function DashboardClient({
   const dashboardStats = [
     { label: "Total Orders", value: orders.length.toString(), icon: ShoppingBag, href: "/orders" },
     { label: "Wishlist Items", value: wishlistItems.length.toString(), icon: Heart, href: "/wishlist" },
-    { label: "Uploaded Designs", value: uploadCount.toString(), icon: Upload, href: "/upload-design" },
+    { label: "Special Items", value: uploadCount.toString(), icon: Upload, href: "/upload-stl" },
   ];
 
   return (
@@ -126,11 +125,11 @@ export function DashboardClient({
                   <span className="text-forest">Browse Products</span>
                 </Link>
                 <Link 
-                  href={"/upload-design" as any}
+                  href={"/upload-stl" as any}
                   className="flex items-center gap-3 p-3 bg-white/50 border border-forest/10 rounded-lg hover:bg-white/70 transition-colors"
                 >
                   <Upload size={20} className="text-forest" />
-                  <span className="text-forest">Upload Design</span>
+                  <span className="text-forest">Special Item</span>
                 </Link>
                 <Link 
                   href={"/wishlist" as any}

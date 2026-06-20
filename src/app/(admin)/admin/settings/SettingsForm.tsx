@@ -23,6 +23,12 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
   // Dynamic preview states for images
   const [logoPreview, setLogoPreview] = useState<string>(initialSettings.logoUrl);
   const [heroPreview, setHeroPreview] = useState<string>(initialSettings.hero.imageUrl);
+  const [featuredPreviews, setFeaturedPreviews] = useState<string[]>([
+    initialSettings.hero.featuredItems?.[0]?.img || "https://picsum.photos/seed/wooden-guardian-collection-1/900/1200",
+    initialSettings.hero.featuredItems?.[1]?.img || "https://picsum.photos/seed/wooden-guardian-collection-2/900/1200",
+    initialSettings.hero.featuredItems?.[2]?.img || "https://picsum.photos/seed/wooden-guardian-collection-3/900/1200",
+    initialSettings.hero.featuredItems?.[3]?.img || "https://picsum.photos/seed/wooden-guardian-collection-4/900/1200"
+  ]);
 
   function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -35,6 +41,15 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
     const file = e.target.files?.[0];
     if (file) {
       setHeroPreview(URL.createObjectURL(file));
+    }
+  }
+
+  function handleFeaturedChange(idx: number, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      const newPreviews = [...featuredPreviews];
+      newPreviews[idx] = URL.createObjectURL(file);
+      setFeaturedPreviews(newPreviews);
     }
   }
 
@@ -241,6 +256,81 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
                 </p>
               </div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Hero Featured Items Card */}
+      <Card className="bg-[#121212] border-gray-800 shadow-xl">
+        <CardHeader className="border-gray-800">
+          <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+            <Sparkles className="text-accent-warm h-5 w-5" /> Homepage Hero Collection Grid (4 Items)
+          </h2>
+          <p className="text-sm text-gray-400 mt-1">
+            Customize the four collection items displayed on the right grid of the homepage hero banner.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-8 pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[0, 1, 2, 3].map((idx) => {
+              const item = initialSettings.hero.featuredItems?.[idx] || { label: "", tag: "" };
+              return (
+                <div key={idx} className="p-4 rounded-xl border border-gray-800 bg-black/40 space-y-4">
+                  <h3 className="text-sm font-bold text-accent-warm uppercase tracking-wider">
+                    Item {idx + 1} Settings
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-gray-400">Label / Title</label>
+                      <Input
+                        name={`item${idx}Label`}
+                        defaultValue={item.label}
+                        placeholder="e.g. Fantasy Resin Mask"
+                        className="bg-black border-gray-700 text-white placeholder:text-gray-500 focus:border-forest"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-gray-400">Tag / Category</label>
+                      <Input
+                        name={`item${idx}Tag`}
+                        defaultValue={item.tag}
+                        placeholder="e.g. Classical Resin"
+                        className="bg-black border-gray-700 text-white placeholder:text-gray-500 focus:border-forest"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-400">Cover Image</label>
+                    <div className="flex items-center gap-4">
+                      <div className="relative w-16 h-20 rounded-lg bg-gray-900 border border-gray-700 overflow-hidden flex items-center justify-center shrink-0 shadow-md">
+                        {featuredPreviews[idx] ? (
+                          <img src={featuredPreviews[idx]} alt={`Item ${idx + 1} preview`} className="w-full h-full object-cover" />
+                        ) : (
+                          <ImageIcon className="text-gray-600 h-6 w-6" />
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <Input
+                          name={`item${idx}File`}
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFeaturedChange(idx, e)}
+                          className="bg-black border-gray-700 text-white file:bg-gray-800 file:border-gray-600 file:text-gray-300 text-xs"
+                        />
+                        <p className="text-[10px] text-gray-500">
+                          Recommended: 900x1200 vertical image (WEBP or JPG).
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

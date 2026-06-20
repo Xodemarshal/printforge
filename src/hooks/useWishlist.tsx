@@ -34,17 +34,18 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   }, [items]);
 
   const toggle = (productId: string) => {
-    setItems(currentItems => {
-      const isCurrentlyInWishlist = currentItems.includes(productId);
-      
-      if (isCurrentlyInWishlist) {
-        info("Removed from Wishlist", "Item removed from your wishlist");
-        return currentItems.filter(id => id !== productId);
-      } else {
-        success("Added to Wishlist", "Item saved to your wishlist");
-        return [...currentItems, productId];
-      }
-    });
+    const isCurrentlyInWishlist = items.includes(productId);
+    setItems(currentItems =>
+      isCurrentlyInWishlist
+        ? currentItems.filter(id => id !== productId)
+        : [...currentItems, productId]
+    );
+
+    if (isCurrentlyInWishlist) {
+      info("Removed from Wishlist", "Item removed from your wishlist");
+    } else {
+      success("Added to Wishlist", "Item saved to your wishlist");
+    }
   };
 
   const isInWishlist = (productId: string) => {
