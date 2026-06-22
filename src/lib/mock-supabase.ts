@@ -389,7 +389,16 @@ class MockQuery {
 private filters: Array<{
   key: string;
   value: unknown;
-  op: "eq" | "gte" | "lt" | "ilike" | "in";
+op:
+  | "eq"
+  | "gte"
+  | "lte"
+  | "gt"
+  | "lt"
+  | "ilike"
+  | "in"
+  | "or"
+  | "is";
 }> = [];
   private limitCount: number | null = null;
   private sort: { key: string; ascending: boolean } | null = null;
@@ -411,7 +420,15 @@ private filters: Array<{
     this.filters.push({ key, value, op: "eq" });
     return this;
   }
+or(filter: string) {
+  this.filters.push({
+    key: "__or__",
+    value: filter,
+    op: "or"
+  });
 
+  return this;
+}
   gte(key: string, value: unknown) {
     this.filters.push({ key, value, op: "gte" });
     return this;
@@ -426,6 +443,38 @@ private filters: Array<{
     this.filters.push({ key, value: pattern, op: "ilike" });
     return this;
   }
+
+  is(key: string, value: unknown) {
+  this.filters.push({
+    key,
+    value,
+    op: "is"
+  });
+
+  return this;
+}
+  lte(key: string, value: unknown) {
+  this.filters.push({
+    key,
+    value,
+    op: "lte"
+  });
+
+  return this;
+}
+
+gt(key: string, value: unknown) {
+  this.filters.push({
+    key,
+    value,
+    op: "gt"
+  });
+
+  return this;
+}
+
+
+
 
   order(key: string, opts?: { ascending?: boolean }) {
     this.sort = { key, ascending: opts?.ascending ?? true };

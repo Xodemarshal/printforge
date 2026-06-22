@@ -340,9 +340,9 @@ export async function bulkUploadProductsAction(formData: FormData) {
       }
 
       // Upload first image if provided
-      let imageUrl = null;
+      let imageUrl: string | null = null;
       if (productData.images && productData.images.length > 0) {
-        try {
+        try { 
           imageUrl = await maybeUploadImage(productData.images[0]);
         } catch (error) {
           console.error(`Image upload failed for product ${name}:`, error);

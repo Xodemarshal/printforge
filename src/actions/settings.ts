@@ -144,7 +144,7 @@ export async function updateSiteSettingsAction(formData: FormData) {
       if (uploadedHero) heroImageUrl = uploadedHero;
     }
 
-    const featuredItems = [];
+    const featuredItems: Array<FeaturedItem> = [];
     for (let i = 0; i < 4; i++) {
       const label = String(formData.get(`item${i}Label`) || current.hero.featuredItems[i]?.label || "").trim();
       const tag = String(formData.get(`item${i}Tag`) || current.hero.featuredItems[i]?.tag || "").trim();

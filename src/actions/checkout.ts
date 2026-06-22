@@ -5,6 +5,10 @@ import { requireUser } from "@/lib/guards";
 import { sendNotification } from "@/services/notifications";
 import { createRazorpayOrder, razorpay } from "@/lib/razorpay";
 import { queueShiprocketRetry, syncOrderWithShiprocket } from "@/services/shiprocket";
+import { sendOrderConfirmationEmail } from "@/services/email";
+import { linkCustomerToOrder } from "@/services/customer";
+import { trackPaymentSuccess } from "@/services/analytics";
+import { markCartAsRecovered } from "@/services/cart";
 
 interface CheckoutData {
   idempotencyKey: string;
@@ -154,7 +158,7 @@ export async function createOrderAction(data: CheckoutData) {
     }
 
     // Create Razorpay order if payment method requires it
-    let razorpayOrderId = null;
+    let razorpayOrderId :string | null = null;
     if (paymentMethod === "razorpay") {
       const razorpayResult = await createRazorpayOrder(data.total, "INR");
       if (razorpayResult.success && razorpayResult.order) {
@@ -236,6 +240,13 @@ export async function createOrderAction(data: CheckoutData) {
       }
     }
 
+    // Link customer and update stats
+    await linkCustomerToOrder(order.id, {
+      email: customerEmail,
+      phone: customerPhone,
+      name: customerName
+    });
+
     // Send notification
     const addressStr = `${data.shippingAddress.street}, ${data.shippingAddress.city}, ${data.shippingAddress.state} ${data.shippingAddress.zipCode}, ${data.shippingAddress.country}`;
     await sendNotification(
@@ -244,6 +255,17 @@ export async function createOrderAction(data: CheckoutData) {
       "Order Placed Successfully",
       `Your order #${order.id.slice(0, 8)} has been placed. Total: $${data.total.toFixed(2)}. Payment: ${data.paymentMethod}. Shipping to: ${addressStr}`
     );
+
+    // Send order confirmation email for COD orders
+    if (paymentMethod === "cod") {
+      await sendOrderConfirmationEmail({
+        orderId: order.id,
+        customerName,
+        customerEmail,
+        totalAmount: data.total,
+        orderStatus: 'Confirmed'
+      });
+    }
 
     return { 
       success: true, 
@@ -257,16 +279,20 @@ export async function createOrderAction(data: CheckoutData) {
   }
 }
 
-export async function verifyPaymentAction(orderId: string, razorpayPaymentId: string, razorpaySignature: string) {
+export async function verifyPaymentAction(orderId: string, razorpayPaymentId: string, _razorpaySignature: string) {
   const supabase = createAdminClient();
   
   try {
-    // Fetch the existing order details to update notes cleanly
+    // Fetch the existing order details
     const { data: orderData } = await supabase
       .from("orders")
-      .select("notes, payment_method")
+      .select("notes, payment_method, total_amount, user_id, customer_name, customer_email")
       .eq("id", orderId)
       .maybeSingle();
+
+    if (!orderData) {
+      return { error: "Order not found" };
+    }
 
     let actualPaymentMethod = "razorpay";
     try {
@@ -278,8 +304,8 @@ export async function verifyPaymentAction(orderId: string, razorpayPaymentId: st
       console.error("Failed to fetch Razorpay payment details:", err);
     }
 
-    let notesUpdate = orderData?.notes || "";
-    const initialMethod = orderData?.payment_method || "razorpay";
+    let notesUpdate = orderData.notes || "";
+    const initialMethod = orderData.payment_method || "razorpay";
     if (notesUpdate.includes(`Payment method: ${initialMethod}`)) {
       notesUpdate = notesUpdate.replace(`Payment method: ${initialMethod}`, `Payment method: ${actualPaymentMethod}`);
     } else if (notesUpdate) {
@@ -302,6 +328,33 @@ export async function verifyPaymentAction(orderId: string, razorpayPaymentId: st
 
     if (error) throw error;
 
+    // Link customer and update stats
+    if (orderData.customer_email) {
+      await linkCustomerToOrder(orderId, {
+        email: orderData.customer_email,
+        name: orderData.customer_name || 'Customer'
+      });
+    }
+
+    // Track payment success
+    await trackPaymentSuccess(
+      orderId,
+      orderData.total_amount,
+      orderData.user_id
+    );
+
+    // Send order confirmation email
+    if (orderData.customer_email) {
+      await sendOrderConfirmationEmail({
+        orderId,
+        customerName: orderData.customer_name || 'Customer',
+        customerEmail: orderData.customer_email,
+        totalAmount: orderData.total_amount,
+        orderStatus: 'Confirmed'
+      });
+    }
+
+    // Sync with Shiprocket
     try {
       await syncOrderWithShiprocket(orderId);
     } catch (shiprocketError: any) {
