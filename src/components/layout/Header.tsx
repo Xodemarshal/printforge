@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Search, ShoppingCart, User, Leaf, Box, HelpCircle, Hammer } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, ShoppingCart, User, Leaf, Box, HelpCircle, Hammer, X } from "lucide-react";
 import { NAV_LINKS } from "@/lib/constants";
 import { useCart } from "@/hooks/useCart";
 
@@ -14,6 +16,18 @@ export function Header({
 }) {
   const { openCart, getTotalItems } = useCart();
   const totalItems = getTotalItems();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/shop?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchOpen(false);
+      setSearchQuery("");
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40">
@@ -76,7 +90,11 @@ export function Header({
 
           {/* Action Icons */}
           <div className="flex items-center gap-4 sm:gap-6 shrink-0">
-            <button className="text-forest/80 hover:text-forest transition-colors">
+            <button 
+              onClick={() => setSearchOpen(!searchOpen)}
+              className="text-forest/80 hover:text-forest transition-colors"
+              aria-label="Search"
+            >
               <Search size={20} />
             </button>
             
@@ -98,6 +116,43 @@ export function Header({
             </button>
           </div>
         </div>
+
+        {/* Search Bar */}
+        {searchOpen && (
+          <div className="border-t border-forest/10 bg-alabaster">
+            <div className="page-shell py-4">
+              <form onSubmit={handleSearch} className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search products..."
+                  className="w-full px-4 py-3 pr-24 border border-forest/20 rounded-lg focus:outline-none focus:border-forest/40 focus:ring-2 focus:ring-forest/10 text-forest placeholder:text-forest/40"
+                  autoFocus
+                />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  <button
+                    type="submit"
+                    className="px-4 py-1.5 bg-forest text-alabaster text-sm font-medium rounded hover:bg-forest/90 transition-colors"
+                  >
+                    Search
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchOpen(false);
+                      setSearchQuery("");
+                    }}
+                    className="p-1.5 text-forest/60 hover:text-forest transition-colors"
+                    aria-label="Close search"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );
