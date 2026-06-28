@@ -12,6 +12,26 @@ import { sendEmail } from "@/services/email";
 
 type ActionResult = { success?: boolean; error?: string };
 
+/**
+ * Helper to securely resolve the application base URL from environment variables or async headers.
+ */
+async function getAppUrl(): Promise<string> {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  const fallbackHost = "localhost:3000";
+  const requestHeaders = await headers();
+  // Server actions can execute behind reverse proxies; evaluate forwarded hosts first
+  const host = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || fallbackHost;
+  const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
+  
+  return `${protocol}://${host}`;
+}
+
 export async function loginAction(formData: FormData): Promise<ActionResult> {
   const parsed = parseLoginInput(formData);
   if (!parsed.success) {
@@ -42,17 +62,11 @@ export async function registerAction(formData: FormData): Promise<ActionResult> 
   }
 
   const supabase = await createClient();
-  const admin = createAdminClient();
+  const admin = await createAdminClient();
   
   console.log("Attempting to register user:", parsed.data.email);
   
-  const host = (await headers()).get("host") || "localhost:3000";
-  const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
-  const appUrl =
-  process.env.NEXT_PUBLIC_APP_URL ??
-  (process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000");
+  const appUrl = await getAppUrl();
   let confirmLink = "";
   let userId = "";
 
@@ -160,10 +174,7 @@ export async function resetPasswordAction(formData: FormData): Promise<ActionRes
   }
 
   const supabase = await createClient();
-  
-  const host = (await headers()).get("host") || "localhost:3000";
-  const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
-  const appUrl = `${protocol}://${host}`;
+  const appUrl = await getAppUrl();
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${appUrl}/reset-password`
@@ -182,7 +193,7 @@ export async function updateProfileAction(formData: FormData): Promise<ActionRes
   const phone = String(formData.get("phone") ?? "");
   const avatar_url = String(formData.get("avatar_url") ?? "");
 
-  const supabase = createAdminClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase.from("users").update({
     name,
     phone,
@@ -211,7 +222,7 @@ export async function addAddressAction(formData: FormData): Promise<ActionResult
     return { error: "Invalid address." };
   }
 
-  const supabase = createAdminClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase.from("addresses").insert({
     user_id: user.id,
     ...parsed.data,
@@ -228,6 +239,7 @@ export async function addAddressAction(formData: FormData): Promise<ActionResult
 export async function updateAddressAction(formData: FormData): Promise<ActionResult> {
   const user = await requireUser();
   const id = String(formData.get("id") ?? "");
+  
   const parsed = addressSchema.safeParse({
     id,
     line1: String(formData.get("line1") ?? ""),
@@ -242,8 +254,16 @@ export async function updateAddressAction(formData: FormData): Promise<ActionRes
     return { error: "Invalid address." };
   }
 
-  const supabase = createAdminClient();
-  const { error } = await supabase.from("addresses").update(parsed.data).eq("id", id).eq("user_id", user.id);
+  // Deconstruct 'id' out of payload to avoid mutation errors during database update calls
+  const { id: _, ...updateData } = parsed.data as any;
+
+  const supabase = await createAdminClient();
+  const { error } = await supabase
+    .from("addresses")
+    .update(updateData)
+    .eq("id", id)
+    .eq("user_id", user.id);
+
   if (error) {
     return { error: error.message };
   }
@@ -258,7 +278,7 @@ export async function deleteAddressAction(formData: FormData): Promise<ActionRes
     return { error: "Invalid address." };
   }
 
-  const supabase = createAdminClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase.from("addresses").delete().eq("id", id).eq("user_id", user.id);
   if (error) {
     return { error: error.message };
