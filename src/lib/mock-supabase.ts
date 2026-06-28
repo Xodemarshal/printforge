@@ -746,6 +746,11 @@ class MockAuth {
     console.log("Mock password reset for:", email);
     return { error: null };
   }
+
+  async exchangeCodeForSession(code: string) {
+    console.log("Mock code exchange for session:", code);
+    return { data: { session: null, user: null }, error: null };
+  }
 }
 
 export function createMockSupabaseClient() {
