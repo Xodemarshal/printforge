@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { addressSchema } from "@/lib/validators";
@@ -44,10 +45,15 @@ export async function registerAction(formData: FormData): Promise<ActionResult> 
   
   console.log("Attempting to register user:", parsed.data.email);
   
+  const host = (await headers()).get("host") || "localhost:3000";
+  const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
+  const appUrl = `${protocol}://${host}`;
+
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
+      emailRedirectTo: `${appUrl}/api/auth/callback`,
       data: {
         name: parsed.data.name
       }
@@ -93,8 +99,13 @@ export async function resetPasswordAction(formData: FormData): Promise<ActionRes
   }
 
   const supabase = await createClient();
+  
+  const host = (await headers()).get("host") || "localhost:3000";
+  const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
+  const appUrl = `${protocol}://${host}`;
+
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/reset-password`
+    redirectTo: `${appUrl}/reset-password`
   });
 
   if (error) {

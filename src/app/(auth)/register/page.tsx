@@ -1,17 +1,41 @@
+"use client";
+
+import { useState, useTransition } from "react";
 import { registerAction } from "@/actions/auth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Link from "next/link";
-import { TreePine } from "lucide-react";
+import { TreePine, AlertTriangle } from "lucide-react";
 
 export default function RegisterPage() {
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    const formData = new FormData(event.currentTarget);
+
+    startTransition(async () => {
+      try {
+        const res = await registerAction(formData);
+        if (res && res.error) {
+          setError(res.error);
+        }
+      } catch (err: any) {
+        // If it's a Next.js redirect, let it propagate
+        if (err.message && (err.message.includes("NEXT_REDIRECT") || err.digest?.includes("NEXT_REDIRECT"))) {
+          throw err;
+        }
+        setError(err.message || "An unexpected error occurred during registration.");
+      }
+    });
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-16">
       <form 
-        action={async (formData) => {
-          "use server";
-          await registerAction(formData);
-        }} 
+        onSubmit={handleSubmit}
         className="panel-soft w-full max-w-md space-y-5 rounded-[28px] p-8"
       >
         <div className="flex flex-col items-center gap-3 text-center">
@@ -21,12 +45,22 @@ export default function RegisterPage() {
           <h1 className="display-font text-3xl text-primary-dark font-bold">Create account</h1>
           <p className="text-sm text-secondary-medium">Join PrintForge today</p>
         </div>
-        <Input name="name" placeholder="Full name" required />
-        <Input name="email" type="email" placeholder="Email address" required />
-        <Input name="password" type="password" placeholder="Create password" required />
-        <Button type="submit" className="w-full">
-          Create Account
+
+        {error && (
+          <div className="flex items-center gap-2 rounded-xl bg-red-50 p-4 text-sm text-red-800 border border-red-200">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <Input name="name" placeholder="Full name" required disabled={isPending} />
+        <Input name="email" type="email" placeholder="Email address" required disabled={isPending} />
+        <Input name="password" type="password" placeholder="Create password" required disabled={isPending} />
+        
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending ? "Creating Account..." : "Create Account"}
         </Button>
+        
         <p className="pt-2 text-center text-sm text-secondary-light">
           Already have an account?{" "}
           <Link href="/login" className="font-medium text-interactive">
