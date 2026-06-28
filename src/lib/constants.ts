@@ -33,7 +33,6 @@ export const ADMIN_NAV_LINKS = [
   { href: "/admin/shipping/not-picked-up", label: "Shipping" },
   { href: "/admin/inventory", label: "Inventory" },
   { href: "/admin/coupons", label: "Coupons" },
-  { href: "/admin/reviews", label: "Reviews" },
   { href: "/admin/analytics", label: "Analytics" },
   { href: "/admin/profitability", label: "Profitability" },
   { href: "/admin/leads", label: "Leads" },

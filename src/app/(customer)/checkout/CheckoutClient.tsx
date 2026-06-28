@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { CheckCircle, Loader2 } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/useToast";
 import { Button } from "@/components/ui/Button";
@@ -14,7 +15,7 @@ import { createOrderAction, verifyPaymentAction } from "@/actions/checkout";
 import { validateCouponAction } from "@/actions/coupons";
 
 const SHIPPING_COST = 15;
-const FREE_SHIPPING_THRESHOLD = 150;
+const FREE_SHIPPING_THRESHOLD = 299;
 
 type PaymentMethod = "razorpay" | "cod";
 
@@ -23,6 +24,7 @@ export function CheckoutClient() {
   const { success, error } = useToast();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [orderPreparing, setOrderPreparing] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>("razorpay");
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
@@ -137,8 +139,10 @@ export function CheckoutClient() {
               );
               
               if (verifyResult.success) {
-                success("Payment Successful!", "Your order has been confirmed.");
                 clearCart();
+                setOrderPreparing(true);
+                // Small delay to let the order record propagate
+                await new Promise(resolve => setTimeout(resolve, 1800));
                 router.push(`/orders/${result.orderId}`);
               } else {
                 error("Payment Verification Failed", verifyResult.error || "Please contact support.");
@@ -178,6 +182,35 @@ export function CheckoutClient() {
       setIsProcessing(false);
     }
   };
+
+  if (orderPreparing) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#FAF8F5]" style={{ fontFamily: "Inter, sans-serif" }}>
+        <div className="text-center max-w-sm px-6">
+          <div className="relative mb-8">
+            <div className="w-24 h-24 mx-auto rounded-full bg-[#2C5F2D]/10 flex items-center justify-center">
+              <CheckCircle size={48} className="text-[#2C5F2D]" />
+            </div>
+            <span className="absolute bottom-0 right-1/2 translate-x-12 translate-y-1">
+              <Loader2 size={22} className="text-[#D4A017] animate-spin" />
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold text-[#2C5F2D] mb-2">Payment Successful!</h1>
+          <p className="text-lg font-semibold text-[#4a3728] mb-1">Your order is being prepared</p>
+          <p className="text-sm text-[#7a6a5a] mb-6">Please wait a moment while we confirm your order details and get everything ready...</p>
+          <div className="flex justify-center gap-1.5 mt-2">
+            {[0, 1, 2].map(i => (
+              <span
+                key={i}
+                className="w-2 h-2 rounded-full bg-[#2C5F2D] animate-bounce"
+                style={{ animationDelay: `${i * 0.15}s` }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (

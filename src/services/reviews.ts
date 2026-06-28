@@ -39,6 +39,7 @@ export async function requestReview(orderId: string) {
 
 /**
  * Submit product review
+ * Enforces: one review per user per product per order (even if purchased multiple times)
  */
 export async function submitReview(
   userId: string,
@@ -50,7 +51,37 @@ export async function submitReview(
   const supabase = createAdminClient();
 
   try {
-    // Get customer
+    // Verify the order belongs to this user and contains this product
+    const { data: orderItem } = await supabase
+      .from('order_items')
+      .select('id, orders!inner(user_id, customer_name, payment_status)')
+      .eq('order_id', orderId)
+      .eq('product_id', productId)
+      .maybeSingle();
+
+    if (!orderItem) {
+      return { success: false, error: 'You can only review products you have purchased.' };
+    }
+
+    const orderData = orderItem.orders as any;
+    if (orderData?.user_id !== userId) {
+      return { success: false, error: 'This order does not belong to your account.' };
+    }
+
+    // One review per user per product per order — prevent duplicates
+    const { data: existing } = await supabase
+      .from('product_reviews')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('product_id', productId)
+      .eq('order_id', orderId)
+      .maybeSingle();
+
+    if (existing) {
+      return { success: false, error: 'You have already submitted a review for this product from this order.' };
+    }
+
+    // Get customer record for reference
     const { data: user } = await supabase
       .from('users')
       .select('email')
@@ -59,8 +90,15 @@ export async function submitReview(
 
     const { data: customer } = await supabase
       .from('customers')
-      .select('id')
-      .eq('email', user?.email)
+      .select('id, name')
+      .eq('email', user?.email ?? '')
+      .maybeSingle();
+
+    // Get product name for notification
+    const { data: product } = await supabase
+      .from('products')
+      .select('name')
+      .eq('id', productId)
       .maybeSingle();
 
     const { error } = await supabase
@@ -76,6 +114,22 @@ export async function submitReview(
       });
 
     if (error) throw error;
+
+    // Notify admin via alert (non-blocking)
+    const customerName = customer?.name || orderData?.customer_name || 'A customer';
+    const productName = product?.name || 'a product';
+    try {
+      await supabase.from('admin_alerts').insert({
+        alert_type: 'new_review',
+        severity: 'info',
+        title: 'New Review Pending Approval',
+        message: `${customerName} left a ${rating}-star review for "${productName}". Pending your approval.`,
+        status: 'unread',
+        entity_type: 'product_review',
+      });
+    } catch {
+      // Don't fail the review if alert fails
+    }
 
     return { success: true };
   } catch (error: any) {

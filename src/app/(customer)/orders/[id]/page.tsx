@@ -1,17 +1,19 @@
 import { getOrderById, cancelOrderAction } from "@/actions/orders";
-import { submitReviewAction } from "@/actions/reviews";
 import { OrderTimeline } from "@/components/orders/OrderTimeline";
+import { ReviewSection } from "@/components/orders/ReviewSection";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
 import { formatCurrency } from "@/lib/utils";
 import { Package, CreditCard, Calendar, Truck, ChevronLeft, ClipboardList, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { requireUser } from "@/lib/guards";
 export const dynamic = "force-dynamic";
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const order = await getOrderById(id);
+  const [order, user] = await Promise.all([getOrderById(id), requireUser()]);
+  const supabase = createAdminClient();
+  
   
   if (!order) {
     return (
@@ -32,9 +34,22 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   }
 
   const orderItems = order.order_items || [];
-  const orderTotal = orderItems.reduce((sum: number, item: any) => 
+  const orderTotal = orderItems.reduce((sum: number, item: any) =>
     sum + (item.unit_price * item.quantity), 0
   );
+
+  // Pre-fetch which products the user already reviewed for THIS order
+  const productIds = orderItems.map((i: any) => i.product_id).filter(Boolean);
+  let reviewedList: Array<{ product_id: string; rating: number; review_text: string }> = [];
+  if (productIds.length > 0) {
+    const { data: existingReviews } = await supabase
+      .from("product_reviews")
+      .select("product_id, rating, review_text")
+      .eq("user_id", user.id)
+      .eq("order_id", id)
+      .in("product_id", productIds);
+    reviewedList = existingReviews || [];
+  }
 
   return (
     <div className="page-shell py-8">
@@ -155,59 +170,23 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </div>
             </div>
 
-            {/* Review Section - Only if delivered */}
-            {order.status === "delivered" && orderItems.length > 0 && (
-              <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
-                <h2 className="text-xl font-semibold text-forest mb-4">Leave a Review</h2>
-                <form action={async (formData) => {
-                  "use server";
-                  await submitReviewAction(formData);
-                  revalidatePath(`/orders/${order.id}`);
-                }} className="space-y-4">
-                  <input type="hidden" name="orderItemId" value={orderItems[0].id} />
-                  <input type="hidden" name="productId" value={orderItems[0].product_id} />
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-forest mb-2">
-                      Rating (1-5 stars)
-                    </label>
-                    <Input 
-                      name="rating" 
-                      type="number" 
-                      min="1" 
-                      max="5" 
-                      placeholder="5"
-                      className="border-forest/30 focus:border-forest"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-forest mb-2">
-                      Your Review
-                    </label>
-                    <Textarea 
-                      name="comment" 
-                      placeholder="Share your experience with this product..."
-                      rows={4}
-                      className="border-forest/30 focus:border-forest resize-none"
-                      required
-                    />
-                  </div>
-                  
-                  <Button 
-                    type="submit"
-                    className="w-full bg-forest hover:bg-forest-dark text-white"
-                  >
-                    Submit Review
-                  </Button>
-                </form>
-              </div>
-            )}
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Review Section - Only if delivered */}
+            {order.status === "delivered" && orderItems.length > 0 && (
+              <ReviewSection
+                orderId={order.id}
+                orderItems={orderItems.map((item: any) => ({
+                  id: item.id,
+                  product_id: item.product_id,
+                  name: item.name || item.products?.name || "Product"
+                }))}
+                reviewedList={reviewedList}
+              />
+            )}
+
             {/* Payment Info */}
             <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
               <div className="flex items-center gap-2 mb-4">

@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/useToast";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { IndianRupee } from "lucide-react";
 
 interface Product {
   id: string;
@@ -37,12 +36,21 @@ export function EditProductForm({ product, categories }: EditProductFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { success, error } = useToast();
   const router = useRouter();
+
+  // State for live calculations
+  const [currentPrice, setCurrentPrice] = useState(product.price ?? 0);
   const [filamentGrams, setFilamentGrams] = useState(product.filament_weight_grams ?? 0);
   const [powerCost, setPowerCost] = useState(product.estimated_power_cost ?? 0);
   const [packagingCost, setPackagingCost] = useState(product.estimated_packaging_cost ?? 0);
-  const estimatedTotalCost = (filamentGrams * 0.80) + powerCost + packagingCost;
-  const salePrice = product.price / 100;
-  const estimatedMargin = salePrice > 0 ? ((salePrice - estimatedTotalCost) / salePrice) * 100 : 0;
+
+  // Constants
+  const FILAMENT_COST_PER_GRAM = 0.80; // ₹800 per kg
+
+  // Calculations
+  const estimatedTotalCost = (filamentGrams * FILAMENT_COST_PER_GRAM) + powerCost + packagingCost;
+  const estimatedMargin = currentPrice > 0 
+    ? ((currentPrice - estimatedTotalCost) / currentPrice) * 100 
+    : 0;
 
   async function clientAction(formData: FormData) {
     setIsLoading(true);
@@ -54,8 +62,9 @@ export function EditProductForm({ product, categories }: EditProductFormProps) {
         error("Update Failed", result.error);
       } else if (result && result.success) {
         success("Product Updated", result.message || "Product updated successfully");
-        // Force a hard refresh to show updated data
-        window.location.href = "/admin/products";
+        // Redirect back to product list to see updated costs
+        router.push("/admin/products");
+        router.refresh();
       }
     } catch (err) {
       console.error('Error:', err);
@@ -70,41 +79,57 @@ export function EditProductForm({ product, categories }: EditProductFormProps) {
       action={clientAction}
       className="space-y-4 rounded-2xl border p-6 bg-gray-900 border-gray-800"
     >
+      {/* Hidden Fields for the Server Action */}
       <input type="hidden" name="id" value={product.id} />
+      <input type="hidden" name="estimated_total_cost" value={estimatedTotalCost} />
 
-      <Input
-        name="name"
-        defaultValue={product.name}
-        placeholder="Product Name"
-        className="bg-black border-gray-700 text-white placeholder:text-gray-400"
-        required
-      />
+      <div>
+        <label className="text-sm font-medium text-gray-300 block mb-1.5">Product Name</label>
+        <Input
+          name="name"
+          defaultValue={product.name}
+          placeholder="Product Name"
+          className="bg-black border-gray-700 text-white placeholder:text-gray-400"
+          required
+        />
+      </div>
 
-      <Input
-        name="slug"
-        defaultValue={product.slug}
-        placeholder="product-slug"
-        className="bg-black border-gray-700 text-white placeholder:text-gray-400"
-        required
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="text-sm font-medium text-gray-300 block mb-1.5">Slug</label>
+          <Input
+            name="slug"
+            defaultValue={product.slug}
+            placeholder="product-slug"
+            className="bg-black border-gray-700 text-white placeholder:text-gray-400"
+            required
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-300 block mb-1.5">Selling Price (₹)</label>
+          <Input
+            name="price"
+            type="number"
+            step="0.01"
+            value={currentPrice}
+            onChange={(e) => setCurrentPrice(Number(e.target.value))}
+            placeholder="Price"
+            className="bg-black border-gray-700 text-white placeholder:text-gray-400 font-bold"
+            required
+          />
+        </div>
+      </div>
 
-      <Textarea
-        name="description"
-        defaultValue={product.description}
-        placeholder="Product Description"
-        className="bg-black border-gray-700 text-white placeholder:text-gray-400"
-        required
-      />
-
-      <Input
-        name="price"
-        type="number"
-        step="0.01"
-        defaultValue={product.price}
-        placeholder="Price"
-        className="bg-black border-gray-700 text-white placeholder:text-gray-400"
-        required
-      />
+      <div>
+        <label className="text-sm font-medium text-gray-300 block mb-1.5">Description</label>
+        <Textarea
+          name="description"
+          defaultValue={product.description}
+          placeholder="Product Description"
+          className="bg-black border-gray-700 text-white placeholder:text-gray-400"
+          required
+        />
+      </div>
 
       <div className="space-y-1">
         <label className="text-sm font-medium text-gray-300">Category</label>
@@ -123,89 +148,81 @@ export function EditProductForm({ product, categories }: EditProductFormProps) {
         </select>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-300">Thumbnail Image</label>
-        {product.image_url && (
-          <div className="mb-2">
-            <img
-              src={product.image_url}
-              alt={product.name}
-              className="w-20 h-20 rounded-lg object-cover border border-gray-700"
-            />
-            <p className="text-xs text-gray-400 mt-1">Current thumbnail</p>
-          </div>
-        )}
-        <Input
-          name="image"
-          type="file"
-          accept="image/*"
-          className="bg-black border-gray-700 text-white file:bg-gray-800 file:border-gray-600 file:text-gray-300"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-300">Thumbnail Image</label>
+          {product.image_url && (
+            <div className="mb-2">
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="w-20 h-20 rounded-lg object-cover border border-gray-700"
+              />
+            </div>
+          )}
+          <Input
+            name="image"
+            type="file"
+            accept="image/*"
+            className="bg-black border-gray-700 text-white file:bg-gray-800 file:border-gray-600 file:text-gray-300 text-xs"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-300">Add Gallery Images</label>
+          <Input
+            name="gallery"
+            type="file"
+            accept="image/*"
+            multiple
+            className="bg-black border-gray-700 text-white file:bg-gray-800 file:border-gray-600 file:text-gray-300 text-xs"
+          />
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-300">Gallery Images (New)</label>
-        {(product as any).gallery_urls && (product as any).gallery_urls.length > 0 && (
-          <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
-            {(product as any).gallery_urls.map((url: string, i: number) => (
-              <div key={i} className="shrink-0">
-                <img src={url} alt={`Gallery ${i}`} className="w-16 h-16 rounded-lg object-cover border border-gray-700" />
-              </div>
-            ))}
-          </div>
-        )}
-        <Input
-          name="gallery"
-          type="file"
-          accept="image/*"
-          multiple
-          className="bg-black border-gray-700 text-white file:bg-gray-800 file:border-gray-600 file:text-gray-300"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="text-sm font-medium text-gray-300 block mb-1.5">Material Info</label>
+          <Input
+            name="material_info"
+            defaultValue={product.material_info}
+            placeholder="e.g. PLA, PETG"
+            className="bg-black border-gray-700 text-white placeholder:text-gray-400"
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-300 block mb-1.5">Color Options</label>
+          <Input
+            name="colorOptions"
+            defaultValue={product.color_options?.join(", ")}
+            placeholder="Red, Blue, Black"
+            className="bg-black border-gray-700 text-white placeholder:text-gray-400"
+          />
+        </div>
       </div>
-
-      <Input
-        name="video_url"
-        defaultValue={(product as any).video_url || ""}
-        placeholder="Video URL"
-        className="bg-black border-gray-700 text-white placeholder:text-gray-400"
-      />
-
-      <Input
-        name="material_info"
-        defaultValue={product.material_info}
-        placeholder="Material Information"
-        className="bg-black border-gray-700 text-white placeholder:text-gray-400"
-      />
-
-      <Input
-        name="colorOptions"
-        defaultValue={product.color_options.join(", ")}
-        placeholder="Color options (comma separated)"
-        className="bg-black border-gray-700 text-white placeholder:text-gray-400"
-      />
 
       {/* Manufacturing Cost Section */}
-      <div className="pt-2 pb-1 border-t border-gray-800 space-y-3">
+      <div className="pt-4 pb-2 border-t border-gray-800 space-y-4">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wider text-amber-400">Manufacturing Cost & Spec (For Profit Analytics)</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-amber-400">Manufacturing & Profit Analysis</p>
           <div className="flex gap-4 text-xs">
-            <span className="text-gray-400">Est. Cost: <span className="text-white font-bold">₹{estimatedTotalCost.toFixed(2)}</span></span>
-            <span className="text-gray-400">Margin: <span className={`font-bold ${estimatedMargin >= 0 ? 'text-green-400' : 'text-red-400'}`}>{estimatedMargin.toFixed(1)}%</span></span>
+            <span className="text-gray-400">Total Cost: <span className="text-white font-bold">₹{estimatedTotalCost.toFixed(2)}</span></span>
+            <span className="text-gray-400">Live Margin: <span className={`font-bold ${estimatedMargin >= 20 ? 'text-green-400' : 'text-red-400'}`}>{estimatedMargin.toFixed(1)}%</span></span>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs text-gray-400 block mb-1">Filament Weight (Grams)</label>
+            <label className="text-xs text-gray-400 block mb-1">Filament (Grams)</label>
             <Input
               name="filament_weight_grams"
               type="number"
               step="0.1"
               value={filamentGrams}
               onChange={e => setFilamentGrams(Number(e.target.value))}
-              placeholder="e.g. 150"
-              className="bg-black border-gray-700 text-white placeholder:text-gray-500 text-sm"
+              className="bg-black border-gray-700 text-white text-sm"
             />
-            <p className="text-[10px] text-gray-600 mt-0.5">₹0.80/g (₹800/kg) = ₹{(filamentGrams * 0.80).toFixed(2)}</p>
+            <p className="text-[10px] text-gray-600 mt-1">₹0.80/g = ₹{(filamentGrams * 0.80).toFixed(2)}</p>
           </div>
           <div>
             <label className="text-xs text-gray-400 block mb-1">Power Cost (₹)</label>
@@ -215,42 +232,42 @@ export function EditProductForm({ product, categories }: EditProductFormProps) {
               step="0.5"
               value={powerCost}
               onChange={e => setPowerCost(Number(e.target.value))}
-              placeholder="e.g. 15"
-              className="bg-black border-gray-700 text-white placeholder:text-gray-500 text-sm"
+              className="bg-black border-gray-700 text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-gray-400 block mb-1">Packaging Cost (₹)</label>
+            <label className="text-xs text-gray-400 block mb-1">Packaging (₹)</label>
             <Input
               name="estimated_packaging_cost"
               type="number"
               step="0.5"
               value={packagingCost}
               onChange={e => setPackagingCost(Number(e.target.value))}
-              placeholder="e.g. 25"
-              className="bg-black border-gray-700 text-white placeholder:text-gray-500 text-sm"
+              className="bg-black border-gray-700 text-white text-sm"
             />
           </div>
         </div>
       </div>
 
-      <label className="flex items-center gap-2 text-gray-300">
-        <input
-          type="checkbox"
-          name="active"
-          defaultChecked={product.active}
-          className="rounded border-gray-600 bg-black text-forest focus:ring-forest focus:ring-offset-0"
-        />
-        Active (visible to customers)
-      </label>
+      <div className="py-2">
+        <label className="flex items-center gap-2 text-gray-300 cursor-pointer">
+          <input
+            type="checkbox"
+            name="active"
+            defaultChecked={product.active}
+            className="w-4 h-4 rounded border-gray-600 bg-black text-forest-green focus:ring-forest focus:ring-offset-0"
+          />
+          <span className="text-sm">Active (visible to customers)</span>
+        </label>
+      </div>
 
       <div className="flex gap-3 pt-4">
         <Button
           type="submit"
           disabled={isLoading}
-          className="bg-forest hover:bg-forest-dark text-white"
+          className="bg-forest-green hover:bg-forest-green/90 text-white px-8"
         >
-          {isLoading ? "Updating..." : "Update Product"}
+          {isLoading ? "Saving..." : "Update Product"}
         </Button>
         <Button
           type="button"

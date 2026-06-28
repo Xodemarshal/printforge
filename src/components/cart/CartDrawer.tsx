@@ -5,7 +5,7 @@ import { Minus, Plus, X } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { formatCurrency } from "@/lib/utils";
 
-const FREE_SHIPPING_THRESHOLD = 150;
+const FREE_SHIPPING_THRESHOLD = 299;
 
 export function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, getTotalPrice } = useCart();

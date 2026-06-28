@@ -37,7 +37,7 @@ export function Header({
           <div className="flex items-center gap-2">
             <Leaf size={12} className="text-accent" />
             <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
-              Free shipping on orders above $79
+              Free shipping on orders above ₹299
             </span>
           </div>
           <div className="hidden md:flex items-center gap-6">

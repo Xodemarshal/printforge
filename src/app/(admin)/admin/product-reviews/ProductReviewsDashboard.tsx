@@ -166,7 +166,7 @@ export default function ProductReviewsDashboard({ data }: Props) {
             onClick={() => setTab(t.id)}
             className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
               tab === t.id
-                ? 'bg-forest-green text-white shadow-sm'
+                ? 'bg-[#2C5F2D] text-white shadow-sm'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
@@ -204,7 +204,7 @@ export default function ProductReviewsDashboard({ data }: Props) {
                   <button
                     onClick={() => handleApprove(review.id)}
                     disabled={isPending}
-                    className="flex items-center gap-2 px-4 py-2 bg-forest-green hover:bg-forest-green/90 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 shrink-0"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#2C5F2D] hover:bg-[#2C5F2D]/90 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 shrink-0"
                   >
                     <CheckCircle2 size={15} /> Approve
                   </button>
@@ -225,7 +225,7 @@ export default function ProductReviewsDashboard({ data }: Props) {
             </div>
           ) : (
             data.approvedReviews.map((review: any) => (
-              <div key={review.id} className="bg-gray-900 rounded-xl p-5 border-l-4 border-l-forest-green border border-gray-800 shadow-sm">
+              <div key={review.id} className="bg-gray-900 rounded-xl p-5 border-l-4 border-l-[#2C5F2D] border border-gray-800 shadow-sm">
                 <div className="flex items-start gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
@@ -252,7 +252,7 @@ export default function ProductReviewsDashboard({ data }: Props) {
         <div className="max-w-lg">
           <div className="bg-gray-900 rounded-xl p-6 border border-gray-800 shadow-sm">
             <h2 className="text-white font-semibold text-lg mb-5 flex items-center gap-2">
-              <Send size={18} className="text-forest-green" /> Request Review via Email
+              <Send size={18} className="text-[#2C5F2D]" /> Request Review via Email
             </h2>
             <div className="space-y-4">
               <div>
@@ -260,7 +260,7 @@ export default function ProductReviewsDashboard({ data }: Props) {
                 <select
                   value={requestOrderId}
                   onChange={(e) => setRequestOrderId(e.target.value)}
-                  className="w-full bg-black border border-gray-700 text-white rounded-lg px-4 py-3 text-sm focus:border-forest-green outline-none"
+                  className="w-full bg-black border border-gray-700 text-white rounded-lg px-4 py-3 text-sm focus:border-[#2C5F2D] outline-none"
                 >
                   <option value="">— Choose a delivered order —</option>
                   {data.deliveredOrders.map((o: any) => (
@@ -273,7 +273,7 @@ export default function ProductReviewsDashboard({ data }: Props) {
               <button
                 onClick={handleRequestReview}
                 disabled={isPending || !requestOrderId}
-                className="w-full py-3 bg-forest-green hover:bg-forest-green/90 text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3 bg-[#2C5F2D] hover:bg-[#2C5F2D]/90 text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isPending ? 'Sending…' : <><Send size={16} /> Send Review Request</>}
               </button>
