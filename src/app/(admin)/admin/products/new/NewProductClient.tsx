@@ -125,6 +125,43 @@ export function NewProductClient({ categories }: NewProductClientProps) {
         placeholder="Color options (comma separated)" 
         className="bg-black border-gray-700 text-white placeholder:text-gray-400"
       />
+
+      {/* Manufacturing & Cost Fields for Profitability Calculation */}
+      <div className="pt-2 pb-1 border-t border-gray-800 space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-wider text-amber-400">Manufacturing Cost & Spec (For Profit Analytics)</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Filament Weight (Grams)</label>
+            <Input 
+              name="filament_weight_grams" 
+              type="number"
+              step="0.1"
+              placeholder="e.g. 150" 
+              className="bg-black border-gray-700 text-white placeholder:text-gray-500 text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Power Cost (₹)</label>
+            <Input 
+              name="estimated_power_cost" 
+              type="number"
+              step="0.5"
+              placeholder="e.g. 15" 
+              className="bg-black border-gray-700 text-white placeholder:text-gray-500 text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Packaging Cost (₹)</label>
+            <Input 
+              name="estimated_packaging_cost" 
+              type="number"
+              step="0.5"
+              placeholder="e.g. 25" 
+              className="bg-black border-gray-700 text-white placeholder:text-gray-500 text-sm"
+            />
+          </div>
+        </div>
+      </div>
       
       <label className="flex items-center gap-2 text-gray-300">
         <input 

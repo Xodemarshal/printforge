@@ -158,6 +158,12 @@ export async function createProductAction(formData: FormData) {
     .map((item) => item.trim())
     .filter(Boolean);
 
+  const filamentWeightGrams = Number(formData.get("filament_weight_grams") ?? 0);
+  const estimatedPowerCost = Number(formData.get("estimated_power_cost") ?? 0);
+  const estimatedPackagingCost = Number(formData.get("estimated_packaging_cost") ?? 0);
+  const materialCost = filamentWeightGrams * 0.05;
+  const estimatedTotalCost = materialCost + estimatedPowerCost + estimatedPackagingCost;
+
   const { error } = await supabase.from("products").insert({
     name,
     slug,
@@ -171,6 +177,10 @@ export async function createProductAction(formData: FormData) {
     video_url: videoUrl,
     material_info: String(formData.get("material_info") ?? ""),
     color_options: colorOptions,
+    filament_weight_grams: filamentWeightGrams,
+    estimated_power_cost: estimatedPowerCost,
+    estimated_packaging_cost: estimatedPackagingCost,
+    estimated_total_cost: estimatedTotalCost,
     active: formData.get("active") === "on"
   });
 
@@ -219,6 +229,10 @@ export async function updateProductAction(formData: FormData) {
         .split(",")
         .map((item) => item.trim())
         .filter(Boolean),
+      filament_weight_grams: Number(formData.get("filament_weight_grams") ?? 0),
+      estimated_power_cost: Number(formData.get("estimated_power_cost") ?? 0),
+      estimated_packaging_cost: Number(formData.get("estimated_packaging_cost") ?? 0),
+      estimated_total_cost: (Number(formData.get("filament_weight_grams") ?? 0) * 0.05) + Number(formData.get("estimated_power_cost") ?? 0) + Number(formData.get("estimated_packaging_cost") ?? 0),
       active: formData.get("active") === "on"
     };
 
