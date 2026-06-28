@@ -48,8 +48,11 @@ export async function registerAction(formData: FormData): Promise<ActionResult> 
   
   const host = (await headers()).get("host") || "localhost:3000";
   const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
-  const appUrl = `${protocol}://${host}`;
-
+  const appUrl =
+  process.env.NEXT_PUBLIC_APP_URL ??
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000");
   let confirmLink = "";
   let userId = "";
 
