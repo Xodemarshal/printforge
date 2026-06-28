@@ -64,16 +64,22 @@ export async function sendEmail(
     if (!logEntry) {
       throw new Error('Failed to create email log');
     }
+const from = process.env.EMAIL_FROM || "PrintForge <noreply@theorigin.site>";
+
+console.log("================================");
+console.log("EMAIL_FROM env:", process.env.EMAIL_FROM);
+console.log("Using FROM:", from);
+console.log("RESEND_DOMAIN:", process.env.RESEND_DOMAIN);
+console.log("================================");
 
     // Send email via Resend
-    const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PrintForge <noreply@theorigin.site>',
-      to: options.to,
-      subject: options.subject,
-      html: options.html,
-      text: options.text || stripHtml(options.html)
-    });
-
+const { data, error } = await resend.emails.send({
+  from,
+  to: options.to,
+  subject: options.subject,
+  html: options.html,
+  text: options.text || stripHtml(options.html),
+});
     if (error) {
       // Update log with error
       await supabase
