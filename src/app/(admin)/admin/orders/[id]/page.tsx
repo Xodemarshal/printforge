@@ -44,12 +44,13 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-sm text-gray-400 mb-1">
+          <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">PrintForge Admin</p>
+          <h1 className="text-3xl font-bold text-white">Order Details</h1>
+          <div className="flex items-center gap-2 text-xs text-gray-400 mt-1">
             <Link href="/admin/orders" className="hover:text-white transition-colors">Orders</Link>
             <span>/</span>
-            <span className="text-gray-500">#{order.id.slice(0, 8)}</span>
+            <span className="text-gray-500 font-mono">#{order.id}</span>
           </div>
-          <h1 className="text-2xl font-semibold text-white">Order Details</h1>
         </div>
         
         <div className="flex items-center gap-3">

@@ -161,7 +161,7 @@ export async function createProductAction(formData: FormData) {
   const filamentWeightGrams = Number(formData.get("filament_weight_grams") ?? 0);
   const estimatedPowerCost = Number(formData.get("estimated_power_cost") ?? 0);
   const estimatedPackagingCost = Number(formData.get("estimated_packaging_cost") ?? 0);
-  const materialCost = filamentWeightGrams * 0.05;
+  const materialCost = filamentWeightGrams * 0.80; // ₹800 per kg = ₹0.80 per gram
   const estimatedTotalCost = materialCost + estimatedPowerCost + estimatedPackagingCost;
 
   const { error } = await supabase.from("products").insert({
@@ -232,7 +232,7 @@ export async function updateProductAction(formData: FormData) {
       filament_weight_grams: Number(formData.get("filament_weight_grams") ?? 0),
       estimated_power_cost: Number(formData.get("estimated_power_cost") ?? 0),
       estimated_packaging_cost: Number(formData.get("estimated_packaging_cost") ?? 0),
-      estimated_total_cost: (Number(formData.get("filament_weight_grams") ?? 0) * 0.05) + Number(formData.get("estimated_power_cost") ?? 0) + Number(formData.get("estimated_packaging_cost") ?? 0),
+      estimated_total_cost: (Number(formData.get("filament_weight_grams") ?? 0) * 0.80) + Number(formData.get("estimated_power_cost") ?? 0) + Number(formData.get("estimated_packaging_cost") ?? 0),
       active: formData.get("active") === "on"
     };
 

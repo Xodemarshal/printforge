@@ -83,8 +83,9 @@ export default function InventoryDashboard({ items }: { items: InventoryItem[] }
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Material Inventory</h1>
-          <p className="text-gray-400 mt-1">Track filament and materials stock levels.</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">PrintForge Admin</p>
+          <h1 className="text-3xl font-bold text-white">Material Inventory</h1>
+          <p className="text-gray-400 mt-1 text-sm">Track filament and materials stock levels.</p>
         </div>
         <button
           onClick={() => setShowAdd(v => !v)}

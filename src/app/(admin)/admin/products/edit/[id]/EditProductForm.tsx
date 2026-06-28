@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/useToast";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import { IndianRupee } from "lucide-react";
 
 interface Product {
   id: string;
@@ -16,9 +17,15 @@ interface Product {
   price: number;
   category_id?: string;
   image_url?: string;
+  gallery_urls?: string[];
+  video_url?: string;
   material_info: string;
   color_options: string[];
   active: boolean;
+  filament_weight_grams?: number;
+  estimated_power_cost?: number;
+  estimated_packaging_cost?: number;
+  estimated_total_cost?: number;
 }
 
 interface EditProductFormProps {
@@ -30,6 +37,12 @@ export function EditProductForm({ product, categories }: EditProductFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { success, error } = useToast();
   const router = useRouter();
+  const [filamentGrams, setFilamentGrams] = useState(product.filament_weight_grams ?? 0);
+  const [powerCost, setPowerCost] = useState(product.estimated_power_cost ?? 0);
+  const [packagingCost, setPackagingCost] = useState(product.estimated_packaging_cost ?? 0);
+  const estimatedTotalCost = (filamentGrams * 0.80) + powerCost + packagingCost;
+  const salePrice = product.price / 100;
+  const estimatedMargin = salePrice > 0 ? ((salePrice - estimatedTotalCost) / salePrice) * 100 : 0;
 
   async function clientAction(formData: FormData) {
     setIsLoading(true);
@@ -170,6 +183,56 @@ export function EditProductForm({ product, categories }: EditProductFormProps) {
         placeholder="Color options (comma separated)"
         className="bg-black border-gray-700 text-white placeholder:text-gray-400"
       />
+
+      {/* Manufacturing Cost Section */}
+      <div className="pt-2 pb-1 border-t border-gray-800 space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold uppercase tracking-wider text-amber-400">Manufacturing Cost & Spec (For Profit Analytics)</p>
+          <div className="flex gap-4 text-xs">
+            <span className="text-gray-400">Est. Cost: <span className="text-white font-bold">₹{estimatedTotalCost.toFixed(2)}</span></span>
+            <span className="text-gray-400">Margin: <span className={`font-bold ${estimatedMargin >= 0 ? 'text-green-400' : 'text-red-400'}`}>{estimatedMargin.toFixed(1)}%</span></span>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Filament Weight (Grams)</label>
+            <Input
+              name="filament_weight_grams"
+              type="number"
+              step="0.1"
+              value={filamentGrams}
+              onChange={e => setFilamentGrams(Number(e.target.value))}
+              placeholder="e.g. 150"
+              className="bg-black border-gray-700 text-white placeholder:text-gray-500 text-sm"
+            />
+            <p className="text-[10px] text-gray-600 mt-0.5">₹0.80/g (₹800/kg) = ₹{(filamentGrams * 0.80).toFixed(2)}</p>
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Power Cost (₹)</label>
+            <Input
+              name="estimated_power_cost"
+              type="number"
+              step="0.5"
+              value={powerCost}
+              onChange={e => setPowerCost(Number(e.target.value))}
+              placeholder="e.g. 15"
+              className="bg-black border-gray-700 text-white placeholder:text-gray-500 text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Packaging Cost (₹)</label>
+            <Input
+              name="estimated_packaging_cost"
+              type="number"
+              step="0.5"
+              value={packagingCost}
+              onChange={e => setPackagingCost(Number(e.target.value))}
+              placeholder="e.g. 25"
+              className="bg-black border-gray-700 text-white placeholder:text-gray-500 text-sm"
+            />
+          </div>
+        </div>
+      </div>
 
       <label className="flex items-center gap-2 text-gray-300">
         <input

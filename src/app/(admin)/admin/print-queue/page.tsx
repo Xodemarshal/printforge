@@ -1,17 +1,17 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
 import { updateIdeaRequestAction } from "@/actions/stl";
+import { ClipboardList, Clock, CheckCircle, Flame, Layers } from "lucide-react";
 
 const REQUEST_STATUS_CARDS = [
-  { label: "Pending review", status: "pending_review", accent: "bg-[#243a2b] text-[#e9dfcc]" },
-  { label: "Ready for concept", status: "approved", accent: "bg-[#3b3225] text-[#f2d7a0]" },
-  { label: "In production", status: "in_production", accent: "bg-[#2d4f36] text-[#76c893]" }
+  { label: "Pending review", status: "pending_review", badgeColor: "bg-yellow-900/40 text-yellow-300 border-yellow-800/60" },
+  { label: "Ready for concept", status: "approved", badgeColor: "bg-blue-900/40 text-blue-300 border-blue-800/60" },
+  { label: "In production", status: "in_production", badgeColor: "bg-green-900/40 text-green-300 border-green-800/60" }
 ] as const;
 
 function formatDate(value?: string | null) {
   if (!value) return "Just now";
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("en-IN", {
     month: "short",
     day: "numeric",
     hour: "numeric",
@@ -41,50 +41,33 @@ export default async function PrintQueuePage() {
 
   return (
     <div className="space-y-6">
-      <div className="panel-dark rounded-[34px] p-6">
-        <p className="text-sm uppercase tracking-[0.3em] text-[#c8b99d]">Request queue</p>
-        <div className="mt-3 flex items-end justify-between gap-4">
-          <div>
-            <h1 className="display-font text-5xl leading-[0.95] text-[#f4ecd9]">Idea requests</h1>
-            <p className="mt-2 max-w-2xl text-sm text-[#c9bea8]">
-              Review the handle, idea brief, and inspiration images. Move each request through the concept pipeline.
-            </p>
-          </div>
-          <Badge className="bg-[#243a2b] text-[#e9dfcc]" tone="secondary">
-            {count ?? requests.length} active
-          </Badge>
-        </div>
+      {/* Header */}
+      <div>
+        <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">PrintForge Admin</p>
+        <h1 className="text-3xl font-bold text-white">Idea Requests & Print Queue</h1>
+        <p className="text-gray-400 mt-1 text-sm">Review customer custom print requests, reference boards, and concept pipeline.</p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      {/* Status KPI Cards */}
+      <div className="grid gap-4 md:grid-cols-3">
         {REQUEST_STATUS_CARDS.map((card) => (
-          <div key={card.status} className="panel-dark rounded-[28px] p-5">
+          <div key={card.status} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-[#c8b99d]">Request status</p>
-                <p className="mt-1 font-semibold text-[#f4ecd9]">{card.label}</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Pipeline Stage</p>
+                <p className="mt-1 font-bold text-white text-lg">{card.label}</p>
               </div>
-              <Badge className={card.accent} tone="secondary">
-                {statusCounts[card.status]}
-              </Badge>
+              <span className={`text-xs px-2.5 py-1 rounded-full font-semibold border ${card.badgeColor}`}>
+                {statusCounts[card.status]} active
+              </span>
             </div>
-            <p className="mt-3 text-sm text-[#c9bea8]">Live submissions waiting in this stage.</p>
-            <div className="mt-4 h-16 rounded-2xl border border-white/8 bg-[#101a14] p-2">
-              <div className="flex h-full items-end gap-1">
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 rounded-sm bg-[#76c893]/60"
-                    style={{ height: `${35 + ((i * 17) % 50)}%` }}
-                  />
-                ))}
-              </div>
-            </div>
+            <p className="mt-2 text-xs text-gray-400">Submissions currently in this stage.</p>
           </div>
         ))}
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
+      <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+        {/* Main Requests List */}
         <div className="space-y-4">
           {requests.map((request: any) => {
             const referenceImages = Array.isArray(request.reference_images)
@@ -92,25 +75,25 @@ export default async function PrintQueuePage() {
               : [];
 
             return (
-              <div key={request.id} className="panel-dark rounded-[32px] p-4">
-                <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
-                  <div className="overflow-hidden rounded-[28px] border border-white/8 bg-white/5">
+              <div key={request.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
+                <div className="grid gap-5 lg:grid-cols-[300px_1fr]">
+                  <div className="overflow-hidden rounded-lg border border-gray-800 bg-black">
                     {referenceImages.length > 0 ? (
-                      <div className="grid grid-cols-2 gap-1 p-2">
+                      <div className="grid grid-cols-2 gap-1 p-1">
                         {referenceImages.slice(0, 4).map((image: string, index: number) => (
                           <img
                             key={image}
                             src={image}
                             alt={`Reference ${index + 1}`}
-                            className="h-40 w-full rounded-[18px] object-cover"
+                            className="h-28 w-full rounded-md object-cover"
                           />
                         ))}
                       </div>
                     ) : request.file_url ? (
-                      <img src={request.file_url} alt={request.file_name} className="h-full min-h-[220px] w-full object-cover" />
+                      <img src={request.file_url} alt={request.file_name} className="h-full min-h-[160px] w-full object-cover" />
                     ) : (
-                      <div className="grid min-h-[220px] place-items-center text-sm text-[#c9bea8]">
-                        No preview available
+                      <div className="grid min-h-[160px] place-items-center text-xs text-gray-500">
+                        No reference image
                       </div>
                     )}
                   </div>
@@ -118,54 +101,21 @@ export default async function PrintQueuePage() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-4">
                       <div>
-                        <p className="text-sm uppercase tracking-[0.2em] text-[#c8b99d]">Request</p>
-                        <p className="font-medium text-[#f4ecd9]">{request.id}</p>
+                        <p className="text-xs font-mono text-gray-500">ID: #{request.id.slice(0, 8)}</p>
+                        <p className="text-sm font-bold text-white mt-0.5">Handle: {request.instagram_handle || "N/A"}</p>
                       </div>
-                      <Badge className="bg-[#243a2b] text-[#e9dfcc]" tone="secondary">
-                        {request.status}
-                      </Badge>
+                      <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-blue-900/40 text-blue-300 border border-blue-800/60 capitalize">
+                        {request.status.replace(/_/g, " ")}
+                      </span>
                     </div>
 
-                    <div className="grid gap-2 text-sm text-[#c9bea8] sm:grid-cols-2">
-                      <p>
-                        <span className="text-[#a89880]">Instagram</span>
-                        <br />
-                        {request.instagram_handle || "N/A"}
-                      </p>
-                      <p>
-                        <span className="text-[#a89880]">Submitted</span>
-                        <br />
-                        {formatDate(request.created_at)}
-                      </p>
+                    <div className="rounded-lg border border-gray-800 bg-black p-3.5">
+                      <p className="text-xs uppercase tracking-wider text-gray-500 font-medium">Idea Brief</p>
+                      <p className="mt-1 text-sm text-gray-300 leading-relaxed">{request.idea}</p>
                     </div>
 
-                    <div className="rounded-[22px] border border-white/8 bg-white/5 p-4">
-                      <p className="text-xs uppercase tracking-[0.2em] text-[#c8b99d]">Idea brief</p>
-                      <p className="mt-2 text-sm leading-6 text-[#e1d6c1]">{request.idea}</p>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      <form
-                        action={async (formData) => {
-                          "use server";
-                          await updateIdeaRequestAction(formData);
-                        }}
-                        className="flex flex-wrap gap-2"
-                      >
-                        <input type="hidden" name="id" value={request.id} />
-                        <input
-                          name="status"
-                          placeholder="Status"
-                          defaultValue={request.status}
-                          className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-[#f4ecd9]"
-                        />
-                        <Button type="submit" variant="gold" className="rounded-full">
-                          Update
-                        </Button>
-                      </form>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <span className="text-xs text-gray-500 mr-1">Move stage:</span>
                       {[
                         ["pending_review", "Queue"],
                         ["reviewing", "Review"],
@@ -183,9 +133,16 @@ export default async function PrintQueuePage() {
                         >
                           <input type="hidden" name="id" value={request.id} />
                           <input type="hidden" name="status" value={status} />
-                          <Button type="submit" variant="outline" className="rounded-full border-white/10 bg-white/5 text-[#f4ecd9]">
+                          <button 
+                            type="submit" 
+                            className={`text-xs px-2.5 py-1 rounded-md font-medium border transition-colors ${
+                              request.status === status 
+                                ? 'bg-green-900/50 text-green-300 border-green-700' 
+                                : 'bg-black text-gray-400 border-gray-800 hover:text-white hover:border-gray-700'
+                            }`}
+                          >
                             {label}
-                          </Button>
+                          </button>
                         </form>
                       ))}
                     </div>
@@ -194,11 +151,17 @@ export default async function PrintQueuePage() {
               </div>
             );
           })}
+          {requests.length === 0 && (
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center text-gray-500 text-sm">
+              No custom idea requests found.
+            </div>
+          )}
         </div>
 
-        <aside className="panel-dark h-fit rounded-[28px] p-5">
-          <p className="text-xs uppercase tracking-[0.2em] text-[#c8b99d]">Production statistics</p>
-          <div className="mt-4 space-y-4">
+        {/* Sidebar Stats */}
+        <aside className="bg-gray-900 border border-gray-800 rounded-xl p-5 h-fit space-y-4">
+          <h2 className="text-white font-semibold text-sm border-b border-gray-800 pb-3">Production Overview</h2>
+          <div className="space-y-4">
             {[
               ["Requests today", todayCount ?? 0],
               ["Pending reviews", pendingCount ?? 0],
@@ -206,14 +169,14 @@ export default async function PrintQueuePage() {
               ["Queue size", requests.length]
             ].map(([label, value]) => (
               <div key={label as string}>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#c9bea8]">{label as string}</span>
-                  <span className="font-semibold text-[#f4ecd9]">{value as number}</span>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-400">{label as string}</span>
+                  <span className="font-bold text-white">{value as number}</span>
                 </div>
-                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/8">
+                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-black">
                   <div
-                    className="h-full rounded-full bg-[#76c893]"
-                    style={{ width: `${Math.min(100, (value as number) * 10 || 12)}%` }}
+                    className="h-full rounded-full bg-green-500"
+                    style={{ width: `${Math.min(100, (value as number) * 10 || 10)}%` }}
                   />
                 </div>
               </div>

@@ -26,9 +26,9 @@ export default async function NotPickedUpOrdersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.3em] text-[#c8b99d]">Shipping control</p>
-        <h1 className="text-2xl font-semibold text-white mt-2">Not Picked Up Orders</h1>
-        <p className="text-gray-400 mt-1">Monitor labels generated but not yet handed over to the courier.</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">PrintForge Admin</p>
+        <h1 className="text-3xl font-bold text-white">Not Picked Up Shipping Queue</h1>
+        <p className="text-gray-400 mt-1 text-sm">Monitor labels generated but not yet handed over to the courier.</p>
       </div>
 
       <NotPickedUpOrdersClient orders={orders as any} />

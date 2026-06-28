@@ -120,8 +120,9 @@ export default function ReportsDashboard({ data }: Props) {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-white">Reports &amp; Automation</h1>
-        <p className="text-gray-400 text-sm mt-1">Configure and send business reports.</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">PrintForge Admin</p>
+        <h1 className="text-3xl font-bold text-white">Reports & Automation</h1>
+        <p className="text-gray-400 text-sm mt-1">Configure automated scheduled reports and email digests.</p>
       </div>
 
       {msg && (

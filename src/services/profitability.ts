@@ -76,7 +76,7 @@ export async function updateProductCost(
 
   try {
     // Calculate total cost
-    const materialCost = (costs.filamentWeightGrams || 0) * 0.05; // ₹0.05 per gram
+    const materialCost = (costs.filamentWeightGrams || 0) * 0.80; // ₹800 per kg = ₹0.80 per gram
     const powerCost = costs.estimatedPowerCost || 0;
     const packagingCost = costs.estimatedPackagingCost || 0;
     const totalCost = materialCost + powerCost + packagingCost;

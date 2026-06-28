@@ -37,7 +37,8 @@ export default async function ReviewsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold text-white">Reviews (Legacy)</h1>
+        <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">PrintForge Admin</p>
+        <h1 className="text-3xl font-bold text-white">Reviews (Legacy)</h1>
         <p className="text-gray-400 text-sm">Old review system — show/hide and delete customer reviews.</p>
       </div>
 

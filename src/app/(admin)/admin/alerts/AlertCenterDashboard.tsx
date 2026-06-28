@@ -118,8 +118,9 @@ export default function AlertCenterDashboard({ data }: { data: AlertsData }) {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Alert Center</h1>
-          <p className="text-gray-400 text-sm mt-1">Real-time system alerts and notifications</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">PrintForge Admin</p>
+          <h1 className="text-3xl font-bold text-white">Alert Center</h1>
+          <p className="text-gray-400 text-sm mt-1">Real-time system alerts, critical warnings, and notifications.</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}

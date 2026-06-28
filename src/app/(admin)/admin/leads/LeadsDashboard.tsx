@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, TrendingUp, MessageCircle, Mail, Phone } from 'lucide-react';
+import { Users, TrendingUp, MessageCircle, Mail, Phone, ArrowUpRight } from 'lucide-react';
 
 interface Lead {
   id: string;
@@ -38,35 +38,6 @@ interface Props {
   };
 }
 
-function StatCard({ 
-  title, 
-  value, 
-  icon: Icon, 
-  subtitle 
-}: { 
-  title: string; 
-  value: string | number; 
-  icon: any;
-  subtitle?: string;
-}) {
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-      <div className="flex items-center justify-between mb-4">
-        <div className="p-2 bg-indigo-50 rounded-lg">
-          <Icon className="w-6 h-6 text-indigo-600" />
-        </div>
-      </div>
-      <div>
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
-        <p className="text-sm text-gray-600 mt-1">{title}</p>
-        {subtitle && (
-          <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function LeadsDashboard({ data }: Props) {
   const [filter, setFilter] = useState<'all' | 'converted' | 'pending'>('all');
 
@@ -87,54 +58,63 @@ export default function LeadsDashboard({ data }: Props) {
   const getSourceIcon = (source: string) => {
     switch (source) {
       case 'whatsapp':
-        return <MessageCircle className="w-4 h-4" />;
+        return <MessageCircle className="w-4 h-4 text-green-400" />;
       case 'contact_form':
-        return <Mail className="w-4 h-4" />;
+        return <Mail className="w-4 h-4 text-blue-400" />;
       case 'phone':
-        return <Phone className="w-4 h-4" />;
+        return <Phone className="w-4 h-4 text-purple-400" />;
       default:
-        return <Users className="w-4 h-4" />;
+        return <Users className="w-4 h-4 text-yellow-400" />;
     }
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Leads Management</h1>
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">PrintForge Admin</p>
+        <h1 className="text-3xl font-bold text-white">Leads Management</h1>
+        <p className="text-gray-400 mt-1 text-sm">Track customer inquiry sources, conversions, and acquisition channels.</p>
+      </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <StatCard
-          title="Total Leads"
-          value={data.stats.total}
-          icon={Users}
-          subtitle={`${data.stats.converted} converted`}
-        />
-        <StatCard
-          title="Conversion Rate"
-          value={`${data.stats.conversionRate.toFixed(1)}%`}
-          icon={TrendingUp}
-          subtitle="Lead to customer"
-        />
-        <StatCard
-          title="WhatsApp Leads"
-          value={data.stats.bySource['whatsapp'] || 0}
-          icon={MessageCircle}
-          subtitle={`${data.stats.bySource['contact_form'] || 0} from forms`}
-        />
+      {/* Stats KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <Users size={18} className="text-blue-400 mb-3" />
+          <p className="text-2xl font-bold text-blue-400">{data.stats.total}</p>
+          <p className="text-white text-sm font-medium mt-1">Total Leads</p>
+          <p className="text-gray-500 text-xs mt-0.5">{data.stats.converted} converted to customers</p>
+        </div>
+
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <TrendingUp size={18} className="text-green-400 mb-3" />
+          <p className="text-2xl font-bold text-green-400">{data.stats.conversionRate.toFixed(1)}%</p>
+          <p className="text-white text-sm font-medium mt-1">Conversion Rate</p>
+          <p className="text-gray-500 text-xs mt-0.5">Inquiries converted to sales</p>
+        </div>
+
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <MessageCircle size={18} className="text-yellow-400 mb-3" />
+          <p className="text-2xl font-bold text-yellow-400">{data.stats.bySource['whatsapp'] || 0}</p>
+          <p className="text-white text-sm font-medium mt-1">WhatsApp Inquiries</p>
+          <p className="text-gray-500 text-xs mt-0.5">{data.stats.bySource['contact_form'] || 0} from contact forms</p>
+        </div>
       </div>
 
       {/* Source Breakdown */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Leads by Source</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-800">
+          <h2 className="text-white font-semibold text-sm">Leads by Source</h2>
+        </div>
+        <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-3">
           {Object.entries(data.stats.bySource).map(([source, count]) => (
-            <div key={source} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+            <div key={source} className="flex items-center gap-3 p-3.5 bg-black border border-gray-800 rounded-lg">
               {getSourceIcon(source)}
               <div>
-                <p className="text-sm font-medium text-gray-900 capitalize">
+                <p className="text-xs text-gray-400 capitalize">
                   {source.replace(/_/g, ' ')}
                 </p>
-                <p className="text-2xl font-bold text-indigo-600">{count}</p>
+                <p className="text-xl font-bold text-white mt-0.5">{count}</p>
               </div>
             </div>
           ))}
@@ -142,138 +122,118 @@ export default function LeadsDashboard({ data }: Props) {
       </div>
 
       {/* Leads Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900">All Leads</h2>
-            <div className="flex gap-2">
+      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-800 flex items-center justify-between flex-wrap gap-3">
+          <h2 className="text-white font-semibold text-sm">All Lead Records</h2>
+          <div className="flex gap-2">
+            {(['all', 'pending', 'converted'] as const).map(f => (
               <button
-                onClick={() => setFilter('all')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  filter === 'all'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
+                  filter === f
+                    ? 'bg-green-900/40 text-green-400 border border-green-800/60'
+                    : 'bg-black text-gray-400 border border-gray-800 hover:text-white'
                 }`}
               >
-                All ({data.leads.length})
+                {f} ({f === 'all' ? data.leads.length : f === 'pending' ? data.leads.filter(l => !l.converted).length : data.stats.converted})
               </button>
-              <button
-                onClick={() => setFilter('pending')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  filter === 'pending'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Pending ({data.leads.filter(l => !l.converted).length})
-              </button>
-              <button
-                onClick={() => setFilter('converted')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  filter === 'converted'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Converted ({data.stats.converted})
-              </button>
-            </div>
+            ))}
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Name</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Contact</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Source</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Product</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Message</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Status</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Date</th>
+          <table className="w-full text-sm">
+            <thead className="bg-black border-b border-gray-800 text-gray-400 text-xs uppercase tracking-wider">
+              <tr>
+                <th className="text-left px-5 py-3 font-medium">Name</th>
+                <th className="text-left px-5 py-3 font-medium">Contact</th>
+                <th className="text-left px-5 py-3 font-medium">Source</th>
+                <th className="text-left px-5 py-3 font-medium">Product</th>
+                <th className="text-left px-5 py-3 font-medium">Message</th>
+                <th className="text-left px-5 py-3 font-medium">Status</th>
+                <th className="text-right px-5 py-3 font-medium">Date</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-800">
               {filteredLeads.map((lead) => (
-                <tr key={lead.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="py-3 px-4 text-sm text-gray-900">
+                <tr key={lead.id} className="hover:bg-gray-800/50 transition-colors">
+                  <td className="px-5 py-3.5 font-medium text-white">
                     {lead.name || 'Anonymous'}
                   </td>
-                  <td className="py-3 px-4">
-                    <div className="text-sm">
-                      {lead.email && (
-                        <div className="text-gray-900">{lead.email}</div>
-                      )}
-                      {lead.phone && (
-                        <div className="text-gray-600">{lead.phone}</div>
-                      )}
-                    </div>
+                  <td className="px-5 py-3.5 text-xs">
+                    {lead.email && <div className="text-gray-300">{lead.email}</div>}
+                    {lead.phone && <div className="text-gray-500 font-mono mt-0.5">{lead.phone}</div>}
                   </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-2 text-xs text-gray-300 capitalize">
                       {getSourceIcon(lead.source)}
-                      <span className="text-sm text-gray-700 capitalize">
-                        {lead.source.replace(/_/g, ' ')}
-                      </span>
+                      <span>{lead.source.replace(/_/g, ' ')}</span>
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-sm text-gray-600">
-                    {(lead.products as any)?.name || '-'}
+                  <td className="px-5 py-3.5 text-xs text-gray-400">
+                    {(lead.products as any)?.name || '—'}
                   </td>
-                  <td className="py-3 px-4 text-sm text-gray-600 max-w-xs truncate">
-                    {lead.message || '-'}
+                  <td className="px-5 py-3.5 text-xs text-gray-400 max-w-xs truncate">
+                    {lead.message || '—'}
                   </td>
-                  <td className="py-3 px-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  <td className="px-5 py-3.5">
+                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
                       lead.converted
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
+                        ? 'bg-green-900/40 text-green-400'
+                        : 'bg-yellow-900/40 text-yellow-400'
                     }`}>
                       {lead.converted ? 'Converted' : 'Pending'}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-sm text-gray-600">
-                    {new Date(lead.created_at).toLocaleDateString()}
+                  <td className="px-5 py-3.5 text-right text-xs text-gray-500">
+                    {new Date(lead.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                   </td>
                 </tr>
               ))}
+              {filteredLeads.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-gray-500 text-sm">
+                    No leads found for this filter.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
       {/* Recent Customers */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Customers</h2>
+      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-800">
+          <h2 className="text-white font-semibold text-sm">Recently Acquired Customers</h2>
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Customer</th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Orders</th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Total Spent</th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Joined</th>
+          <table className="w-full text-sm">
+            <thead className="bg-black border-b border-gray-800 text-gray-400 text-xs uppercase tracking-wider">
+              <tr>
+                <th className="text-left px-5 py-3 font-medium">Customer</th>
+                <th className="text-right px-5 py-3 font-medium">Orders</th>
+                <th className="text-right px-5 py-3 font-medium">Total Spent</th>
+                <th className="text-right px-5 py-3 font-medium">Joined</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-800">
               {data.recentCustomers.map((customer) => (
-                <tr key={customer.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="py-3 px-4">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {customer.name || 'Customer'}
-                      </p>
-                      <p className="text-xs text-gray-500">{customer.email}</p>
-                    </div>
+                <tr key={customer.id} className="hover:bg-gray-800/50 transition-colors">
+                  <td className="px-5 py-3.5">
+                    <p className="font-medium text-white text-sm">
+                      {customer.name || 'Customer'}
+                    </p>
+                    <p className="text-xs text-gray-500">{customer.email}</p>
                   </td>
-                  <td className="py-3 px-4 text-sm text-gray-600 text-right">
+                  <td className="px-5 py-3.5 text-right text-gray-300 text-sm">
                     {customer.total_orders}
                   </td>
-                  <td className="py-3 px-4 text-sm text-gray-900 font-medium text-right">
+                  <td className="px-5 py-3.5 text-right text-white font-semibold text-sm">
                     {formatCurrency(Number(customer.total_spent))}
                   </td>
-                  <td className="py-3 px-4 text-sm text-gray-600 text-right">
-                    {new Date(customer.created_at).toLocaleDateString()}
+                  <td className="px-5 py-3.5 text-right text-xs text-gray-500">
+                    {new Date(customer.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </td>
                 </tr>
               ))}

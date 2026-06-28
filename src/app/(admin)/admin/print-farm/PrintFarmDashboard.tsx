@@ -121,8 +121,9 @@ export default function PrintFarmDashboard({ data }: { data: PrintFarmData }) {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">Print Farm Control Center</h1>
-        <p className="text-gray-400 text-sm mt-1">Monitor active print jobs and manage your printers</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">PrintForge Admin</p>
+        <h1 className="text-3xl font-bold text-white">Print Farm Control Center</h1>
+        <p className="text-gray-400 text-sm mt-1">Monitor active 3D printer rigs and manage job queues.</p>
       </div>
 
       <div className="space-y-6">

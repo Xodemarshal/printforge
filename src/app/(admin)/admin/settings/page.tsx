@@ -11,9 +11,10 @@ export default async function AdminSettingsPage() {
   return (
     <div className="space-y-8 pb-12">
       <div>
-        <h1 className="text-2xl font-semibold text-white">Site & Hero Settings</h1>
-        <p className="text-gray-400 mt-1">
-          Customize site-wide options such as your store branding, name, logo, and the home page hero section text and assets.
+        <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">PrintForge Admin</p>
+        <h1 className="text-3xl font-bold text-white">Store & Branding Settings</h1>
+        <p className="text-gray-400 mt-1 text-sm">
+          Customize store branding, site name, logo, and home page hero banners.
         </p>
       </div>
       <SettingsForm initialSettings={settings} />

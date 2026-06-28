@@ -62,8 +62,9 @@ export function BulkUploadForm() {
       </div>
 
       <div>
-        <h1 className="text-2xl font-semibold text-white">Bulk Product Upload</h1>
-        <p className="text-gray-400 mt-1">Upload multiple products at once to save time</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">PrintForge Admin</p>
+        <h1 className="text-3xl font-bold text-white">Bulk Product Upload</h1>
+        <p className="text-gray-400 mt-1 text-sm">Import multiple products at once using CSV or JSON payloads.</p>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
