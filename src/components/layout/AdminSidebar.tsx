@@ -12,7 +12,16 @@ import {
   Ticket,
   Star,
   BarChart3,
-  Settings
+  Settings,
+  DollarSign,
+  Users,
+  Printer,
+  MessageSquare,
+  Bell,
+  Activity,
+  FileText,
+  ClipboardList,
+  TrendingUp
 } from "lucide-react";
 
 const ICONS: Record<string, React.ComponentType<{ size?: number | string }>> = {
@@ -21,16 +30,25 @@ const ICONS: Record<string, React.ComponentType<{ size?: number | string }>> = {
   Products: Package,
   Categories: FolderTree,
   Orders: ShoppingBag,
+  Shipping: ShoppingBag,
   Inventory: Warehouse,
   Coupons: Ticket,
   Reviews: Star,
   Analytics: BarChart3,
+  Profitability: DollarSign,
+  Leads: Users,
+  "Print Farm": Printer,
+  "Product Reviews": MessageSquare,
+  "Alert Center": Bell,
+  "Business Health": Activity,
+  Reports: FileText,
+  "Activity Log": ClipboardList,
   Settings: Settings
 };
 
 export function AdminSidebar() {
   return (
-    <aside className="border-r border-gray-800 bg-black px-6 py-8 text-gray-100">
+    <aside className="border-r border-gray-800 bg-black px-6 py-8 text-gray-100 overflow-y-auto">
       <Link href="/admin/dashboard" className="flex items-center gap-3 mb-8">
         <span className="grid h-10 w-10 place-items-center rounded-lg bg-gray-900 text-white">
           <TreePine size={20} />
@@ -40,18 +58,31 @@ export function AdminSidebar() {
           <p className="text-xs text-gray-400">Control Panel</p>
         </div>
       </Link>
-      <nav className="space-y-2">
-        {ADMIN_NAV_LINKS.map((item) => {
+      <nav className="space-y-1">
+        {ADMIN_NAV_LINKS.map((item, index) => {
           const Icon = ICONS[item.label] ?? LayoutDashboard;
+
+          // Add a subtle divider before the new operations group
+          const showDivider = item.label === "Profitability";
+
           return (
-            <Link
-              key={item.href}
-              href={item.href as any}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-gray-900 hover:text-white"
-            >
-              <Icon size={18} />
-              {item.label}
-            </Link>
+            <div key={item.href}>
+              {showDivider && (
+                <div className="pt-3 pb-1">
+                  <p className="text-[10px] uppercase tracking-widest text-gray-500 px-3 mb-1 flex items-center gap-1">
+                    <TrendingUp size={10} />
+                    Operations
+                  </p>
+                </div>
+              )}
+              <Link
+                href={item.href as any}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-gray-900 hover:text-white"
+              >
+                <Icon size={18} />
+                {item.label}
+              </Link>
+            </div>
           );
         })}
       </nav>

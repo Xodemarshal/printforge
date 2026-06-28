@@ -35,6 +35,14 @@ export const ADMIN_NAV_LINKS = [
   { href: "/admin/coupons", label: "Coupons" },
   { href: "/admin/reviews", label: "Reviews" },
   { href: "/admin/analytics", label: "Analytics" },
+  { href: "/admin/profitability", label: "Profitability" },
+  { href: "/admin/leads", label: "Leads" },
+  { href: "/admin/print-farm", label: "Print Farm" },
+  { href: "/admin/product-reviews", label: "Product Reviews" },
+  { href: "/admin/alerts", label: "Alert Center" },
+  { href: "/admin/health", label: "Business Health" },
+  { href: "/admin/reports", label: "Reports" },
+  { href: "/admin/activity-log", label: "Activity Log" },
   { href: "/admin/settings", label: "Settings" }
 ];
 

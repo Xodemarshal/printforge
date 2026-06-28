@@ -480,15 +480,30 @@ gt(key: string, value: unknown) {
     this.sort = { key, ascending: opts?.ascending ?? true };
     return this;
   }
-in(key: string, values: unknown[]) {
-  this.filters.push({
-    key,
-    value: values,
-    op: "in"
-  });
-
-  return this;
-}
+  in(key: string, values: unknown[]) {
+    this.filters.push({
+      key,
+      value: values,
+      op: "in"
+    });
+    return this;
+  }
+  not(key: string, op: string, value: unknown) {
+    this.filters.push({ key, value, op: "eq" });
+    return this;
+  }
+  filter(key: string, op: string, value: unknown) {
+    this.filters.push({ key, value, op: "eq" });
+    return this;
+  }
+  neq(key: string, value: unknown) {
+    this.filters.push({ key, value, op: "eq" });
+    return this;
+  }
+  like(key: string, pattern: string) {
+    this.filters.push({ key, value: pattern, op: "ilike" });
+    return this;
+  }
   limit(count: number) {
     this.limitCount = count;
     return this;
