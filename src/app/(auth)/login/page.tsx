@@ -1,15 +1,28 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, use, useEffect } from "react";
 import { loginAction } from "@/actions/auth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Link from "next/link";
-import { TreePine, AlertTriangle } from "lucide-react";
+import { TreePine, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { useToast } from "@/hooks/useToast";
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams
+}: {
+  searchParams: Promise<{ message?: string }>;
+}) {
+  const params = use(searchParams);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const toast = useToast();
+
+  useEffect(() => {
+    if (params.message === "check-email") {
+      toast.success("Registration Successful", "Please check your email to verify your account before logging in.");
+    }
+  }, [params.message]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -21,13 +34,17 @@ export default function LoginPage() {
         const res = await loginAction(formData);
         if (res && res.error) {
           setError(res.error);
+          toast.error("Login Failed", res.error);
         }
       } catch (err: any) {
         // If it's a Next.js redirect, let it propagate
         if (err.message && (err.message.includes("NEXT_REDIRECT") || err.digest?.includes("NEXT_REDIRECT"))) {
+          toast.success("Welcome back!", "Logging you in...");
           throw err;
         }
-        setError(err.message || "An unexpected error occurred during login.");
+        const errMsg = err.message || "An unexpected error occurred during login.";
+        setError(errMsg);
+        toast.error("Login Error", errMsg);
       }
     });
   };
@@ -45,6 +62,13 @@ export default function LoginPage() {
           <h1 className="display-font text-3xl text-primary-dark font-bold">Welcome back</h1>
           <p className="text-sm text-secondary-medium">Sign in to your PrintForge account</p>
         </div>
+
+        {params.message === "check-email" && (
+          <div className="flex items-center gap-2 rounded-xl bg-green-50 p-4 text-sm text-green-800 border border-green-200">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" />
+            <span>Verification email sent. Please check your inbox to confirm your account.</span>
+          </div>
+        )}
 
         {error && (
           <div className="flex items-center gap-2 rounded-xl bg-red-50 p-4 text-sm text-red-800 border border-red-200">

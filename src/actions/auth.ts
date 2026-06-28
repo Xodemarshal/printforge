@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { addressSchema } from "@/lib/validators";
 import { requireUser } from "@/lib/guards";
 import { parseLoginInput, parseRegisterInput } from "@/lib/auth-actions";
+import { sendEmail } from "@/services/email";
 
 type ActionResult = { success?: boolean; error?: string };
 
@@ -49,27 +50,56 @@ export async function registerAction(formData: FormData): Promise<ActionResult> 
   const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
   const appUrl = `${protocol}://${host}`;
 
-  const { data, error } = await supabase.auth.signUp({
-    email: parsed.data.email,
-    password: parsed.data.password,
-    options: {
-      emailRedirectTo: `${appUrl}/api/auth/callback`,
-      data: {
-        name: parsed.data.name
-      }
-    }
-  });
+  let confirmLink = "";
+  let userId = "";
 
-  if (error) {
-    console.log("Supabase auth signup error:", error);
-    return { error: error.message };
+  const adminClient = admin as any;
+  if (adminClient.auth?.admin) {
+    // Generate the signup verification link using the Supabase Service Role client to bypass default mailer limits
+    const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+      type: "signup",
+      email: parsed.data.email,
+      password: parsed.data.password,
+      options: {
+        redirectTo: `${appUrl}/api/auth/callback`,
+        data: {
+          name: parsed.data.name
+        }
+      }
+    });
+
+    if (linkError) {
+      console.log("Supabase auth generateLink error:", linkError);
+      return { error: linkError.message };
+    }
+
+    confirmLink = linkData?.data?.properties?.action_link || linkData?.properties?.action_link || "";
+    userId = linkData?.data?.user?.id || linkData?.user?.id || "";
+  } else {
+    // Fallback for Mock client during build or testing
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: parsed.data.email,
+      password: parsed.data.password,
+      options: {
+        emailRedirectTo: `${appUrl}/api/auth/callback`,
+        data: {
+          name: parsed.data.name
+        }
+      }
+    });
+
+    if (signUpError) {
+      console.log("Supabase auth signup error:", signUpError);
+      return { error: signUpError.message };
+    }
+
+    userId = signUpData.user?.id || `mock-user-${Date.now()}`;
+    confirmLink = `${appUrl}/api/auth/callback?code=mock-code`;
   }
 
-  console.log("User created:", data.user?.id);
-
-  if (data.user) {
+  if (userId) {
     const { error: dbError } = await admin.from("users").upsert({
-      id: data.user.id,
+      id: userId,
       name: parsed.data.name,
       email: parsed.data.email,
       role: "customer"
@@ -81,9 +111,37 @@ export async function registerAction(formData: FormData): Promise<ActionResult> 
     }
   }
 
-  console.log("Registration successful, redirecting to dashboard");
+  // Send signup verification email using Resend
+  if (confirmLink) {
+    const { error: emailError } = await sendEmail("signup_confirmation", {
+      to: parsed.data.email,
+      subject: "Confirm your PrintForge Account",
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e1d6c1; border-radius: 12px; background-color: #FAF6EE;">
+          <h2 style="color: #2D5016; text-align: center;">Welcome to PrintForge!</h2>
+          <p>Hi ${parsed.data.name},</p>
+          <p>Thank you for signing up. Please click the button below to verify your email address and activate your account:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${confirmLink}" style="background-color: #2D5016; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">Verify Email Address</a>
+          </div>
+          <p style="color: #6B7280; font-size: 12px; text-align: center;">
+            If the button doesn't work, copy and paste the link below into your browser:
+            <br/>
+            <a href="${confirmLink}" style="color: #D4A017;">${confirmLink}</a>
+          </p>
+        </div>
+      `
+    });
+
+    if (emailError) {
+      console.log("Resend signup email error:", emailError);
+      return { error: "Failed to send confirmation email. Please verify your email address is correct." };
+    }
+  }
+
+  console.log("Registration successful, redirecting to login with confirmation request");
   revalidatePath("/");
-  redirect("/dashboard");
+  redirect("/login?message=check-email");
 }
 
 export async function logoutAction() {

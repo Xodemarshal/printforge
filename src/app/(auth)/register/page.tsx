@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Link from "next/link";
 import { TreePine, AlertTriangle } from "lucide-react";
+import { useToast } from "@/hooks/useToast";
 
 export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const toast = useToast();
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -21,13 +23,17 @@ export default function RegisterPage() {
         const res = await registerAction(formData);
         if (res && res.error) {
           setError(res.error);
+          toast.error("Registration Failed", res.error);
         }
       } catch (err: any) {
         // If it's a Next.js redirect, let it propagate
         if (err.message && (err.message.includes("NEXT_REDIRECT") || err.digest?.includes("NEXT_REDIRECT"))) {
+          toast.success("Account Created!", "Check your inbox to confirm your email address.");
           throw err;
         }
-        setError(err.message || "An unexpected error occurred during registration.");
+        const errMsg = err.message || "An unexpected error occurred during registration.";
+        setError(errMsg);
+        toast.error("Registration Error", errMsg);
       }
     });
   };

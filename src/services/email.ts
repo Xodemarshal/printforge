@@ -431,3 +431,38 @@ export async function sendAbandonedCartEmail(data: {
   const emailOptions = getAbandonedCartEmail(data);
   return sendEmail('abandoned_cart', emailOptions);
 }
+
+/**
+ * Resend Domain Management Utilities
+ */
+export async function createResendDomain(domainName?: string) {
+  const name = domainName || process.env.RESEND_DOMAIN || 'theorigin.site';
+  return await resend.domains.create({ name });
+}
+
+export async function getResendDomain(domainId?: string) {
+  const id = domainId || process.env.RESEND_DOMAIN_ID || '31bac63c-4f97-4ce6-9d5e-015bbb46d22a';
+  return await resend.domains.get(id);
+}
+
+export async function verifyResendDomain(domainId?: string) {
+  const id = domainId || process.env.RESEND_DOMAIN_ID || '31bac63c-4f97-4ce6-9d5e-015bbb46d22a';
+  return await resend.domains.verify(id);
+}
+
+export async function updateResendDomain(
+  domainId?: string,
+  trackingOptions?: { openTracking?: boolean; clickTracking?: boolean }
+) {
+  const id = domainId || process.env.RESEND_DOMAIN_ID || '31bac63c-4f97-4ce6-9d5e-015bbb46d22a';
+  return await resend.domains.update({
+    id,
+    openTracking: trackingOptions?.openTracking ?? false,
+    clickTracking: trackingOptions?.clickTracking ?? true
+  });
+}
+
+export async function listResendDomains() {
+  return await resend.domains.list();
+}
+

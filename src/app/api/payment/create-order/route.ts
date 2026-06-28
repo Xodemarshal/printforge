@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/guards";
 
 export async function POST(request: Request) {
   try {
-    const user = await requireUser();
+    const user = await requireUser(false);
     const body = await request.json();
     const amount = Number(body.amount ?? 0);
 
