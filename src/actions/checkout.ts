@@ -139,25 +139,43 @@ export async function createOrderAction(data: CheckoutData) {
       return { error: "Enter a valid 6 digit pincode for Shiprocket shipping." };
     }
 
-    // First, create or get the shipping address
-    const { data: address, error: addressError } = await supabase
+    // First, check if address already exists for this user
+    const { data: existingAddresses } = await supabase
       .from("addresses")
-      .insert({
-        user_id: user.id,
-        line1: data.shippingAddress.street,
-        line2: null,
-        city: data.shippingAddress.city,
-        state: data.shippingAddress.state,
-        postal_code: data.shippingAddress.zipCode,
-        country: data.shippingAddress.country,
-        is_default: false
-      })
-      .select()
-      .single();
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("line1", data.shippingAddress.street)
+      .eq("city", data.shippingAddress.city)
+      .eq("postal_code", data.shippingAddress.zipCode)
+      .maybeSingle();
 
-    if (addressError) {
-      console.error("Address insert error:", addressError);
-      throw addressError;
+    let addressId: string;
+    
+    if (existingAddresses?.id) {
+      // Use existing address
+      addressId = existingAddresses.id;
+    } else {
+      // Create new address
+      const { data: address, error: addressError } = await supabase
+        .from("addresses")
+        .insert({
+          user_id: user.id,
+          line1: data.shippingAddress.street,
+          line2: null,
+          city: data.shippingAddress.city,
+          state: data.shippingAddress.state,
+          postal_code: data.shippingAddress.zipCode,
+          country: data.shippingAddress.country,
+          is_default: false
+        })
+        .select("id")
+        .single();
+
+      if (addressError) {
+        console.error("Address insert error:", addressError);
+        throw addressError;
+      }
+      addressId = address.id;
     }
 
     // Create Razorpay order if payment method requires it
@@ -178,7 +196,7 @@ export async function createOrderAction(data: CheckoutData) {
         status: "pending",
         total_amount: data.total,
         discount_amount: data.discountAmount || 0,
-        shipping_address_id: address.id,
+        shipping_address_id: addressId,
         payment_status: "pending",
         payment_method: paymentMethod,
         customer_name: customerName,

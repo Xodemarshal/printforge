@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle, Loader2 } from "lucide-react";
+import { CheckCircle, Loader2, MapPin } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/useToast";
 import { Button } from "@/components/ui/Button";
@@ -31,11 +31,50 @@ export function CheckoutClient() {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
   const [checkoutKey] = useState(() => globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`);
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
   const subtotal = getTotalPrice();
   const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
   const totalBeforeDiscount = subtotal + shippingCost;
   const total = Math.max(0, totalBeforeDiscount - discountAmount);
+
+  // Fetch saved addresses on component mount
+  useEffect(() => {
+    fetchSavedAddresses();
+  }, []);
+
+  const fetchSavedAddresses = async () => {
+    try {
+      const response = await fetch('/api/user/addresses');
+      if (response.ok) {
+        const data = await response.json();
+        setSavedAddresses(data.addresses || []);
+      } else if (response.status === 401) {
+        // User not authenticated, addresses won't be available
+        console.log('User not authenticated for address fetching');
+      } else {
+        console.error('Failed to fetch addresses:', response.statusText);
+      }
+    } catch (err) {
+      console.error('Failed to fetch addresses:', err);
+    }
+  };
+
+  const handleAddressSelect = (address: any) => {
+    setSelectedAddressId(address.id);
+    // Auto-fill form fields when address is selected
+    const form = document.querySelector('form') as HTMLFormElement;
+    if (form) {
+      const nameParts = (address.users?.name || '').split(' ');
+      (form.querySelector('[name="firstName"]') as HTMLInputElement).value = nameParts[0] || '';
+      (form.querySelector('[name="lastName"]') as HTMLInputElement).value = nameParts.slice(1).join(' ') || '';
+      (form.querySelector('[name="address"]') as HTMLInputElement).value = address.line1 || '';
+      (form.querySelector('[name="city"]') as HTMLInputElement).value = address.city || '';
+      (form.querySelector('[name="state"]') as HTMLInputElement).value = address.state || '';
+      (form.querySelector('[name="zipCode"]') as HTMLInputElement).value = address.postal_code || '';
+    }
+  };
 
   const handleApplyCoupon = async () => {
     if (!couponCode) return;

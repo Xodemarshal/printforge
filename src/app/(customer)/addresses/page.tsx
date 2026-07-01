@@ -6,13 +6,13 @@ import { Textarea } from "@/components/ui/Textarea";
 export default function AddressesPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">Addresses</h1>
+      <h1 className="text-3xl font-semibold text-foreground">Addresses</h1>
       <form 
         action={async (formData) => {
           "use server";
           await addAddressAction(formData);
         }} 
-        className="mt-8 space-y-4 rounded-2xl border p-6"
+        className="mt-8 space-y-4 rounded-2xl border border-border bg-card p-6"
       >
         <Input name="line1" placeholder="Address line 1" />
         <Textarea name="line2" placeholder="Address line 2" />
@@ -29,7 +29,7 @@ export default function AddressesPage() {
           "use server";
           await updateAddressAction(formData);
         }} 
-        className="mt-6 space-y-4 rounded-2xl border p-6"
+        className="mt-6 space-y-4 rounded-2xl border border-border bg-card p-6"
       >
         <Input name="id" placeholder="Address ID" />
         <Button type="submit" variant="outline">Update address</Button>
@@ -39,7 +39,7 @@ export default function AddressesPage() {
           "use server";
           await deleteAddressAction(formData);
         }} 
-        className="mt-6 rounded-2xl border p-6"
+        className="mt-6 rounded-2xl border border-border bg-card p-6"
       >
         <Input name="id" placeholder="Address ID" />
         <Button type="submit" variant="outline">Delete address</Button>

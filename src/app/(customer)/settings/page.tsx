@@ -36,27 +36,27 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 space-y-8">
       <div>
-        <h1 className="text-3xl font-semibold">Settings</h1>
-        <p className="text-gray-400 mt-2">Manage your account and preferences</p>
+        <h1 className="text-3xl font-semibold text-[#2C5F2D]">Settings</h1>
+        <p className="text-[#2C5F2D]/70 mt-2">Manage your account and preferences</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400 mb-2">Total Orders</p>
-          <p className="text-3xl font-semibold text-white">{orderCount}</p>
+        <div className="bg-card border border-border rounded-lg p-6">
+          <p className="text-sm text-muted-foreground mb-2">Total Orders</p>
+          <p className="text-3xl font-semibold text-foreground">{orderCount}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400 mb-2">Wishlist Items</p>
-          <p className="text-3xl font-semibold text-white">{wishlistCount}</p>
+        <div className="bg-card border border-border rounded-lg p-6">
+          <p className="text-sm text-muted-foreground mb-2">Wishlist Items</p>
+          <p className="text-3xl font-semibold text-foreground">{wishlistCount}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400 mb-2">Idea Requests</p>
-          <p className="text-3xl font-semibold text-white">{uploadCount}</p>
+        <div className="bg-card border border-border rounded-lg p-6">
+          <p className="text-sm text-muted-foreground mb-2">Idea Requests</p>
+          <p className="text-3xl font-semibold text-foreground">{uploadCount}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400 mb-2">Saved Addresses</p>
-          <p className="text-3xl font-semibold text-white">{addressCount}</p>
+        <div className="bg-card border border-border rounded-lg p-6">
+          <p className="text-sm text-muted-foreground mb-2">Saved Addresses</p>
+          <p className="text-3xl font-semibold text-foreground">{addressCount}</p>
         </div>
       </div>
 
@@ -66,35 +66,40 @@ export default async function SettingsPage() {
           "use server";
           await updateProfileAction(formData);
         }}
-        className="space-y-4 rounded-2xl border border-gray-800 bg-gray-900 p-6"
+        className="space-y-4 rounded-2xl border border-border bg-card p-6"
       >
         <div>
-          <label className="text-sm text-gray-400">Name</label>
+          <label className="text-sm text-muted-foreground">Name</label>
           <Input name="name" placeholder="Your name" className="mt-2" />
         </div>
         <div>
-          <label className="text-sm text-gray-400">Phone</label>
+          <label className="text-sm text-muted-foreground">Phone</label>
           <Input name="phone" placeholder="Your phone number" className="mt-2" />
         </div>
         <div>
-          <label className="text-sm text-gray-400">Avatar URL</label>
+          <label className="text-sm text-muted-foreground">Avatar URL</label>
           <Input name="avatar_url" placeholder="https://..." className="mt-2" />
         </div>
         <Button type="submit">Save Changes</Button>
       </form>
 
       {/* Account Actions */}
-      <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
-        <h2 className="text-xl font-semibold mb-4">Account Actions</h2>
-        <p className="text-sm text-gray-400 mb-4">Sign out of your account</p>
-        <form action={async () => {
-          "use server";
-          await logoutAction();
-        }}>
-          <Button type="submit" className="bg-red-600 text-white hover:bg-red-700">
-            Sign Out
-          </Button>
-        </form>
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+        <h2 className="text-xl font-semibold mb-4 text-red-800">Account Actions</h2>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-red-700 mb-1">Sign out of your account</p>
+            <p className="text-xs text-red-600">You'll need to sign in again to access your account</p>
+          </div>
+          <form action={async () => {
+            "use server";
+            await logoutAction();
+          }}>
+            <Button type="submit" className="bg-red-600 text-white hover:bg-red-700 px-6 py-3 font-medium border border-red-700">
+              Sign Out
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   );
