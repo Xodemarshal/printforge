@@ -168,7 +168,7 @@ body {
 
 /* Premium Card Styles */
 .card-artisan {
-  @apply relative overflow-hidden rounded-3xl border border-forest/20 bg-gradient-to-br from-cream/90 to-forest-light/10 transition-all duration-500 hover:shadow-2xl hover:shadow-forest/20;
+  @apply relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-cream/90 to-muted/10 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/20;
 }
 
 .forest-gradient-overlay {
