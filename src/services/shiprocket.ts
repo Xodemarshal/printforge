@@ -246,7 +246,7 @@ export function buildShiprocketPayload(order: ShiprocketOrderContext) {
   const length = numberOrDefault(order.parcel_length_cm, 20);
   const width = numberOrDefault(order.parcel_width_cm, 15);
   const height = numberOrDefault(order.parcel_height_cm, 10);
-  const paymentMethod = String(order.payment_method ?? "cod").toLowerCase() === "cod" ? "COD" : "Prepaid";
+  const paymentMethod = "Prepaid";
 
   return {
     order_id: order.id,

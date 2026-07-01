@@ -17,7 +17,7 @@ import { validateCouponAction } from "@/actions/coupons";
 const SHIPPING_COST = 15;
 const FREE_SHIPPING_THRESHOLD = 299;
 
-type PaymentMethod = "razorpay" | "cod";
+type PaymentMethod = "razorpay";
 
 export function CheckoutClient() {
   const { items, getTotalPrice, clearCart } = useCart();
@@ -58,20 +58,7 @@ export function CheckoutClient() {
     }
   };
 
-  const paymentMethods = [
-    {
-      id: "razorpay" as const,
-      name: "Pay Online",
-      icon: <CreditCard size={20} />,
-      description: "Pay securely via Razorpay (UPI, Cards, Netbanking, Wallets)"
-    },
-    {
-      id: "cod" as const,
-      name: "Cash on Delivery",
-      icon: <Truck size={20} />,
-      description: "Pay when your order is delivered"
-    }
-  ];
+
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -114,13 +101,7 @@ export function CheckoutClient() {
         return;
       }
 
-      if (selectedPayment === "cod") {
-        success("Order Placed Successfully!", `Your order #${result.orderId?.slice(0, 8)} will be processed for cash on delivery.`);
-        clearCart();
-        router.push(`/orders/${result.orderId}`);
-        setIsProcessing(false);
-        return;
-      }
+
 
       if (result.razorpayOrderId && result.razorpayKeyId) {
         const options = {
@@ -278,23 +259,12 @@ export function CheckoutClient() {
 
               <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
                 <h2 className="text-xl font-semibold text-forest mb-4">Payment Method</h2>
-                <div className="space-y-3">
-                  {paymentMethods.map((method: any) => (
-                    <button
-                      key={method.id}
-                      type="button"
-                      onClick={() => setSelectedPayment(method.id)}
-                      className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
-                        selectedPayment === method.id ? "border-forest bg-forest/5" : "border-forest/20 hover:border-forest/40"
-                      }`}
-                    >
-                      <div className="p-2 rounded-lg bg-cream/50">{method.icon}</div>
-                      <div className="flex-1 text-left">
-                        <p className="font-semibold text-forest">{method.name}</p>
-                        <p className="text-sm text-forest/60">{method.description}</p>
-                      </div>
-                    </button>
-                  ))}
+                <div className="flex items-center gap-4 p-4 rounded-xl border border-forest/10 bg-white/50">
+                  <div className="p-2 rounded-lg bg-cream/50"><CreditCard size={20} className="text-forest" /></div>
+                  <div className="flex-1 text-left">
+                    <p className="font-semibold text-forest">Pay Online</p>
+                    <p className="text-sm text-forest/60">Pay securely via Razorpay (UPI, Cards, Netbanking, Wallets)</p>
+                  </div>
                 </div>
               </div>
 

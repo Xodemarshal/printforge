@@ -77,6 +77,9 @@ export async function createOrderAction(data: CheckoutData) {
   const user = await requireUser();
   const supabase = createAdminClient();
   const paymentMethod = normalizePaymentMethod(data.paymentMethod);
+  if (paymentMethod !== "razorpay") {
+    return { error: "Invalid payment method. Only online payments via Razorpay are supported." };
+  }
   const { data: profile } = await supabase
     .from("users")
     .select("name, email, phone")
@@ -172,11 +175,11 @@ export async function createOrderAction(data: CheckoutData) {
       .insert({
         idempotency_key: data.idempotencyKey,
         user_id: user.id,
-        status: paymentMethod === "cod" ? "confirmed" : "pending",
+        status: "pending",
         total_amount: data.total,
         discount_amount: data.discountAmount || 0,
         shipping_address_id: address.id,
-        payment_status: paymentMethod === "cod" ? "pending" : "pending",
+        payment_status: "pending",
         payment_method: paymentMethod,
         customer_name: customerName,
         customer_email: customerEmail,
@@ -231,15 +234,6 @@ export async function createOrderAction(data: CheckoutData) {
       throw itemsError;
     }
 
-    if (paymentMethod === "cod") {
-      try {
-        await syncOrderWithShiprocket(order.id);
-      } catch (shiprocketError: any) {
-        await queueShiprocketRetry(order.id, shiprocketError?.message || "Shiprocket sync failed");
-        console.error("Shiprocket sync failed for COD order:", shiprocketError);
-      }
-    }
-
     // Link customer and update stats
     await linkCustomerToOrder(order.id, {
       email: customerEmail,
@@ -255,17 +249,6 @@ export async function createOrderAction(data: CheckoutData) {
       "Order Placed Successfully",
       `Your order #${order.id.slice(0, 8)} has been placed. Total: $${data.total.toFixed(2)}. Payment: ${data.paymentMethod}. Shipping to: ${addressStr}`
     );
-
-    // Send order confirmation email for COD orders
-    if (paymentMethod === "cod") {
-      await sendOrderConfirmationEmail({
-        orderId: order.id,
-        customerName,
-        customerEmail,
-        totalAmount: data.total,
-        orderStatus: 'Confirmed'
-      });
-    }
 
     return { 
       success: true, 
