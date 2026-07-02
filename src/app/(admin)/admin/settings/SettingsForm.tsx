@@ -335,6 +335,77 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
         </CardContent>
       </Card>
 
+      {/* Hero Stats Card */}
+      <Card className="bg-[#121212] border-gray-800 shadow-xl">
+        <CardHeader className="border-gray-800">
+          <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+            <Sparkles className="text-accent-warm h-5 w-5" /> Homepage Hero Statistics
+          </h2>
+          <p className="text-sm text-gray-400 mt-1">
+            Customize the statistics displayed in the hero section (Products Created & Customer Rating).
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6 pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4 p-4 rounded-xl border border-gray-800 bg-black/40">
+              <h3 className="text-sm font-bold text-accent-warm uppercase tracking-wider">
+                Products Statistic
+              </h3>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-400">Count/Number</label>
+                  <Input
+                    name="statsProductsCount"
+                    defaultValue={initialSettings.hero.stats?.productsCount || "2.5k+"}
+                    placeholder="e.g. 2.5k+"
+                    className="bg-black border-gray-700 text-white placeholder:text-gray-500 focus:border-forest"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-400">Label</label>
+                  <Input
+                    name="statsProductsLabel"
+                    defaultValue={initialSettings.hero.stats?.productsLabel || "Products Created"}
+                    placeholder="e.g. Products Created"
+                    className="bg-black border-gray-700 text-white placeholder:text-gray-500 focus:border-forest"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 p-4 rounded-xl border border-gray-800 bg-black/40">
+              <h3 className="text-sm font-bold text-accent-warm uppercase tracking-wider">
+                Rating Statistic
+              </h3>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-400">Rating/Score</label>
+                  <Input
+                    name="statsRating"
+                    defaultValue={initialSettings.hero.stats?.rating || "4.9/5"}
+                    placeholder="e.g. 4.9/5"
+                    className="bg-black border-gray-700 text-white placeholder:text-gray-500 focus:border-forest"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-400">Label</label>
+                  <Input
+                    name="statsRatingLabel"
+                    defaultValue={initialSettings.hero.stats?.ratingLabel || "Customer Rating"}
+                    placeholder="e.g. Customer Rating"
+                    className="bg-black border-gray-700 text-white placeholder:text-gray-500 focus:border-forest"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Form Submit Footer */}
       <div className="flex justify-end gap-4">
         <Button

@@ -72,12 +72,12 @@ export function HeroBanner({ settings }: { settings?: HeroSectionSettings }) {
 
               <div className="mt-6 grid grid-cols-2 gap-8 border-t border-border pt-10">
                 <div className="space-y-1">
-                  <p className="display-font text-3xl font-bold text-primary-dark">2.5k+</p>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-secondary-light">Products Created</p>
+                  <p className="display-font text-3xl font-bold text-primary-dark">{settings?.stats?.productsCount || "2.5k+"}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-secondary-light">{settings?.stats?.productsLabel || "Products Created"}</p>
                 </div>
                 <div className="space-y-1 border-l border-border pl-8">
-                  <p className="display-font text-3xl font-bold text-primary-dark">4.9/5</p>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-secondary-light">Customer Rating</p>
+                  <p className="display-font text-3xl font-bold text-primary-dark">{settings?.stats?.rating || "4.9/5"}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-secondary-light">{settings?.stats?.ratingLabel || "Customer Rating"}</p>
                 </div>
               </div>
             </div>

@@ -20,6 +20,12 @@ export interface HeroSectionSettings {
   showcaseTitle: string;
   showcaseItalic: string;
   featuredItems: FeaturedItem[];
+  stats: {
+    productsCount: string;
+    productsLabel: string;
+    rating: string;
+    ratingLabel: string;
+  };
 }
 
 export interface SiteSettings {
@@ -45,7 +51,13 @@ const DEFAULT_SETTINGS: SiteSettings = {
       { img: "https://picsum.photos/seed/wooden-guardian-collection-2/900/1200", label: "Premium Rocin", tag: "Premium Finish" },
       { img: "https://picsum.photos/seed/wooden-guardian-collection-3/900/1200", label: "Custom Keyboard", tag: "Desk Collectible" },
       { img: "https://picsum.photos/seed/wooden-guardian-collection-4/900/1200", label: "Hand-carved Wood", tag: "Limited Series" }
-    ]
+    ],
+    stats: {
+      productsCount: "2.5k+",
+      productsLabel: "Products Created",
+      rating: "4.9/5",
+      ratingLabel: "Customer Rating"
+    }
   }
 };
 
@@ -81,7 +93,13 @@ export async function getSiteSettings(): Promise<SiteSettings> {
           img: item?.img || DEFAULT_SETTINGS.hero.featuredItems[idx]?.img || "",
           label: item?.label || DEFAULT_SETTINGS.hero.featuredItems[idx]?.label || "",
           tag: item?.tag || DEFAULT_SETTINGS.hero.featuredItems[idx]?.tag || "",
-        })) : DEFAULT_SETTINGS.hero.featuredItems
+        })) : DEFAULT_SETTINGS.hero.featuredItems,
+        stats: {
+          productsCount: value?.hero?.stats?.productsCount || DEFAULT_SETTINGS.hero.stats.productsCount,
+          productsLabel: value?.hero?.stats?.productsLabel || DEFAULT_SETTINGS.hero.stats.productsLabel,
+          rating: value?.hero?.stats?.rating || DEFAULT_SETTINGS.hero.stats.rating,
+          ratingLabel: value?.hero?.stats?.ratingLabel || DEFAULT_SETTINGS.hero.stats.ratingLabel,
+        }
       }
     };
   } catch (err) {
@@ -170,7 +188,13 @@ export async function updateSiteSettingsAction(formData: FormData) {
         imageUrl: heroImageUrl,
         showcaseTitle: String(formData.get("heroShowcaseTitle") || current.hero.showcaseTitle).trim(),
         showcaseItalic: String(formData.get("heroShowcaseItalic") || current.hero.showcaseItalic).trim(),
-        featuredItems
+        featuredItems,
+        stats: {
+          productsCount: String(formData.get("statsProductsCount") || current.hero.stats.productsCount).trim(),
+          productsLabel: String(formData.get("statsProductsLabel") || current.hero.stats.productsLabel).trim(),
+          rating: String(formData.get("statsRating") || current.hero.stats.rating).trim(),
+          ratingLabel: String(formData.get("statsRatingLabel") || current.hero.stats.ratingLabel).trim(),
+        }
       }
     };
 
