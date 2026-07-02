@@ -353,7 +353,7 @@ export function CollectionsPageClient({
           {[
             { icon: "⭐", title: "Premium Quality", subtitle: "Handcrafted with care" },
             { icon: "📦", title: "Secure Packaging", subtitle: "Safe & reliable" },
-            { icon: "🌐", title: "Worldwide Shipping", subtitle: "Fast & tracked" },
+            { icon: "🇮🇳", title: "India Delivery", subtitle: "Fast & tracked" },
             { icon: "🔄", title: "Easy Returns", subtitle: "Hassle free" }
           ].map((item) => (
             <div key={item.title} className="flex items-start gap-4">

@@ -3,8 +3,8 @@ import { Shield, Package, Globe, RotateCcw } from "lucide-react";
 const TRUST_ITEMS = [
   { icon: Shield, title: "Premium Quality", body: "Handcrafted with care" },
   { icon: Package, title: "Secure Packaging", body: "Safe & reliable" },
-  { icon: Globe, title: "Worldwide Shipping", body: "Delivered globally" },
-  { icon: RotateCcw, title: "Easy Returns", body: "30-day guarantee" }
+  { icon: Globe, title: "India Delivery", body: "Delivered across India" },
+  { icon: RotateCcw, title: "Easy Returns", body: "10-day guarantee" }
 ];
 
 export function TrustBar() {

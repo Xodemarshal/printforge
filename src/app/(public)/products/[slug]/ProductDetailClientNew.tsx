@@ -252,7 +252,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
         {[
           { icon: <Award size={20} />, title: "Premium Quality", sub: "Handcrafted with care" },
           { icon: <ShieldCheck size={20} />, title: "Secure Packaging", sub: "Safe & reliable" },
-          { icon: <Globe size={20} />, title: "Worldwide Shipping", sub: "Fast & tracked" },
+          { icon: <Globe size={20} />, title: "India Delivery", sub: "Fast & tracked" },
           { icon: <RotateCcw size={20} />, title: "Easy Returns", sub: "Hassle free" }
         ].map((item) => (
           <div key={item.title} className="flex items-center gap-4 group cursor-default">

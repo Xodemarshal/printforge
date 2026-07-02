@@ -361,7 +361,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
               {[
                 { icon: <ShieldCheck size={20} />, text: "Secure Payment" },
                 { icon: <Truck size={20} />, text: "Free Shipping over $50" },
-                { icon: <RotateCcw size={20} />, text: "30-Day Returns" }
+                { icon: <RotateCcw size={20} />, text: "10-Day Returns" }
               ].map((feature, i) => (
                 <div key={i} className="flex items-center gap-3 text-forest">
                   {feature.icon}
