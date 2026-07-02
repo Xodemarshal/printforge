@@ -31,12 +31,14 @@ export interface HeroSectionSettings {
 export interface SiteSettings {
   siteName: string;
   logoUrl: string;
+  faviconUrl?: string;
   hero: HeroSectionSettings;
 }
 
 const DEFAULT_SETTINGS: SiteSettings = {
-  siteName: "Forest Foundry",
-  logoUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=groot&backgroundColor=2c3e2d",
+  siteName: "PrintForge",
+  logoUrl: "/design/logo.png",
+  faviconUrl: "/design/logo.png",
   hero: {
     title: "Ideas",
     coloredTitle: "Take Shape.",
@@ -80,6 +82,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     return {
       siteName: value?.siteName || DEFAULT_SETTINGS.siteName,
       logoUrl: value?.logoUrl || DEFAULT_SETTINGS.logoUrl,
+      faviconUrl: value?.faviconUrl || DEFAULT_SETTINGS.faviconUrl,
       hero: {
         title: value?.hero?.title || DEFAULT_SETTINGS.hero.title,
         coloredTitle: value?.hero?.coloredTitle || DEFAULT_SETTINGS.hero.coloredTitle,
@@ -147,14 +150,21 @@ export async function updateSiteSettingsAction(formData: FormData) {
     const current = await getSiteSettings();
 
     const logoFile = formData.get("logoFile") as File | null;
+    const faviconFile = formData.get("faviconFile") as File | null;
     const heroFile = formData.get("heroFile") as File | null;
 
     let logoUrl = current.logoUrl;
+    let faviconUrl = current.faviconUrl;
     let heroImageUrl = current.hero.imageUrl;
 
     if (logoFile && logoFile.size > 0) {
       const uploadedLogo = await uploadSettingsImage(logoFile, "logo");
       if (uploadedLogo) logoUrl = uploadedLogo;
+    }
+
+    if (faviconFile && faviconFile.size > 0) {
+      const uploadedFavicon = await uploadSettingsImage(faviconFile, "favicon");
+      if (uploadedFavicon) faviconUrl = uploadedFavicon;
     }
 
     if (heroFile && heroFile.size > 0) {
@@ -179,6 +189,7 @@ export async function updateSiteSettingsAction(formData: FormData) {
     const value = {
       siteName: String(formData.get("siteName") || current.siteName).trim(),
       logoUrl,
+      faviconUrl,
       hero: {
         title: String(formData.get("heroTitle") || current.hero.title).trim(),
         coloredTitle: String(formData.get("heroColoredTitle") || current.hero.coloredTitle).trim(),

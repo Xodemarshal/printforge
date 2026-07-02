@@ -7,11 +7,34 @@ import { NotificationProvider } from "@/hooks/useNotifications";
 import { CartProvider } from "@/hooks/useCart";
 import { WishlistProvider } from "@/hooks/useWishlist";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { getSiteSettings } from "@/actions/settings";
 
-export const metadata: Metadata = {
-  title: "Wooden Guardian",
-  description: "Creative product storefront and admin platform."
-};
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const settings = await getSiteSettings();
+    const faviconUrl = settings.faviconUrl || settings.logoUrl || "/design/logo.png";
+
+    return {
+      title: settings.siteName || "PrintForge",
+      description: "Creative product storefront and admin platform.",
+      icons: {
+        icon: faviconUrl,
+        shortcut: faviconUrl,
+        apple: faviconUrl,
+      },
+    };
+  } catch (error) {
+    return {
+      title: "PrintForge",
+      description: "Creative product storefront and admin platform.",
+      icons: {
+        icon: "/design/logo.png",
+        shortcut: "/design/logo.png",
+        apple: "/design/logo.png",
+      },
+    };
+  }
+}
 
 export default function RootLayout({
   children

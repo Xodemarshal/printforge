@@ -22,6 +22,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 
   // Dynamic preview states for images
   const [logoPreview, setLogoPreview] = useState<string>(initialSettings.logoUrl);
+  const [faviconPreview, setFaviconPreview] = useState<string>(initialSettings.faviconUrl || initialSettings.logoUrl);
   const [heroPreview, setHeroPreview] = useState<string>(initialSettings.hero.imageUrl);
   const [featuredPreviews, setFeaturedPreviews] = useState<string[]>([
     initialSettings.hero.featuredItems?.[0]?.img || "https://picsum.photos/seed/wooden-guardian-collection-1/900/1200",
@@ -34,6 +35,13 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
     const file = e.target.files?.[0];
     if (file) {
       setLogoPreview(URL.createObjectURL(file));
+    }
+  }
+
+  function handleFaviconChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFaviconPreview(URL.createObjectURL(file));
     }
   }
 
@@ -84,39 +92,66 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
           </p>
         </CardHeader>
         <CardContent className="space-y-6 pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-300">Site Name</label>
               <Input
                 name="siteName"
                 defaultValue={initialSettings.siteName}
-                placeholder="e.g. Forest Foundry"
+                placeholder="e.g. PrintForge"
                 className="bg-black border-gray-700 text-white placeholder:text-gray-500 focus:border-forest"
                 required
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">Logo Image</label>
-              <div className="flex items-center gap-4">
-                <div className="relative w-16 h-16 rounded-xl bg-gray-900 border border-gray-700 overflow-hidden flex items-center justify-center shrink-0">
-                  {logoPreview ? (
-                    <img src={logoPreview} alt="Logo preview" className="w-full h-full object-cover" />
-                  ) : (
-                    <ImageIcon className="text-gray-600 h-8 w-8" />
-                  )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-300">Logo Image</label>
+                <div className="flex items-center gap-4">
+                  <div className="relative w-16 h-16 rounded-xl bg-gray-900 border border-gray-700 overflow-hidden flex items-center justify-center shrink-0">
+                    {logoPreview ? (
+                      <img src={logoPreview} alt="Logo preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <ImageIcon className="text-gray-600 h-8 w-8" />
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      name="logoFile"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoChange}
+                      className="bg-black border-gray-700 text-white file:bg-gray-800 file:border-gray-600 file:text-gray-300 text-xs"
+                    />
+                    <p className="text-xs text-gray-500">
+                      Main logo for site header and branding. Falls back to /design/logo.png if not set.
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1 space-y-2">
-                  <Input
-                    name="logoFile"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoChange}
-                    className="bg-black border-gray-700 text-white file:bg-gray-800 file:border-gray-600 file:text-gray-300 text-xs"
-                  />
-                  <p className="text-xs text-gray-500">
-                    Recommended: Square image (PNG, SVG, or WEBP) with transparent background.
-                  </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-300">Favicon / Tab Icon</label>
+                <div className="flex items-center gap-4">
+                  <div className="relative w-16 h-16 rounded-xl bg-gray-900 border border-gray-700 overflow-hidden flex items-center justify-center shrink-0">
+                    {faviconPreview ? (
+                      <img src={faviconPreview} alt="Favicon preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <ImageIcon className="text-gray-600 h-8 w-8" />
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      name="faviconFile"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFaviconChange}
+                      className="bg-black border-gray-700 text-white file:bg-gray-800 file:border-gray-600 file:text-gray-300 text-xs"
+                    />
+                    <p className="text-xs text-gray-500">
+                      Small icon shown in browser tabs (uses logo if not set). Falls back to /design/logo.png.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
