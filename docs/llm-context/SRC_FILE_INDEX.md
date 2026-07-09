@@ -298,3 +298,5 @@ This file gives a one-line purpose note for every file under `src/`.
 - If you add a new file under `src/`, append it here with a one-line purpose note.
 - If a file changes ownership, update this index so future edits know where the logic lives.
 
+
+To continue this session, run codex resume 019f489e-1089-7820-a97a-aa4a17cd8329

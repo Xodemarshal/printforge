@@ -30,7 +30,7 @@ export function CustomerTrackingPanel({ order }: CustomerTrackingPanelProps) {
 
   return (
     <div className="space-y-6">
-      <div className="overflow-hidden rounded-3xl border border-forest/15 bg-white/80 p-6 shadow-[0_12px_35px_rgba(46,75,36,0.06)]">
+      <div className="overflow-hidden rounded-3xl border border-forest/15 bg-cream/15 p-6 shadow-[0_10px_24px_rgba(46,75,36,0.04)]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <h3 className="text-lg font-semibold text-forest">Shipment Tracking</h3>
@@ -38,7 +38,7 @@ export function CustomerTrackingPanel({ order }: CustomerTrackingPanelProps) {
               {courierName ? `Shipping via ${courierName}` : "Shipping in progress"}
             </p>
           </div>
-          <div className="w-fit rounded-full border border-forest/10 bg-cream/40 px-3 py-1.5">
+          <div className="w-fit rounded-full border border-forest/10 bg-cream/20 px-3 py-1.5">
             <p className="text-xs font-medium text-forest/60">
               {order.payment_status === "paid" ? "✓ Paid" : "Payment Pending"}
             </p>
@@ -47,9 +47,9 @@ export function CustomerTrackingPanel({ order }: CustomerTrackingPanelProps) {
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {courierName && (
-            <div className="flex items-start gap-3 rounded-2xl border border-forest/10 bg-cream/20 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                <Truck size={18} className="text-primary" />
+            <div className="flex items-start gap-3 rounded-2xl border border-forest/10 bg-cream/15 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-forest/5">
+                <Truck size={18} className="text-forest/50" />
               </div>
               <div className="min-w-0">
                 <p className="text-xs text-forest/60">Delivery Partner</p>
@@ -59,9 +59,9 @@ export function CustomerTrackingPanel({ order }: CustomerTrackingPanelProps) {
           )}
 
           {trackingNumber && (
-            <div className="flex items-start gap-3 rounded-2xl border border-forest/10 bg-cream/20 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                <Package size={18} className="text-primary" />
+            <div className="flex items-start gap-3 rounded-2xl border border-forest/10 bg-cream/15 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-forest/5">
+                <Package size={18} className="text-forest/50" />
               </div>
               <div className="min-w-0">
                 <p className="text-xs text-forest/60">Tracking Number</p>
@@ -71,9 +71,9 @@ export function CustomerTrackingPanel({ order }: CustomerTrackingPanelProps) {
           )}
 
           {dispatchDate && (
-            <div className="flex items-start gap-3 rounded-2xl border border-forest/10 bg-cream/20 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                <Calendar size={18} className="text-primary" />
+            <div className="flex items-start gap-3 rounded-2xl border border-forest/10 bg-cream/15 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-forest/5">
+                <Calendar size={18} className="text-forest/50" />
               </div>
               <div>
                 <p className="text-xs text-forest/60">Dispatched On</p>
@@ -89,9 +89,9 @@ export function CustomerTrackingPanel({ order }: CustomerTrackingPanelProps) {
           )}
 
           {deliveredDate && (
-            <div className="flex items-start gap-3 rounded-2xl border border-forest/10 bg-cream/20 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100">
-                <Calendar size={18} className="text-green-600" />
+            <div className="flex items-start gap-3 rounded-2xl border border-forest/10 bg-cream/15 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-forest/5">
+                <Calendar size={18} className="text-forest/50" />
               </div>
               <div>
                 <p className="text-xs text-forest/60">Delivered On</p>
@@ -120,17 +120,17 @@ export function CustomerTrackingPanel({ order }: CustomerTrackingPanelProps) {
         )}
       </div>
 
-      <div className="overflow-hidden rounded-3xl border border-forest/15 bg-white/80 p-6 shadow-[0_12px_35px_rgba(46,75,36,0.06)]">
+      <div className="overflow-hidden rounded-3xl border border-forest/15 bg-cream/15 p-6 shadow-[0_10px_24px_rgba(46,75,36,0.04)]">
         <h3 className="mb-6 text-lg font-semibold text-forest">Shipment Progress</h3>
         <ShipmentTimeline currentStatus={shipmentStatus} />
       </div>
 
       {!isManual && Array.isArray(order.shiprocket_tracking_events) && order.shiprocket_tracking_events.length > 0 && (
-        <div className="overflow-hidden rounded-3xl border border-forest/15 bg-white/80 p-6 shadow-[0_12px_35px_rgba(46,75,36,0.06)]">
+        <div className="overflow-hidden rounded-3xl border border-forest/15 bg-cream/15 p-6 shadow-[0_10px_24px_rgba(46,75,36,0.04)]">
           <h3 className="mb-4 text-lg font-semibold text-forest">Tracking History</h3>
           <div className="space-y-3">
             {order.shiprocket_tracking_events.slice(0, 5).map((event: any, index: number) => (
-              <div key={index} className="rounded-2xl border border-forest/10 bg-cream/20 p-4">
+              <div key={index} className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
                 <div className="flex items-start justify-between gap-4">
                   <p className="font-medium text-forest capitalize">
                     {String(event.raw_status || event.shiprocket_status || "Update").replace(/_/g, " ")}

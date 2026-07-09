@@ -38,6 +38,10 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const orderTotal = orderItems.reduce((sum: number, item: any) =>
     sum + (item.unit_price * item.quantity), 0
   );
+  const deliveryPartner = order.shiprocket_courier_name || order.courier_name || "Preparing";
+  const awbNumber = order.shiprocket_awb_number || order.tracking_number || "Pending";
+  const trackingUrl = order.shiprocket_tracking_url || order.tracking_url || null;
+  const shippingMode = order.shipping_mode || "AUTOMATIC";
 
   // Pre-fetch which products the user already reviewed for THIS order
   const productIds = orderItems.map((i: any) => i.product_id).filter(Boolean);
@@ -65,7 +69,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </Link>
 
         {/* Header */}
-        <div className="mb-6 overflow-hidden rounded-3xl border border-forest/15 bg-gradient-to-br from-cream/80 via-white to-moss/10 shadow-[0_18px_50px_rgba(46,75,36,0.08)]">
+        <div className="mb-6 overflow-hidden rounded-3xl border border-forest/15 bg-cream/20 shadow-[0_10px_24px_rgba(46,75,36,0.04)]">
           <div className="border-b border-forest/10 px-6 py-5 sm:px-8">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
@@ -90,7 +94,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   revalidatePath(`/orders/${order.id}`);
                 }} className="shrink-0">
                   <input type="hidden" name="id" value={order.id} />
-                  <Button type="submit" variant="outline" className="border-red-500/40 text-red-700 hover:bg-red-50">
+                  <Button type="submit" variant="outline" className="border-red-300 text-red-700 hover:bg-red-50">
                     Cancel Order
                   </Button>
                 </form>
@@ -99,28 +103,58 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </div>
 
           <div className="grid gap-3 px-6 py-5 sm:grid-cols-2 xl:grid-cols-4 sm:px-8">
-            <div className="rounded-2xl border border-forest/10 bg-white/70 p-4">
+            <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
               <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Order Number</p>
               <p className="mt-2 break-all font-mono text-sm font-semibold text-forest">{order.id}</p>
             </div>
-            <div className="rounded-2xl border border-forest/10 bg-white/70 p-4">
+            <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
               <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Payment</p>
               <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-forest">
-                <CheckCircle2 size={16} className={order.payment_status === "paid" ? "text-emerald-600" : "text-amber-600"} />
+                <CheckCircle2 size={16} className={order.payment_status === "paid" ? "text-forest" : "text-amber-600"} />
                 <span className="capitalize">{order.payment_status}</span>
               </p>
             </div>
-            <div className="rounded-2xl border border-forest/10 bg-white/70 p-4">
+            <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
               <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Shipping</p>
               <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-forest">
                 <Truck size={16} className="text-forest/70" />
                 <span>{order.shiprocket_courier_name || order.courier_name || "Preparing"}</span>
               </p>
             </div>
-            <div className="rounded-2xl border border-forest/10 bg-white/70 p-4">
+            <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
               <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Status</p>
               <p className="mt-2 text-sm font-semibold text-forest capitalize">{order.status}</p>
             </div>
+          </div>
+        </div>
+
+        <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
+            <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Delivery Partner</p>
+            <p className="mt-2 break-words text-sm font-medium text-forest">{deliveryPartner}</p>
+          </div>
+          <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
+            <p className="text-xs uppercase tracking-[0.22em] text-forest/45">AWB / Tracking</p>
+            <p className="mt-2 break-all font-mono text-sm font-semibold text-forest">{awbNumber}</p>
+          </div>
+          <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
+            <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Tracking Link</p>
+            {trackingUrl ? (
+              <a
+                href={trackingUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 block break-all text-sm font-medium text-forest underline decoration-forest/30 underline-offset-4"
+              >
+                Open tracking page
+              </a>
+            ) : (
+              <p className="mt-2 text-sm text-forest/60">Not available yet</p>
+            )}
+          </div>
+          <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
+            <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Shipping Mode</p>
+            <p className="mt-2 text-sm font-semibold text-forest">{shippingMode}</p>
           </div>
         </div>
 
@@ -128,13 +162,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Order Timeline */}
-            <div className="overflow-hidden rounded-3xl border border-forest/15 bg-white/80 p-6 shadow-[0_12px_35px_rgba(46,75,36,0.06)]">
+            <div className="overflow-hidden rounded-3xl border border-forest/15 bg-cream/15 p-6 shadow-[0_10px_24px_rgba(46,75,36,0.04)]">
               <h2 className="text-xl font-semibold text-forest mb-4">Order Status</h2>
               <OrderTimeline status={order.status} shipmentStatus={order.shiprocket_status} />
             </div>
 
             {/* Order Items */}
-            <div className="overflow-hidden rounded-3xl border border-forest/15 bg-white/80 p-6 shadow-[0_12px_35px_rgba(46,75,36,0.06)]">
+            <div className="overflow-hidden rounded-3xl border border-forest/15 bg-cream/15 p-6 shadow-[0_10px_24px_rgba(46,75,36,0.04)]">
               <h2 className="text-xl font-semibold text-forest mb-4">Order Items</h2>
               <div className="space-y-4">
                 {orderItems.map((item: any) => {
@@ -142,8 +176,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   
                   const itemContent = (
                     <>
-                      <div className="w-20 h-20 bg-gradient-to-br from-forest/10 to-moss/10 rounded-lg flex items-center justify-center shrink-0">
-                        <Package size={32} className="text-forest/40" />
+                      <div className="w-20 h-20 rounded-lg border border-forest/10 bg-cream/20 flex items-center justify-center shrink-0">
+                        <Package size={32} className="text-forest/25" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-forest">{item.name}</h3>
@@ -182,16 +216,16 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
               {/* Order Summary */}
               <div className="mt-6 grid gap-3 border-t border-forest/15 pt-6 sm:grid-cols-3">
-                <div className="rounded-2xl bg-forest/5 p-4">
+                <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
                   <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Subtotal</p>
                   <p className="mt-2 text-base font-semibold text-forest">{formatCurrency(orderTotal)}</p>
                 </div>
-                <div className="rounded-2xl bg-forest/5 p-4">
+                <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
                   <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Shipping</p>
                   <p className="mt-2 text-base font-semibold text-forest">{formatCurrency(0)}</p>
                 </div>
-                <div className="rounded-2xl bg-gradient-to-br from-forest to-moss p-4 text-white">
-                  <p className="text-xs uppercase tracking-[0.22em] text-white/70">Total</p>
+                <div className="rounded-2xl border border-forest/15 bg-cream/20 p-4 text-forest">
+                  <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Total</p>
                   <p className="mt-2 text-lg font-bold">{formatCurrency(order.total_amount)}</p>
                 </div>
               </div>
@@ -215,7 +249,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             )}
 
             {/* Payment Info */}
-            <div className="rounded-3xl border border-forest/15 bg-white/80 p-6 shadow-[0_12px_35px_rgba(46,75,36,0.06)]">
+            <div className="rounded-3xl border border-forest/15 bg-cream/15 p-6 shadow-[0_10px_24px_rgba(46,75,36,0.04)]">
               <div className="flex items-center gap-2 mb-4">
                 <CreditCard size={20} className="text-forest" />
                 <h3 className="font-semibold text-forest">Payment Information</h3>
@@ -228,7 +262,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   </span>
                 </div>
                 {order.notes && (
-                  <div className="rounded-2xl bg-cream/30 p-3">
+              <div className="rounded-2xl bg-cream/20 p-3">
                     <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Method</p>
                     <p className="mt-2 break-words font-medium text-forest">
                       {order.notes.replace("Payment method: ", "")}
@@ -236,7 +270,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   </div>
                 )}
                 {order.razorpay_payment_id && (
-                  <div className="rounded-2xl bg-cream/30 p-3">
+              <div className="rounded-2xl bg-cream/20 p-3">
                     <span className="text-xs uppercase tracking-[0.22em] text-forest/45">Transaction ID</span>
                     <p className="mt-2 break-all font-mono text-xs text-forest">
                       {order.razorpay_payment_id}
@@ -250,7 +284,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <CustomerTrackingPanel order={order} />
 
             {/* Help */}
-            <div className="rounded-3xl border border-forest/15 bg-gradient-to-br from-forest/5 to-white p-6">
+            <div className="rounded-3xl border border-forest/15 bg-cream/15 p-6 shadow-[0_10px_24px_rgba(46,75,36,0.04)]">
               <h3 className="font-semibold text-forest mb-2">Need Help?</h3>
               <p className="text-sm text-forest/70 mb-4">
                 Have questions about your order? We're here to help!
