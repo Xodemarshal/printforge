@@ -32,6 +32,7 @@ export interface SiteSettings {
   siteName: string;
   logoUrl: string;
   faviconUrl?: string;
+  shippingMode?: "AUTOMATIC" | "MANUAL";
   hero: HeroSectionSettings;
 }
 
@@ -39,6 +40,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   siteName: "PrintForge",
   logoUrl: "/design/logo.png",
   faviconUrl: "/design/logo.png",
+  shippingMode: "AUTOMATIC",
   hero: {
     title: "Ideas",
     coloredTitle: "Take Shape.",
@@ -83,6 +85,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       siteName: value?.siteName || DEFAULT_SETTINGS.siteName,
       logoUrl: value?.logoUrl || DEFAULT_SETTINGS.logoUrl,
       faviconUrl: value?.faviconUrl || DEFAULT_SETTINGS.faviconUrl,
+      shippingMode: value?.shippingMode || "AUTOMATIC",
       hero: {
         title: value?.hero?.title || DEFAULT_SETTINGS.hero.title,
         coloredTitle: value?.hero?.coloredTitle || DEFAULT_SETTINGS.hero.coloredTitle,
@@ -190,6 +193,7 @@ export async function updateSiteSettingsAction(formData: FormData) {
       siteName: String(formData.get("siteName") || current.siteName).trim(),
       logoUrl,
       faviconUrl,
+      shippingMode: (formData.get("shipping_mode") as "AUTOMATIC" | "MANUAL") || current.shippingMode || "AUTOMATIC",
       hero: {
         title: String(formData.get("heroTitle") || current.hero.title).trim(),
         coloredTitle: String(formData.get("heroColoredTitle") || current.hero.coloredTitle).trim(),

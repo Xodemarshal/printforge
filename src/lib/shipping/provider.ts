@@ -20,28 +20,29 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export async function getGlobalShippingMode(): Promise<"AUTOMATIC" | "MANUAL"> {
   const supabase = createAdminClient();
   
+  // Get the site_settings JSON object
   const { data: setting } = await supabase
     .from("settings")
     .select("value")
-    .eq("key", "shipping_mode")
+    .eq("key", "site_settings")
     .single();
 
   if (!setting || !setting.value) {
     return "AUTOMATIC";
   }
 
-  // The value is stored as JSON string, need to parse it
-  const value = setting.value;
-  if (typeof value === 'string') {
-    try {
-      const parsed = JSON.parse(value);
-      return parsed as "AUTOMATIC" | "MANUAL";
-    } catch {
-      return "AUTOMATIC";
-    }
+  try {
+    // Parse the JSON object
+    const siteSettings = typeof setting.value === 'string' 
+      ? JSON.parse(setting.value) 
+      : setting.value;
+    
+    // Get shipping mode from site_settings.shippingMode or default to AUTOMATIC
+    const shippingMode = siteSettings?.shippingMode || siteSettings?.shipping_mode;
+    return (shippingMode === "MANUAL" ? "MANUAL" : "AUTOMATIC");
+  } catch {
+    return "AUTOMATIC";
   }
-  
-  return (value as "AUTOMATIC" | "MANUAL") || "AUTOMATIC";
 }
 
 /**
@@ -50,11 +51,35 @@ export async function getGlobalShippingMode(): Promise<"AUTOMATIC" | "MANUAL"> {
 export async function updateGlobalShippingMode(mode: "AUTOMATIC" | "MANUAL"): Promise<void> {
   const supabase = createAdminClient();
   
+  // First get the current site_settings
+  const { data: currentSetting } = await supabase
+    .from("settings")
+    .select("value")
+    .eq("key", "site_settings")
+    .single();
+
+  let siteSettings: any = {};
+  
+  if (currentSetting && currentSetting.value) {
+    try {
+      siteSettings = typeof currentSetting.value === 'string' 
+        ? JSON.parse(currentSetting.value) 
+        : currentSetting.value;
+    } catch {
+      // If parsing fails, start with empty object
+      siteSettings = {};
+    }
+  }
+
+  // Update the shipping mode in the site_settings object
+  siteSettings.shippingMode = mode;
+  
+  // Update the entire site_settings JSON object
   await supabase
     .from("settings")
     .upsert({
-      key: "shipping_mode",
-      value: JSON.stringify(mode), // Store as JSON string
+      key: "site_settings",
+      value: siteSettings,
       updated_at: new Date().toISOString()
     });
 }

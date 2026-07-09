@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { updateSiteSettingsAction } from "@/actions/settings";
-import { getShippingMode, switchGlobalShippingMode } from "@/actions/shipping";
 import { useToast } from "@/hooks/useToast";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -18,25 +17,11 @@ interface SettingsFormProps {
 
 export function SettingsForm({ initialSettings }: SettingsFormProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [shippingMode, setShippingMode] = useState<"AUTOMATIC" | "MANUAL">("AUTOMATIC");
+  const [shippingMode, setShippingMode] = useState<"AUTOMATIC" | "MANUAL">(initialSettings.shippingMode || "AUTOMATIC");
   const { success, error } = useToast();
   const router = useRouter();
 
-  // Load shipping mode on component mount
-  useEffect(() => {
-    async function loadShippingMode() {
-      try {
-        const result = await getShippingMode();
-        if (result.success && result.data?.mode) {
-          setShippingMode(result.data.mode);
-        }
-      } catch (err) {
-        console.error("Failed to load shipping mode:", err);
-      }
-    }
-    
-    loadShippingMode();
-  }, []);
+  // Dynamic preview states for images
 
   // Dynamic preview states for images
   const [logoPreview, setLogoPreview] = useState<string>(initialSettings.logoUrl);
@@ -82,19 +67,13 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
   async function clientAction(formData: FormData) {
     setIsLoading(true);
     try {
-      // Update shipping mode separately
+      // Update shipping mode along with other settings
       const shippingModeInput = formData.get("shipping_mode") as "AUTOMATIC" | "MANUAL";
       if (shippingModeInput && shippingModeInput !== shippingMode) {
-        const shippingResult = await switchGlobalShippingMode(shippingModeInput);
-        if (shippingResult.error) {
-          error("Shipping Mode Update Failed", shippingResult.error);
-          setIsLoading(false);
-          return;
-        }
         setShippingMode(shippingModeInput);
       }
 
-      // Update site settings
+      // Update site settings (includes shipping mode in the JSON)
       const result = await updateSiteSettingsAction(formData);
       if (result && result.error) {
         error("Update Failed", result.error);
