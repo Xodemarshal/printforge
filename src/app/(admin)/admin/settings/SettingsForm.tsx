@@ -240,11 +240,11 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
                 </div>
               </div>
             </div>
-            
+
             <div className="p-4 rounded-xl border border-gray-800 bg-black/40">
               <p className="text-sm text-gray-400">
-                <strong className="text-yellow-400">Important:</strong> Changing the shipping mode only affects new shipment operations. 
-                Existing orders with Shiprocket shipments will continue to use Shiprocket tracking. 
+                <strong className="text-yellow-400">Important:</strong> Changing the shipping mode only affects new shipment operations.
+                Existing orders with Shiprocket shipments will continue to use Shiprocket tracking.
                 Customers will see the same tracking experience regardless of the mode.
               </p>
             </div>
@@ -407,7 +407,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
                   <h3 className="text-sm font-bold text-accent-warm uppercase tracking-wider">
                     Item {idx + 1} Settings
                   </h3>
-                  
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-gray-400">Label / Title</label>
@@ -419,7 +419,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
                         required
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-gray-400">Tag / Category</label>
                       <Input
