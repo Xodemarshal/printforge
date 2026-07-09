@@ -71,7 +71,7 @@ export async function getCategories() {
   const { data, error } = await supabase
     .from('categories')
     .select('*')
-    .order('name', { ascending: true});
+    .order('name', { ascending: true });
 
   if (error) {
     console.error('❌ getCategories error:', error);
@@ -168,7 +168,7 @@ export async function createProductAction(formData: FormData) {
     name,
     slug,
     description: String(formData.get("description") ?? ""),
-    price: Math.round(Number(formData.get("price") ?? 0) * 100),
+    price: Math.round(Number(formData.get("price") ?? 0)),
     category_id: (String(formData.get("category_id") ?? "") && String(formData.get("category_id")).length > 10)
       ? String(formData.get("category_id"))
       : null,
@@ -219,7 +219,7 @@ export async function updateProductAction(formData: FormData) {
       name: productName,
       slug: slugify(String(formData.get("slug") ?? productName)),
       description: String(formData.get("description") ?? ""),
-      price: Math.round(Number(formData.get("price") ?? 0) * 100),
+      price: Math.round(Number(formData.get("price") ?? 0)),
       category_id: (String(formData.get("category_id") ?? "") && String(formData.get("category_id")).length > 10)
         ? String(formData.get("category_id"))
         : null,
@@ -356,7 +356,7 @@ export async function bulkUploadProductsAction(formData: FormData) {
       // Upload first image if provided
       let imageUrl: string | null = null;
       if (productData.images && productData.images.length > 0) {
-        try { 
+        try {
           imageUrl = await maybeUploadImage(productData.images[0]);
         } catch (error) {
           console.error(`Image upload failed for product ${name}:`, error);
@@ -393,7 +393,7 @@ export async function bulkUploadProductsAction(formData: FormData) {
         name,
         slug,
         description,
-        price: Math.round(price * 100), // Convert to cents
+        price: Math.round(price),
         category_id: categoryId,
         image_url: imageUrl,
         material_info: material,

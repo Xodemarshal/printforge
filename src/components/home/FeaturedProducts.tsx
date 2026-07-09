@@ -6,10 +6,10 @@ export function FeaturedProducts({ products }: { products: any[] }) {
     <section className="page-shell py-10 lg:py-14">
       <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-foreground/50">New arrivals</p>
-          <h2 className="display-font text-4xl text-[#243223]">Fresh from the workshop</h2>
+          <p className="text-sm uppercase tracking-[0.3em] text-forest/70">New arrivals</p>
+          <h2 className="display-font text-4xl text-forest">Fresh from the workshop</h2>
         </div>
-        <Link href="/shop" className="btn-outline px-4 py-2">
+        <Link href="/shop" className="btn-outline px-4 py-2 text-forest border-forest hover:bg-forest hover:text-white">
           Browse all
         </Link>
       </div>

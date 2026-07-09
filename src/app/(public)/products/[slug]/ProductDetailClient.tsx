@@ -19,6 +19,68 @@ interface ProductDetailClientProps {
   related: { items: any[] };
 }
 
+// Helper function to create HTML markup from text with basic formatting
+const createMarkup = (html: string) => {
+  return { __html: html };
+};
+
+// Helper to format description text for HTML display
+const formatDescription = (description: string) => {
+  if (!description) return '';
+  
+  // If it already looks like HTML (has tags), return as-is
+  if (description.includes('<') && description.includes('>')) {
+    // Clean up any malformed HTML and ensure it's safe
+    return description
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+      .replace(/on\w+="[^"]*"/g, '') // Remove inline event handlers
+      .replace(/javascript:/gi, '') // Remove javascript: protocol
+      .trim();
+  }
+  
+  // Otherwise format plain text into HTML with enhanced formatting
+  const paragraphs = description.split('\n\n');
+  const formattedParagraphs = paragraphs.map(p => {
+    if (!p.trim()) return '';
+    
+    // Handle markdown-like formatting
+    let formatted = p
+      // Headers
+      .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
+      .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+      // Bold and italic
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/_(.*?)_/g, '<em>$1</em>')
+      // Lists
+      .replace(/^\* (.*$)/gim, '<li>$1</li>')
+      .replace(/^- (.*$)/gim, '<li>$1</li>')
+      // Links
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+      // Code
+      .replace(/`([^`]+)`/g, '<code>$1</code>');
+    
+    // If the paragraph starts with <li> tags, wrap it in <ul>
+    if (formatted.includes('<li>')) {
+      formatted = `<ul>${formatted}</ul>`;
+    }
+    
+    // Add line breaks within paragraphs
+    formatted = formatted.replace(/\n/g, '<br>');
+    
+    // Only wrap in <p> if it's not already a header, list, or other block element
+    if (!formatted.startsWith('<h') && !formatted.startsWith('<ul') && !formatted.startsWith('<ol') && !formatted.startsWith('<blockquote')) {
+      formatted = `<p>${formatted}</p>`;
+    }
+    
+    return formatted;
+  });
+  
+  return formattedParagraphs.filter(p => p).join('');
+};
+
 export function ProductDetailClient({ product, related }: ProductDetailClientProps) {
   const router = useRouter();
   const { addItem } = useCart();
@@ -63,8 +125,15 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
 
   const mediaItems = buildMediaArray();
   const hasMedia = mediaItems.length > 0;
-  const rating = product.rating || 4.8;
-  const reviewCount = product.review_count || 128;
+  // Use actual rating/review data or hide it
+  const rating = product.rating || 0;
+  const reviewCount = product.review_count || 0;
+  const hasReviews = rating > 0 && reviewCount > 0;
+  
+  // Format the description for HTML display
+  const descriptionHtml = formatDescription(
+    product.description || product.long_description || "Premium quality product handcrafted with care"
+  );
 
   const handleAddToCart = () => {
     const firstImage = mediaItems.find(m => m.type === 'image')?.url || productImage(product.slug);
@@ -95,15 +164,15 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
   };
 
   return (
-    <div className="min-h-screen bg-alabaster">
-      <div className="bg-white border-b border-gray-100">
+    <div className="min-h-screen" style={{ backgroundColor: '#0f1810' }}>
+      <div className="border-b border-gray-800" style={{ backgroundColor: '#0a130c', borderColor: 'rgb(197, 160, 89)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <nav className="flex items-center gap-2 text-sm text-gray-500">
-            <Link href="/" className="hover:text-forest">Home</Link>
+          <nav className="flex items-center gap-2 text-sm" style={{ color: 'rgb(197, 160, 89)' }}>
+            <Link href="/" className="hover:opacity-80 transition-opacity" style={{ color: 'rgb(197, 160, 89)' }}>Home</Link>
             <ChevronRight size={14} />
-            <Link href="/shop" className="hover:text-forest">Shop</Link>
+            <Link href="/shop" className="hover:opacity-80 transition-opacity" style={{ color: 'rgb(197, 160, 89)' }}>Shop</Link>
             <ChevronRight size={14} />
-            <span className="text-forest font-medium">{product.name}</span>
+            <span className="font-medium" style={{ color: 'rgb(197, 160, 89)' }}>{product.name}</span>
           </nav>
         </div>
       </div>
@@ -120,8 +189,9 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`relative w-20 h-20 shrink-0 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? 'border-forest' : 'border-gray-200 hover:border-gray-300'
+                    className={`relative w-20 h-20 shrink-0 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? 'border-gray-700' : 'border-gray-800 hover:border-gray-600'
                       }`}
+                    style={selectedImage === index ? { borderColor: 'rgb(197, 160, 89)' } : { borderColor: '#374151' }}
                   >
                     {media.type === 'image' ? (
                       <img
@@ -131,7 +201,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                       />
                     ) : (
                       <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-                        <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-8 h-8" style={{ color: 'rgb(197, 160, 89)' }} fill="currentColor" viewBox="0 0 20 20">
                           <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                         </svg>
                       </div>
@@ -143,7 +213,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
 
             {/* Main Media Display */}
             {hasMedia ? (
-              <div className="relative aspect-square bg-white rounded-3xl overflow-hidden border border-gray-100 group">
+              <div className="relative aspect-square bg-gray-900/50 rounded-3xl overflow-hidden border border-gray-800 group" style={{ borderColor: 'rgb(197, 160, 89)' }}>
                 {mediaItems[selectedImage].type === 'image' ? (
                   <img
                     src={mediaItems[selectedImage].url}
@@ -168,72 +238,82 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                 <button
                   onClick={() => toggle(product.id)}
                   className={`absolute top-4 right-4 p-3 rounded-full transition-all ${isInWishlist(product.id)
-                    ? "bg-red-50 text-red-500"
-                    : "bg-white/90 backdrop-blur text-gray-600 hover:text-red-500"
+                    ? "bg-red-900 text-red-300"
+                    : "bg-gray-900/90 backdrop-blur hover:bg-gray-800"
                     }`}
+                  style={{ color: isInWishlist(product.id) ? '#f87171' : 'rgb(197, 160, 89)' }}
                 >
                   <Heart size={20} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
                 </button>
 
                 {product.badge && (
-                  <div className="absolute top-4 left-4 bg-accent text-white px-3 py-1 rounded-full text-xs font-bold">
+                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold"
+                    style={{ backgroundColor: 'rgb(197, 160, 89)', color: '#0f1810' }}
+                  >
                     {product.badge}
                   </div>
                 )}
               </div>
             ) : (
               // Fallback: No media uploaded
-              <div className="relative aspect-square bg-cream/50 rounded-3xl overflow-hidden border border-gray-100 flex items-center justify-center">
-                <div className="text-center text-gray-400">
-                  <Package2 size={64} className="mx-auto mb-4 opacity-20" />
+              <div className="relative aspect-square bg-gray-900/50 rounded-3xl overflow-hidden border border-gray-800 flex items-center justify-center" style={{ borderColor: 'rgb(197, 160, 89)' }}>
+                <div className="text-center" style={{ color: 'rgb(197, 160, 89)' }}>
+                  <Package2 size={64} className="mx-auto mb-4 opacity-50" />
                   <p className="text-sm font-medium">No image available</p>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-6" style={{ color: 'rgb(197, 160, 89)' }}>
             <div className="space-y-4">
-              <h1 className="text-3xl lg:text-4xl font-bold text-forest">{product.name}</h1>
+              <h1 className="text-3xl lg:text-4xl font-bold" style={{ color: 'rgb(197, 160, 89)' }}>{product.name}</h1>
 
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={18}
-                      className={i < Math.floor(rating) ? "text-accent fill-accent" : "text-gray-200 fill-gray-200"}
-                    />
-                  ))}
+              {/* Only show rating if there are actual reviews */}
+              {hasReviews && (
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        size={18}
+                        className={i < Math.floor(rating) ? "fill-current" : "text-gray-200 fill-gray-200"}
+                        style={{ color: i < Math.floor(rating) ? 'rgb(197, 160, 89)' : undefined }}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm" style={{ color: 'rgb(197, 160, 89)' }}>
+                    {rating.toFixed(1)} ({reviewCount} reviews)
+                  </span>
                 </div>
-                <span className="text-sm text-gray-600">
-                  {rating} ({reviewCount} reviews)
-                </span>
-              </div>
+              )}
 
               <div className="flex items-baseline gap-3">
-                <span className="text-4xl font-bold text-forest">
+                <span className="text-4xl font-bold" style={{ color: 'rgb(197, 160, 89)' }}>
                   {formatCurrency(
                     Number(product.price) + (typeof selectedSize === 'object' ? selectedSize.extra || 0 : 0)
                   )}
                 </span>
               </div>
 
-              <p className="text-gray-600 leading-relaxed">
-                {product.description || product.long_description || "Premium quality product handcrafted with care"}
-              </p>
+              {/* Product Description with HTML markup support */}
+              <div 
+                className="rich-text-description space-y-4 leading-relaxed max-w-full overflow-hidden"
+                style={{ color: 'rgb(197, 160, 89)' }}
+                dangerouslySetInnerHTML={createMarkup(descriptionHtml)}
+              />
             </div>
 
-            <div className="grid grid-cols-3 gap-3 py-4 border-y border-gray-100">
-              <div className="flex items-center gap-2 text-forest">
+            <div className="grid grid-cols-3 gap-3 py-4 border-y border-gray-800" style={{ borderColor: 'rgb(197, 160, 89)' }}>
+              <div className="flex items-center gap-2" style={{ color: 'rgb(197, 160, 89)' }}>
                 <Check size={16} className="shrink-0" />
                 <span className="text-xs font-medium">In Stock</span>
               </div>
-              <div className="flex items-center gap-2 text-forest">
+              <div className="flex items-center gap-2" style={{ color: 'rgb(197, 160, 89)' }}>
                 <Truck size={16} className="shrink-0" />
                 <span className="text-xs font-medium">Fast Ship</span>
               </div>
-              <div className="flex items-center gap-2 text-forest">
+              <div className="flex items-center gap-2" style={{ color: 'rgb(197, 160, 89)' }}>
                 <Award size={16} className="shrink-0" />
                 <span className="text-xs font-medium">Premium</span>
               </div>
@@ -241,16 +321,20 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
 
             {materials.length > 1 && (
               <div className="space-y-3">
-                <label className="text-sm font-bold text-forest uppercase tracking-wider">Material</label>
+                <label className="text-sm font-bold uppercase tracking-wider" style={{ color: 'rgb(197, 160, 89)' }}>Material</label>
                 <div className="flex flex-wrap gap-2">
                   {materials.map((material: any) => (
                     <button
                       key={typeof material === 'string' ? material : material.name}
                       onClick={() => setSelectedMaterial(material)}
                       className={`px-4 py-2 rounded-xl border-2 transition-all font-medium text-sm ${selectedMaterial === material
-                        ? "border-forest bg-forest text-white"
-                        : "border-gray-200 hover:border-forest/50"
+                        ? "bg-gray-800 text-white border-gray-700"
+                        : "border-gray-700 hover:border-gray-600 text-gray-300"
                         }`}
+                      style={selectedMaterial === material ? 
+                        { backgroundColor: 'rgb(197, 160, 89)', borderColor: 'rgb(197, 160, 89)', color: '#0f1810' } : 
+                        { borderColor: 'rgb(197, 160, 89)', color: 'rgb(197, 160, 89)' }
+                      }
                     >
                       {typeof material === 'string' ? material : material.name}
                     </button>
@@ -261,7 +345,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
 
             {sizes.length > 1 && (
               <div className="space-y-3">
-                <label className="text-sm font-bold text-forest uppercase tracking-wider">Size</label>
+                <label className="text-sm font-bold uppercase tracking-wider" style={{ color: 'rgb(197, 160, 89)' }}>Size</label>
                 <div className="flex flex-wrap gap-2">
                   {sizes.map((size: any) => {
                     const sizeName = typeof size === 'string' ? size : size.name;
@@ -271,9 +355,13 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                         key={sizeName}
                         onClick={() => setSelectedSize(size)}
                         className={`px-4 py-2 rounded-xl border-2 transition-all font-medium text-sm ${selectedSize === size
-                          ? "border-forest bg-forest text-white"
-                          : "border-gray-200 hover:border-forest/50"
+                          ? "bg-gray-800 text-white border-gray-700"
+                          : "border-gray-700 hover:border-gray-600 text-gray-300"
                           }`}
+                        style={selectedSize === size ? 
+                          { backgroundColor: 'rgb(197, 160, 89)', borderColor: 'rgb(197, 160, 89)', color: '#0f1810' } : 
+                          { borderColor: 'rgb(197, 160, 89)', color: 'rgb(197, 160, 89)' }
+                        }
                       >
                         {sizeName}
                         {extra > 0 && <span className="text-xs ml-1">(+{formatCurrency(extra)})</span>}
@@ -286,19 +374,23 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
 
             {colors.length > 1 && (
               <div className="space-y-3">
-                <label className="text-sm font-bold text-forest uppercase tracking-wider">Color</label>
+                <label className="text-sm font-bold uppercase tracking-wider" style={{ color: 'rgb(197, 160, 89)' }}>Color</label>
                 <div className="flex flex-wrap gap-3">
                   {colors.map((color: any) => (
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 transition-all ${selectedColor === color
-                        ? "border-forest"
-                        : "border-transparent hover:border-gray-200"
+                        ? "border-gray-700"
+                        : "border-transparent hover:border-gray-600"
                         }`}
+                      style={selectedColor === color ? 
+                        { borderColor: 'rgb(197, 160, 89)' } : 
+                        { borderColor: 'transparent' }
+                      }
                     >
                       <div className={`w-6 h-6 rounded-full ${getColorClass(color)}`} />
-                      <span className="text-sm font-medium">{color}</span>
+                      <span className="text-sm font-medium" style={{ color: 'rgb(197, 160, 89)' }}>{color}</span>
                     </button>
                   ))}
                 </div>
@@ -307,17 +399,19 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
 
             <div className="space-y-4 pt-4">
               <div className="flex items-center gap-4">
-                <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden">
+                <div className="flex items-center border-2 border-gray-700 rounded-xl overflow-hidden">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-4 py-3 hover:bg-gray-50 transition-colors"
+                    className="px-4 py-3 hover:bg-gray-800 transition-colors"
+                    style={{ color: 'rgb(197, 160, 89)' }}
                   >
                     <Minus size={16} />
                   </button>
-                  <span className="px-6 py-3 font-bold border-x-2 border-gray-200">{quantity}</span>
+                  <span className="px-6 py-3 font-bold border-x-2 border-gray-700" style={{ color: 'rgb(197, 160, 89)' }}>{quantity}</span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="px-4 py-3 hover:bg-gray-50 transition-colors"
+                    className="px-4 py-3 hover:bg-gray-800 transition-colors"
+                    style={{ color: 'rgb(197, 160, 89)' }}
                   >
                     <Plus size={16} />
                   </button>
@@ -327,7 +421,8 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
               <div className="flex gap-3">
                 <Button
                   onClick={handleAddToCart}
-                  className="flex-1 bg-forest text-white py-4 rounded-xl font-bold text-sm hover:bg-forest/90 transition-all"
+                  className="flex-1 py-4 rounded-xl font-bold text-sm hover:opacity-90 transition-all"
+                  style={{ backgroundColor: 'rgb(197, 160, 89)', color: '#0f1810' }}
                 >
                   Add to Cart
                 </Button>
@@ -336,7 +431,8 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                     handleAddToCart();
                     router.push('/checkout');
                   }}
-                  className="flex-1 bg-accent text-white py-4 rounded-xl font-bold text-sm hover:bg-accent/90 transition-all"
+                  className="flex-1 py-4 rounded-xl font-bold text-sm hover:opacity-90 transition-all"
+                  style={{ backgroundColor: 'rgb(197, 160, 89)', color: '#0f1810' }}
                 >
                   Buy Now
                 </Button>
@@ -345,25 +441,26 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
               <div className="flex items-center gap-6 pt-2">
                 <button
                   onClick={() => toggle(product.id)}
-                  className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-500 transition-colors"
+                  className="flex items-center gap-2 text-sm hover:opacity-80 transition-colors"
+                  style={{ color: 'rgb(197, 160, 89)' }}
                 >
                   <Heart size={18} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
                   Wishlist
                 </button>
-                <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-forest transition-colors">
+                <button className="flex items-center gap-2 text-sm hover:opacity-80 transition-colors" style={{ color: 'rgb(197, 160, 89)' }}>
                   <Share2 size={18} />
                   Share
                 </button>
               </div>
             </div>
 
-            <div className="bg-forest/5 rounded-2xl p-6 space-y-3">
+            <div className="bg-gray-900/50 rounded-2xl p-6 space-y-3" style={{ borderColor: 'rgb(197, 160, 89)' }}>
               {[
                 { icon: <ShieldCheck size={20} />, text: "Secure Payment" },
                 { icon: <Truck size={20} />, text: "Free Shipping over $50" },
                 { icon: <RotateCcw size={20} />, text: "10-Day Returns" }
               ].map((feature, i) => (
-                <div key={i} className="flex items-center gap-3 text-forest">
+                <div key={i} className="flex items-center gap-3" style={{ color: 'rgb(197, 160, 89)' }}>
                   {feature.icon}
                   <span className="text-sm font-medium">{feature.text}</span>
                 </div>
@@ -374,11 +471,11 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
 
         {related.items && related.items.length > 0 && (
           <div className="mt-16">
-            <h2 className="text-2xl font-bold text-forest mb-8">You May Also Like</h2>
+            <h2 className="text-2xl font-bold mb-8" style={{ color: 'rgb(197, 160, 89)' }}>You May Also Like</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {related.items.slice(0, 4).map((item: any) => (
                 <Link key={item.id} href={`/products/${item.slug}`} className="group">
-                  <div className="aspect-square bg-white rounded-2xl overflow-hidden mb-3 border border-gray-100">
+                  <div className="aspect-square bg-gray-900/50 rounded-2xl overflow-hidden mb-3 border border-gray-800" style={{ borderColor: 'rgb(197, 160, 89)' }}>
                     <img
                       src={item.image_url || productImage(item.slug)}
                       alt={item.name}
@@ -389,16 +486,141 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                       }}
                     />
                   </div>
-                  <h3 className="font-semibold text-sm mb-1 group-hover:text-forest transition-colors">
+                  <h3 className="font-semibold text-sm mb-1 group-hover:opacity-80 transition-colors" style={{ color: 'rgb(197, 160, 89)' }}>
                     {item.name}
                   </h3>
-                  <p className="text-forest font-bold">{formatCurrency(item.price)}</p>
+                  <p className="font-bold" style={{ color: 'rgb(197, 160, 89)' }}>{formatCurrency(item.price)}</p>
                 </Link>
               ))}
             </div>
           </div>
         )}
       </div>
+      
+      {/* CSS for rich text description styling */}
+      <style jsx>{`
+        .rich-text-description {
+          line-height: 1.7;
+        }
+        .rich-text-description h1,
+        .rich-text-description h2,
+        .rich-text-description h3,
+        .rich-text-description h4,
+        .rich-text-description h5,
+        .rich-text-description h6 {
+          font-weight: 600;
+          margin-top: 1.5rem;
+          margin-bottom: 0.75rem;
+          color: rgb(197, 160, 89);
+        }
+        .rich-text-description h1 { font-size: 1.875rem; }
+        .rich-text-description h2 { font-size: 1.5rem; }
+        .rich-text-description h3 { font-size: 1.25rem; }
+        .rich-text-description h4 { font-size: 1.125rem; }
+        .rich-text-description h5 { font-size: 1rem; }
+        .rich-text-description h6 { font-size: 0.875rem; }
+        
+        .rich-text-description p {
+          margin-bottom: 1rem;
+        }
+        
+        .rich-text-description ul,
+        .rich-text-description ol {
+          margin-left: 1.5rem;
+          margin-bottom: 1rem;
+        }
+        
+        .rich-text-description li {
+          margin-bottom: 0.5rem;
+        }
+        
+        .rich-text-description ul {
+          list-style-type: disc;
+        }
+        
+        .rich-text-description ol {
+          list-style-type: decimal;
+        }
+        
+        .rich-text-description strong,
+        .rich-text-description b {
+          font-weight: 600;
+          color: rgb(197, 160, 89);
+        }
+        
+        .rich-text-description em,
+        .rich-text-description i {
+          font-style: italic;
+          color: rgb(197, 160, 89);
+        }
+        
+        .rich-text-description a {
+          color: rgb(197, 160, 89);
+          text-decoration: underline;
+          text-decoration-color: rgba(197, 160, 89, 0.4);
+        }
+        
+        .rich-text-description a:hover {
+          text-decoration-color: rgb(197, 160, 89);
+        }
+        
+        .rich-text-description blockquote {
+          border-left: 3px solid rgb(197, 160, 89);
+          padding-left: 1rem;
+          margin-left: 0;
+          margin-right: 0;
+          margin-bottom: 1rem;
+          font-style: italic;
+          color: rgba(197, 160, 89, 0.9);
+        }
+        
+        .rich-text-description code {
+          font-family: 'Courier New', monospace;
+          background-color: rgba(0, 0, 0, 0.2);
+          padding: 0.125rem 0.25rem;
+          border-radius: 0.25rem;
+          font-size: 0.875rem;
+        }
+        
+        .rich-text-description pre {
+          background-color: rgba(0, 0, 0, 0.2);
+          padding: 1rem;
+          border-radius: 0.5rem;
+          overflow-x: auto;
+          margin-bottom: 1rem;
+        }
+        
+        .rich-text-description img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 0.5rem;
+          margin: 1rem 0;
+        }
+        
+        .rich-text-description table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 1rem;
+        }
+        
+        .rich-text-description th,
+        .rich-text-description td {
+          border: 1px solid rgba(197, 160, 89, 0.3);
+          padding: 0.5rem;
+          text-align: left;
+        }
+        
+        .rich-text-description th {
+          background-color: rgba(197, 160, 89, 0.1);
+          font-weight: 600;
+        }
+        
+        .rich-text-description hr {
+          border: none;
+          border-top: 1px solid rgba(197, 160, 89, 0.3);
+          margin: 1.5rem 0;
+        }
+      `}</style>
     </div>
   );
 }

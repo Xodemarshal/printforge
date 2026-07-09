@@ -31,9 +31,9 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const badge = product.featured ? "Bestseller" : product.best_seller ? "New" : null;
 
   return (
-    <div className="group relative bg-white rounded-2xl border border-forest/5 overflow-hidden hover:shadow-xl hover:shadow-forest/10 transition-all duration-300">
+    <div className="group relative bg-gray-900/30 rounded-2xl border border-forest/20 overflow-hidden hover:shadow-xl hover:shadow-forest/10 transition-all duration-300">
       {/* Image Container */}
-      <Link href={`/products/${product.slug}`} className="block relative aspect-square overflow-hidden bg-cream/30">
+      <Link href={`/products/${product.slug}`} className="block relative aspect-square overflow-hidden bg-gray-800/30">
         <img 
           src={imageUrl}
           alt={product.name}
@@ -46,7 +46,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         
         {/* Badge */}
         {badge && (
-          <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${badge === "Bestseller" ? "bg-gold text-white" : "bg-moss text-white"}`}>
+          <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${badge === "Bestseller" ? "bg-yellow-500 text-gray-900" : "bg-forest text-white"}`}>
             {badge}
           </div>
         )}
@@ -64,12 +64,12 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               toggle(product.id);
             }}
             className={`w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-md transition-all ${
-              isInWishlist(product.id) ? "bg-accent/10 text-accent" : "bg-white/90 text-forest/60 hover:text-accent"
+              isInWishlist(product.id) ? "bg-accent/10 text-accent" : "bg-gray-900/90 text-forest/60 hover:text-accent"
             }`}
           >
             <Heart size={16} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
           </button>
-          <button className="w-10 h-10 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-md text-forest/60 hover:text-forest transition-colors">
+          <button className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-900/90 backdrop-blur-md text-forest/60 hover:text-forest transition-colors">
             <Eye size={16} />
           </button>
         </div>
@@ -89,7 +89,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             {[...Array(5)].map((_, i) => (
               <svg
                 key={i}
-                className={`w-3 h-3 ${i < Math.floor(product.rating || 4.5) ? "text-gold fill-gold" : "text-forest/10 fill-forest/10"}`}
+                className={`w-3 h-3 ${i < Math.floor(product.rating || 4.5) ? "text-yellow-400 fill-yellow-400" : "text-forest/30 fill-forest/30"}`}
                 viewBox="0 0 20 20"
               >
                 <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
@@ -100,7 +100,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         </div>
 
         {/* Price & Cart */}
-        <div className="flex items-center justify-between pt-2 border-t border-forest/5">
+        <div className="flex items-center justify-between pt-2 border-t border-forest/20">
           <span className="text-lg font-bold text-forest">{formatCurrency(product.price)}</span>
           <button
             onClick={() => {
@@ -114,7 +114,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 imageUrl: imageUrl
               });
             }}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-forest/5 text-forest hover:bg-forest hover:text-white transition-all"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-forest/20 text-forest hover:bg-forest hover:text-white transition-all"
           >
             <ShoppingCart size={14} />
           </button>
