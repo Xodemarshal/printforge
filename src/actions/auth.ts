@@ -9,6 +9,8 @@ import { addressSchema } from "@/lib/validators";
 import { requireUser } from "@/lib/guards";
 import { parseLoginInput, parseRegisterInput } from "@/lib/auth-actions";
 import { sendEmail } from "@/services/email";
+import { sendNotification } from "@/services/notifications";
+import { trackEvent } from "@/lib/utils";
 
 type ActionResult = { success?: boolean; error?: string };
 
@@ -28,7 +30,7 @@ async function getAppUrl(): Promise<string> {
   // Server actions can execute behind reverse proxies; evaluate forwarded hosts first
   const host = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || fallbackHost;
   const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
-  
+
   return `${protocol}://${host}`;
 }
 
@@ -40,10 +42,10 @@ export async function loginAction(formData: FormData): Promise<ActionResult> {
   }
 
   console.log("Attempting to login user:", parsed.data.email);
-  
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
-  
+
   if (error) {
     console.log("Supabase auth login error:", error);
     return { error: error.message };
@@ -63,9 +65,9 @@ export async function registerAction(formData: FormData): Promise<ActionResult> 
 
   const supabase = await createClient();
   const admin = await createAdminClient();
-  
+
   console.log("Attempting to register user:", parsed.data.email);
-  
+
   const appUrl = await getAppUrl();
   let confirmLink = "";
   let userId = "";
@@ -121,7 +123,7 @@ export async function registerAction(formData: FormData): Promise<ActionResult> 
       email: parsed.data.email,
       role: "customer"
     });
-    
+
     if (dbError) {
       console.log("Database user creation error:", dbError);
       return { error: "Failed to create user profile." };
@@ -238,7 +240,7 @@ export async function addAddressAction(formData: FormData): Promise<ActionResult
 export async function updateAddressAction(formData: FormData): Promise<ActionResult> {
   const user = await requireUser();
   const id = String(formData.get("id") ?? "");
-  
+
   const parsed = addressSchema.safeParse({
     id,
     line1: String(formData.get("line1") ?? ""),
@@ -284,4 +286,118 @@ export async function deleteAddressAction(formData: FormData): Promise<ActionRes
   }
 
   return { success: true };
+}/**
+ * Change user password
+ */
+export async function changePasswordAction(formData: FormData): Promise<ActionResult> {
+  try {
+    const user = await requireUser();
+    const currentPassword = String(formData.get("currentPassword") ?? "");
+    const newPassword = String(formData.get("newPassword") ?? "");
+    const confirmPassword = String(formData.get("confirmPassword") ?? "");
+
+    if (newPassword.length < 6) {
+      return { error: "New password must be at least 6 characters" };
+    }
+
+    if (newPassword !== confirmPassword) {
+      return { error: "New passwords do not match" };
+    }
+
+    const supabase = await createClient();
+
+    // First verify current password
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email || "",
+      password: currentPassword
+    });
+
+    if (signInError) {
+      return { error: "Current password is incorrect" };
+    }
+
+    // Update password
+    const { error: updateError } = await (supabase.auth as any).updateUser({
+      password: newPassword
+    });
+
+    if (updateError) {
+      return { error: updateError.message };
+    }
+
+    await sendNotification(
+      user.id,
+      "account_update",
+      "Password Changed",
+      "Your password has been updated successfully."
+    );
+
+    await trackEvent("admin_action", user.id, {
+      action: "password_change"
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message || "Failed to change password" };
+  }
+}
+
+/**
+ * Send password reset email
+ */
+export async function requestPasswordResetAction(formData: FormData): Promise<ActionResult> {
+  try {
+    const email = String(formData.get("email") ?? "");
+
+    if (!email.includes("@")) {
+      return { error: "Please enter a valid email address" };
+    }
+
+    const supabase = await createClient();
+    const appUrl = await getAppUrl();
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${appUrl}/reset-password`
+    });
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message || "Failed to send reset email" };
+  }
+}
+
+/**
+ * Reset password with token
+ */
+export async function resetPasswordWithTokenAction(formData: FormData): Promise<ActionResult> {
+  try {
+    const password = String(formData.get("password") ?? "");
+    const confirmPassword = String(formData.get("confirmPassword") ?? "");
+
+    if (password.length < 6) {
+      return { error: "Password must be at least 6 characters" };
+    }
+
+    if (password !== confirmPassword) {
+      return { error: "Passwords do not match" };
+    }
+
+    const supabase = await createClient();
+    const { error } = await (supabase.auth as any).updateUser({
+      password
+    });
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    revalidatePath("/");
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message || "Failed to reset password" };
+  }
 }

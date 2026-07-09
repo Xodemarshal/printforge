@@ -7,9 +7,11 @@ export const dynamic = "force-dynamic";
 const shipmentBadge = (status?: string | null) => {
   const s = String(status ?? "pending");
   if (s === "delivered") return "bg-green-900/20 text-green-400 border-green-800";
-  if (s === "picked_up" || s === "in_transit" || s === "out_for_delivery") return "bg-blue-900/20 text-blue-400 border-blue-800";
-  if (s === "label_generated" || s === "manifested") return "bg-indigo-900/20 text-indigo-400 border-indigo-800";
-  if (s === "not_picked_up" || s === "not_generated") return "bg-yellow-900/20 text-yellow-400 border-yellow-800";
+  if (s === "shipped" || s === "out_for_delivery") return "bg-blue-900/20 text-blue-400 border-blue-800";
+  if (s === "picked_up" || s === "in_transit") return "bg-blue-900/20 text-blue-400 border-blue-800";
+  if (s === "label_generated" || s === "manifested" || s === "ready_for_dispatch") return "bg-indigo-900/20 text-indigo-400 border-indigo-800";
+  if (s === "not_picked_up" || s === "not_generated" || s === "order_placed") return "bg-yellow-900/20 text-yellow-400 border-yellow-800";
+  if (s === "payment_confirmed" || s === "printing" || s === "quality_check" || s === "packed") return "bg-purple-900/20 text-purple-400 border-purple-800";
   return "bg-gray-900/20 text-gray-400 border-gray-800";
 };
 
@@ -18,6 +20,16 @@ const paymentBadge = (status?: string | null) => {
   if (status === "pending") return "bg-yellow-900/30 text-yellow-400";
   if (status === "failed") return "bg-red-900/30 text-red-400";
   return "bg-gray-800 text-gray-500";
+};
+
+const formatShippingStatus = (shiprocketStatus?: string | null, manualStatus?: string | null) => {
+  if (manualStatus) {
+    return String(manualStatus).replace(/_/g, " ");
+  }
+  if (shiprocketStatus) {
+    return String(shiprocketStatus).replace(/_/g, " ");
+  }
+  return "not generated";
 };
 
 export default async function AdminOrdersPage({
@@ -30,7 +42,7 @@ export default async function AdminOrdersPage({
 
   const { data } = await supabase
     .from("orders")
-    .select("id, customer_name, customer_email, total_amount, profit_amount, payment_status, status, shiprocket_status, shiprocket_awb_number, shiprocket_courier_name, shiprocket_pickup_status, shiprocket_label_pdf_url, created_at, order_items(id)")
+    .select("id, customer_name, customer_email, total_amount, profit_amount, payment_status, status, shipment_status, courier_name, tracking_number, shiprocket_status, shiprocket_awb_number, shiprocket_courier_name, shiprocket_pickup_status, shiprocket_label_pdf_url, created_at, order_items(id)")
     .order("created_at", { ascending: false })
     .limit(200);
 
@@ -112,7 +124,7 @@ export default async function AdminOrdersPage({
           <table className="w-full">
             <thead className="bg-black border-b border-gray-800">
               <tr>
-                {["Order ID", "Customer", "Payment", "Shipment", "AWB", "Revenue", "Profit", "Date", "Action"].map(h => (
+                {["Order ID", "Customer", "Payment", "Mode", "Status", "Tracking", "Revenue", "Profit", "Date", "Action"].map(h => (
                   <th key={h} className={`px-5 py-3 text-sm font-medium text-gray-300 ${h === "Revenue" || h === "Profit" || h === "Action" ? "text-right" : "text-left"}`}>{h}</th>
                 ))}
               </tr>
@@ -138,16 +150,29 @@ export default async function AdminOrdersPage({
                       </span>
                     </td>
                     <td className="px-5 py-4 text-sm">
-                      <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${shipmentBadge(order.shiprocket_status)}`}>
-                        {String(order.shiprocket_status || order.status || "not_generated").replace(/_/g, " ")}
+                      <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                        shipmentBadge(order.shiprocket_status || order.shipment_status)
+                      }`}>
+                        {formatShippingStatus(order.shiprocket_status, order.shipment_status)}
                       </div>
-                      {order.shiprocket_courier_name && (
-                        <p className="text-gray-500 text-xs mt-1">{order.shiprocket_courier_name}</p>
-                      )}
                     </td>
                     <td className="px-5 py-4 text-sm">
-                      <p className="font-mono text-white text-xs">{order.shiprocket_awb_number || "Pending"}</p>
-                      {order.shiprocket_label_pdf_url && (
+                      <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                        shipmentBadge(order.shiprocket_status || order.shipment_status)
+                      }`}>
+                        {formatShippingStatus(order.shiprocket_status, order.shipment_status)}
+                      </div>
+                      <p className="text-gray-500 text-xs mt-1">
+                        {order.courier_name || order.shiprocket_courier_name || 'Not specified'}
+                      </p>
+                    </td>
+                    <td className="px-5 py-4 text-sm">
+                      <p className="font-mono text-white text-xs">
+                        {order.shipping_mode === 'MANUAL' 
+                          ? order.tracking_number || 'Pending'
+                          : order.shiprocket_awb_number || 'Pending'}
+                      </p>
+                      {(order.shiprocket_label_pdf_url) && (
                         <a href={order.shiprocket_label_pdf_url} target="_blank" rel="noreferrer"
                           className="mt-1 inline-flex items-center gap-1 text-xs text-forest-green hover:text-forest-green/80">
                           Label <ExternalLink size={10} />

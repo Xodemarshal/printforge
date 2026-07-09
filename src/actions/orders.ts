@@ -25,7 +25,11 @@ export async function getOrderById(id: string) {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("orders")
-    .select("*, order_items(*, products(slug))")
+    .select(`
+      *,
+      order_items(*, products(slug)),
+      addresses(*)
+    `)
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;

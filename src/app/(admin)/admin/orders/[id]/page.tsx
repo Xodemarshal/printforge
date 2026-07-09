@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { ORDER_STATUSES } from "@/lib/constants";
+import { AdminShippingPanel } from "@/components/shipping/AdminShippingPanel";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -191,50 +192,15 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           </Card>
 
           <Card className="bg-gray-900 border-gray-800 p-6">
-            <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex items-center justify-between gap-4 mb-6">
               <div className="flex items-center gap-2">
                 <Truck size={18} className="text-forest-green" />
-                <h2 className="text-lg font-medium text-white">Shipping Information</h2>
-              </div>
-              <Badge tone={order.shiprocket_status === "delivered" ? "success" : order.shiprocket_awb_number ? "default" : "warning"}>
-                {order.shiprocket_status || "not_generated"}
-              </Badge>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">AWB Number</p>
-                <p className="text-white font-mono text-sm">{order.shiprocket_awb_number || "N/A"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Courier</p>
-                <p className="text-white text-sm">{order.shiprocket_courier_name || "Auto-assigned"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Shipping Phone</p>
-                <p className="text-white text-sm">{order.shipping_phone || "N/A"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Tracking ID</p>
-                <p className="text-white font-mono text-sm">{order.shiprocket_tracking_id || "N/A"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Pickup Status</p>
-                <p className="text-white text-sm capitalize">{order.shiprocket_pickup_status || "not picked up"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Label PDF</p>
-                <p className="text-white text-sm">{order.shiprocket_label_pdf_url ? "Available" : "Pending"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Last Sync</p>
-                <p className="text-white text-sm">{order.shiprocket_last_synced_at ? new Date(order.shiprocket_last_synced_at).toLocaleString() : "Never"}</p>
+                <h2 className="text-lg font-medium text-white">Shipping Management</h2>
               </div>
             </div>
-            {order.shiprocket_error && (
-              <div className="mt-4 rounded-lg border border-red-800 bg-red-950/30 p-4 text-sm text-red-200">
-                {order.shiprocket_error}
-              </div>
-            )}
+            
+            {/* New Shipping Management Panel */}
+            <AdminShippingPanel order={order} />
           </Card>
         </div>
 

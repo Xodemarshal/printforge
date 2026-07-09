@@ -98,6 +98,15 @@ export default function LoginPage({
           {isPending ? "Signing In..." : "Sign In"}
         </Button>
 
+        <div className="text-center pt-2">
+          <Link 
+            href="/forgot-password" 
+            className="text-sm text-interactive hover:text-primary-medium transition-colors"
+          >
+            Forgot your password?
+          </Link>
+        </div>
+
         <div className="relative flex items-center justify-center my-2">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-forest/25"></div>

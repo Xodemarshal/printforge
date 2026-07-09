@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { updateSiteSettingsAction } from "@/actions/settings";
+import { getShippingMode, switchGlobalShippingMode } from "@/actions/shipping";
 import { useToast } from "@/hooks/useToast";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import type { SiteSettings } from "@/actions/settings";
-import { Image as ImageIcon, Sparkles, UploadCloud } from "lucide-react";
+import { Image as ImageIcon, Sparkles, UploadCloud, Truck, Package } from "lucide-react";
 
 interface SettingsFormProps {
   initialSettings: SiteSettings;
@@ -17,8 +18,25 @@ interface SettingsFormProps {
 
 export function SettingsForm({ initialSettings }: SettingsFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [shippingMode, setShippingMode] = useState<"AUTOMATIC" | "MANUAL">("AUTOMATIC");
   const { success, error } = useToast();
   const router = useRouter();
+
+  // Load shipping mode on component mount
+  useEffect(() => {
+    async function loadShippingMode() {
+      try {
+        const result = await getShippingMode();
+        if (result.success && result.data?.mode) {
+          setShippingMode(result.data.mode);
+        }
+      } catch (err) {
+        console.error("Failed to load shipping mode:", err);
+      }
+    }
+    
+    loadShippingMode();
+  }, []);
 
   // Dynamic preview states for images
   const [logoPreview, setLogoPreview] = useState<string>(initialSettings.logoUrl);
@@ -64,6 +82,19 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
   async function clientAction(formData: FormData) {
     setIsLoading(true);
     try {
+      // Update shipping mode separately
+      const shippingModeInput = formData.get("shipping_mode") as "AUTOMATIC" | "MANUAL";
+      if (shippingModeInput && shippingModeInput !== shippingMode) {
+        const shippingResult = await switchGlobalShippingMode(shippingModeInput);
+        if (shippingResult.error) {
+          error("Shipping Mode Update Failed", shippingResult.error);
+          setIsLoading(false);
+          return;
+        }
+        setShippingMode(shippingModeInput);
+      }
+
+      // Update site settings
       const result = await updateSiteSettingsAction(formData);
       if (result && result.error) {
         error("Update Failed", result.error);
@@ -154,6 +185,89 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Shipping Configuration Card */}
+      <Card className="bg-[#121212] border-gray-800 shadow-xl">
+        <CardHeader className="border-gray-800">
+          <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+            <Truck className="text-accent-warm h-5 w-5" /> Shipping Configuration
+          </h2>
+          <p className="text-sm text-gray-400 mt-1">
+            Configure global shipping settings for all orders in your store.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6 pt-6">
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <label className="text-sm font-medium text-gray-300">Shipping Mode</label>
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <input
+                      type="radio"
+                      id="shipping-automatic"
+                      name="shipping_mode"
+                      value="AUTOMATIC"
+                      checked={shippingMode === "AUTOMATIC"}
+                      onChange={() => setShippingMode("AUTOMATIC")}
+                      className="peer hidden"
+                    />
+                    <label
+                      htmlFor="shipping-automatic"
+                      className="block p-4 rounded-xl border-2 border-gray-700 bg-gray-900 hover:border-forest transition-colors cursor-pointer peer-checked:border-forest peer-checked:bg-forest/10"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full border-2 border-gray-600 peer-checked:border-forest peer-checked:bg-forest"></div>
+                        <div>
+                          <p className="font-semibold text-white">Automatic (Shiprocket)</p>
+                          <p className="text-sm text-gray-400 mt-1">
+                            Automated shipping via Shiprocket API. Generates AWBs, labels, and handles tracking automatically.
+                          </p>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="relative">
+                    <input
+                      type="radio"
+                      id="shipping-manual"
+                      name="shipping_mode"
+                      value="MANUAL"
+                      checked={shippingMode === "MANUAL"}
+                      onChange={() => setShippingMode("MANUAL")}
+                      className="peer hidden"
+                    />
+                    <label
+                      htmlFor="shipping-manual"
+                      className="block p-4 rounded-xl border-2 border-gray-700 bg-gray-900 hover:border-forest transition-colors cursor-pointer peer-checked:border-forest peer-checked:bg-forest/10"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full border-2 border-gray-600 peer-checked:border-forest peer-checked:bg-forest"></div>
+                        <div>
+                          <p className="font-semibold text-white">Manual Shipping</p>
+                          <p className="text-sm text-gray-400 mt-1">
+                            Manually manage shipping (India Post, DTDC, Delhivery, etc.). Admin controls all shipment updates.
+                          </p>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 rounded-xl border border-gray-800 bg-black/40">
+              <p className="text-sm text-gray-400">
+                <strong className="text-yellow-400">Important:</strong> Changing the shipping mode only affects new shipment operations. 
+                Existing orders with Shiprocket shipments will continue to use Shiprocket tracking. 
+                Customers will see the same tracking experience regardless of the mode.
+              </p>
             </div>
           </div>
         </CardContent>

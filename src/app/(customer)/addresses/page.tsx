@@ -1,4 +1,4 @@
-import { addAddressAction, deleteAddressAction, updateAddressAction } from "@/actions/auth";
+import { addAddressAction, deleteAddressAction, updateAddressAction, changePasswordAction } from "@/actions/auth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
