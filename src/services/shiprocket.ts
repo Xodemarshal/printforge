@@ -295,6 +295,10 @@ export async function syncOrderWithShiprocket(orderId: string) {
     throw error;
   }
 
+  if (String(order.shipping_mode || "").toUpperCase() === "MANUAL") {
+    return order;
+  }
+
   const [userResult, addressResult, itemsResult] = await Promise.all([
     supabase.from("users").select("name, email, phone").eq("id", order.user_id).maybeSingle(),
     order.shipping_address_id ? supabase.from("addresses").select("line1, line2, city, state, postal_code, country").eq("id", order.shipping_address_id).maybeSingle() : Promise.resolve({ data: null, error: null }),

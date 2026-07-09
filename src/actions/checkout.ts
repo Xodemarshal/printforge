@@ -9,6 +9,7 @@ import { sendOrderConfirmationEmail } from "@/services/email";
 import { linkCustomerToOrder } from "@/services/customer";
 import { trackPaymentSuccess } from "@/services/analytics";
 import { markCartAsRecovered } from "@/services/cart";
+import { getGlobalShippingMode } from "@/lib/shipping/provider";
 
 interface CheckoutData {
   idempotencyKey: string;
@@ -90,6 +91,8 @@ export async function createOrderAction(data: CheckoutData) {
     if (String(data.shippingAddress.country ?? "").toUpperCase() !== "IN") {
       return { error: "Shiprocket shipping currently supports Indian delivery addresses only." };
     }
+
+    const shippingMode = await getGlobalShippingMode();
 
     const { data: existingOrder } = await supabase
       .from("orders")
@@ -212,7 +215,8 @@ export async function createOrderAction(data: CheckoutData) {
         parcel_length_cm: packageMetrics.parcelLengthCm,
         parcel_width_cm: packageMetrics.parcelWidthCm,
         parcel_height_cm: packageMetrics.parcelHeightCm,
-        shipping_provider: "shiprocket",
+        shipping_mode: shippingMode,
+        shipping_provider: shippingMode === "AUTOMATIC" ? "shiprocket" : "manual",
         razorpay_order_id: razorpayOrderId,
         notes: `Payment method: ${data.paymentMethod}${data.couponId ? ` | Coupon: ${data.couponId}` : ""}`
       })
@@ -287,7 +291,7 @@ export async function verifyPaymentAction(orderId: string, razorpayPaymentId: st
     // Fetch the existing order details
     const { data: orderData } = await supabase
       .from("orders")
-      .select("notes, payment_method, total_amount, user_id, customer_name, customer_email")
+      .select("notes, payment_method, total_amount, user_id, customer_name, customer_email, shipping_mode")
       .eq("id", orderId)
       .maybeSingle();
 
@@ -356,11 +360,14 @@ export async function verifyPaymentAction(orderId: string, razorpayPaymentId: st
     }
 
     // Sync with Shiprocket
-    try {
-      await syncOrderWithShiprocket(orderId);
-    } catch (shiprocketError: any) {
-      await queueShiprocketRetry(orderId, shiprocketError?.message || "Shiprocket sync failed");
-      console.error("Shiprocket sync failed after payment verification:", shiprocketError);
+    const shippingMode = String(orderData.shipping_mode || "AUTOMATIC").toUpperCase();
+    if (shippingMode === "AUTOMATIC") {
+      try {
+        await syncOrderWithShiprocket(orderId);
+      } catch (shiprocketError: any) {
+        await queueShiprocketRetry(orderId, shiprocketError?.message || "Shiprocket sync failed");
+        console.error("Shiprocket sync failed after payment verification:", shiprocketError);
+      }
     }
     
     return { success: true };

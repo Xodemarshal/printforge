@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { razorpay } from "@/lib/razorpay";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireUser } from "@/lib/guards";
+import { getGlobalShippingMode } from "@/lib/shipping/provider";
 
 export async function POST(request: Request) {
   try {
@@ -20,13 +21,19 @@ export async function POST(request: Request) {
     });
 
     const supabase = createAdminClient();
+    
+    // Get the current shipping mode
+    const shippingMode = await getGlobalShippingMode();
+    
     await supabase.from("orders").insert({
       user_id: user.id,
       status: "pending",
       payment_status: "pending",
       payment_method: body.paymentMethod ?? "prepaid",
       total_amount: amount,
-      razorpay_order_id: order.id
+      razorpay_order_id: order.id,
+      shipping_mode: shippingMode,
+      shipping_provider: shippingMode === "AUTOMATIC" ? "shiprocket" : "manual"
     });
 
     return NextResponse.json({ orderId: order.id });

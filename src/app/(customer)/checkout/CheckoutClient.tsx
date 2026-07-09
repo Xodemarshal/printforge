@@ -152,6 +152,7 @@ export function CheckoutClient() {
           order_id: result.razorpayOrderId,
           handler: async function (response: any) {
             try {
+              setOrderPreparing(true);
               const verifyResult = await verifyPaymentAction(
                 result.orderId!,
                 response.razorpay_payment_id,
@@ -160,14 +161,14 @@ export function CheckoutClient() {
               
               if (verifyResult.success) {
                 clearCart();
-                setOrderPreparing(true);
-                // Small delay to let the order record propagate
-                await new Promise(resolve => setTimeout(resolve, 1800));
+                await new Promise(resolve => setTimeout(resolve, 350));
                 router.push(`/orders/${result.orderId}`);
               } else {
+                setOrderPreparing(false);
                 error("Payment Verification Failed", verifyResult.error || "Please contact support.");
               }
             } catch (err: any) {
+              setOrderPreparing(false);
               error("Verification Error", err.message || "Failed to verify payment.");
             } finally {
               setIsProcessing(false);

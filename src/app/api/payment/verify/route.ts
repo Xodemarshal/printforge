@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     const supabase = createAdminClient();
     const { data: order } = await supabase
       .from("orders")
-      .select("id, user_id, notes, payment_method")
+      .select("id, user_id, notes, payment_method, shipping_mode")
       .eq("razorpay_order_id", body.razorpay_order_id)
       .maybeSingle();
 
@@ -78,11 +78,14 @@ export async function POST(request: Request) {
     });
     await sendNotification(order.user_id, "order_update", "Order confirmed", "Your payment has been verified and your order is confirmed.");
 
-    try {
-      await syncOrderWithShiprocket(order.id);
-    } catch (shiprocketError: any) {
-      await queueShiprocketRetry(order.id, shiprocketError?.message || "Shiprocket sync failed");
-      console.error("Shiprocket sync failed in payment verify route:", shiprocketError);
+    const shippingMode = String(order.shipping_mode || "AUTOMATIC").toUpperCase();
+    if (shippingMode === "AUTOMATIC") {
+      try {
+        await syncOrderWithShiprocket(order.id);
+      } catch (shiprocketError: any) {
+        await queueShiprocketRetry(order.id, shiprocketError?.message || "Shiprocket sync failed");
+        console.error("Shiprocket sync failed in payment verify route:", shiprocketError);
+      }
     }
 
     return NextResponse.json({ success: true, clearCart: true });
