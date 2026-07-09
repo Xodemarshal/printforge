@@ -10,22 +10,23 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
-import { 
+import {
   getShippingMode,
-  createShipment, 
+  createShipment,
   updateManualShipment,
   updateShipmentStatus,
   generateShippingLabel
 } from "@/actions/shipping";
 import { useToast } from "@/hooks/useToast";
-import { 
-  Package, 
-  Truck, 
-  Edit, 
-  Save, 
-  RefreshCw, 
+import {
+  Package,
+  Truck,
+  Edit,
+  Save,
+  RefreshCw,
   FileText,
-  CheckCircle
+  CheckCircle,
+  Link as LinkIcon
 } from "lucide-react";
 import type { ShippingMode, ShipmentStatus } from "@/types/shipping";
 import { SHIPMENT_STATUSES } from "@/types/shipping";
@@ -38,7 +39,7 @@ export function AdminShippingPanel({ order }: AdminShippingPanelProps) {
   const toast = useToast();
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState(false);
-  
+
   const [courierName, setCourierName] = useState(order.courier_name || "");
   const [trackingNumber, setTrackingNumber] = useState(order.tracking_number || "");
   const [trackingUrl, setTrackingUrl] = useState(order.tracking_url || "");
@@ -46,8 +47,7 @@ export function AdminShippingPanel({ order }: AdminShippingPanelProps) {
 
   const [globalShippingMode, setGlobalShippingMode] = useState<ShippingMode>("AUTOMATIC");
   const hasShipment = order.shiprocket_awb_number || order.tracking_number;
-  
-  // Load global shipping mode
+
   useEffect(() => {
     async function loadShippingMode() {
       try {
@@ -59,13 +59,11 @@ export function AdminShippingPanel({ order }: AdminShippingPanelProps) {
         console.error("Failed to load shipping mode:", err);
       }
     }
-    
+
     loadShippingMode();
   }, []);
 
   const isManual = globalShippingMode === "MANUAL";
-
-
 
   const handleCreateShipment = () => {
     startTransition(async () => {
@@ -97,7 +95,7 @@ export function AdminShippingPanel({ order }: AdminShippingPanelProps) {
         trackingUrl,
         shipmentNotes
       });
-      
+
       if (result.error) {
         toast.error("Error", result.error);
       } else {
@@ -120,39 +118,38 @@ export function AdminShippingPanel({ order }: AdminShippingPanelProps) {
 
   return (
     <div className="space-y-6">
-      {/* Shipping Mode Indicator */}
-      <div className="rounded-xl border border-border bg-card p-4">
-        <h3 className="mb-3 font-semibold text-foreground">Shipping Mode</h3>
-        <div className="flex items-center gap-3">
-          <div className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-            globalShippingMode === "AUTOMATIC" 
-              ? "bg-blue-100 text-blue-800 border border-blue-200" 
-              : "bg-purple-100 text-purple-800 border border-purple-200"
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h3 className="font-semibold text-foreground">Shipping Mode</h3>
+            <p className="text-sm text-muted-foreground">
+              {globalShippingMode === "AUTOMATIC"
+                ? "Using Shiprocket API for automated shipping"
+                : "Manually managing shipping details"}
+            </p>
+          </div>
+          <div className={`w-fit rounded-full border px-3 py-1.5 text-sm font-medium ${
+            globalShippingMode === "AUTOMATIC"
+              ? "border-blue-200 bg-blue-50 text-blue-800"
+              : "border-purple-200 bg-purple-50 text-purple-800"
           }`}>
             {globalShippingMode === "AUTOMATIC" ? "Automatic (Shiprocket)" : "Manual Shipping"}
           </div>
-          <p className="text-sm text-muted-foreground">
-            {globalShippingMode === "AUTOMATIC" 
-              ? "Using Shiprocket API for automated shipping" 
-              : "Manually managing shipping details"}
-          </p>
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">
-          Change global shipping mode in <a href="/admin/settings" className="text-primary hover:underline">Admin Settings</a>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Change global shipping mode in{" "}
+          <a href="/admin/settings" className="text-primary hover:underline">
+            Admin Settings
+          </a>
         </p>
       </div>
 
-      {/* Automatic Mode */}
       {globalShippingMode === "AUTOMATIC" && (
-        <div className="rounded-xl border border-border bg-card p-4 space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
+          <div className="flex items-center justify-between gap-4">
             <h3 className="font-semibold text-foreground">Shiprocket Shipment</h3>
             {!order.shiprocket_awb_number && (
-              <Button 
-                onClick={handleCreateShipment} 
-                disabled={isPending}
-                className="text-sm"
-              >
+              <Button onClick={handleCreateShipment} disabled={isPending} className="text-sm">
                 <Package size={16} className="mr-2" />
                 Create Shipment
               </Button>
@@ -161,26 +158,40 @@ export function AdminShippingPanel({ order }: AdminShippingPanelProps) {
 
           {order.shiprocket_awb_number && (
             <>
-              <div className="grid gap-3">
-                <div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border border-border bg-background/60 p-4">
                   <p className="text-xs text-muted-foreground">AWB Number</p>
-                  <p className="font-mono text-sm text-foreground">{order.shiprocket_awb_number}</p>
+                  <p className="mt-1 break-all font-mono text-sm text-foreground">{order.shiprocket_awb_number}</p>
                 </div>
                 {order.shiprocket_courier_name && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Courier</p>
-                    <p className="text-sm text-foreground">{order.shiprocket_courier_name}</p>
+                  <div className="rounded-2xl border border-border bg-background/60 p-4">
+                    <p className="text-xs text-muted-foreground">Delivery Partner</p>
+                    <p className="mt-1 break-words text-sm text-foreground">{order.shiprocket_courier_name}</p>
                   </div>
                 )}
                 {order.shiprocket_status && (
-                  <div>
+                  <div className="rounded-2xl border border-border bg-background/60 p-4">
                     <p className="text-xs text-muted-foreground">Status</p>
-                    <p className="text-sm text-foreground capitalize">{order.shiprocket_status.replace(/_/g, " ")}</p>
+                    <p className="mt-1 text-sm capitalize text-foreground">{order.shiprocket_status.replace(/_/g, " ")}</p>
+                  </div>
+                )}
+                {order.shiprocket_tracking_url && (
+                  <div className="rounded-2xl border border-border bg-background/60 p-4">
+                    <p className="text-xs text-muted-foreground">Tracking Link</p>
+                    <a
+                      href={order.shiprocket_tracking_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 inline-flex items-center gap-2 break-all text-sm text-primary hover:underline"
+                    >
+                      <LinkIcon size={14} />
+                      Open tracking
+                    </a>
                   </div>
                 )}
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {order.shiprocket_label_pdf_url && (
                   <Button
                     variant="outline"
@@ -218,11 +229,9 @@ export function AdminShippingPanel({ order }: AdminShippingPanelProps) {
         </div>
       )}
 
-      {/* Manual Mode */}
       {isManual && (
         <>
-          {/* Status Selector */}
-          <div className="rounded-xl border border-border bg-card p-4">
+          <div className="rounded-2xl border border-border bg-card p-4">
             <h3 className="mb-3 font-semibold text-foreground">Shipment Status</h3>
             <Select
               value={order.shipment_status || "order_placed"}
@@ -237,25 +246,16 @@ export function AdminShippingPanel({ order }: AdminShippingPanelProps) {
             </Select>
           </div>
 
-          {/* Shipping Details */}
-          <div className="rounded-xl border border-border bg-card p-4 space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
+            <div className="flex items-center justify-between gap-4">
               <h3 className="font-semibold text-foreground">Shipping Details</h3>
               {!isEditing ? (
-                <Button
-                  variant="outline"
-                  className="text-sm"
-                  onClick={() => setIsEditing(true)}
-                >
+                <Button variant="outline" className="text-sm" onClick={() => setIsEditing(true)}>
                   <Edit size={16} className="mr-2" />
                   Edit
                 </Button>
               ) : (
-                <Button
-                  className="text-sm"
-                  onClick={handleSaveDetails}
-                  disabled={isPending}
-                >
+                <Button className="text-sm" onClick={handleSaveDetails} disabled={isPending}>
                   <Save size={16} className="mr-2" />
                   Save
                 </Button>
@@ -303,36 +303,37 @@ export function AdminShippingPanel({ order }: AdminShippingPanelProps) {
                 </div>
               </div>
             ) : (
-              <div className="grid gap-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {courierName && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Courier</p>
-                    <p className="text-sm text-foreground">{courierName}</p>
+                  <div className="rounded-2xl border border-border bg-background/60 p-4">
+                    <p className="text-xs text-muted-foreground">Delivery Partner</p>
+                    <p className="mt-1 break-words text-sm text-foreground">{courierName}</p>
                   </div>
                 )}
                 {trackingNumber && (
-                  <div>
+                  <div className="rounded-2xl border border-border bg-background/60 p-4">
                     <p className="text-xs text-muted-foreground">Tracking Number</p>
-                    <p className="font-mono text-sm text-foreground">{trackingNumber}</p>
+                    <p className="mt-1 break-all font-mono text-sm text-foreground">{trackingNumber}</p>
                   </div>
                 )}
                 {trackingUrl && (
-                  <div>
+                  <div className="rounded-2xl border border-border bg-background/60 p-4 sm:col-span-2">
                     <p className="text-xs text-muted-foreground">Tracking URL</p>
-                    <a 
-                      href={trackingUrl} 
-                      target="_blank" 
-                      rel="noreferrer" 
-                      className="text-sm text-primary hover:underline"
+                    <a
+                      href={trackingUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 inline-flex items-center gap-2 break-all text-sm text-primary hover:underline"
                     >
+                      <LinkIcon size={14} />
                       View Tracking
                     </a>
                   </div>
                 )}
                 {shipmentNotes && (
-                  <div>
+                  <div className="rounded-2xl border border-border bg-background/60 p-4 sm:col-span-2">
                     <p className="text-xs text-muted-foreground">Notes</p>
-                    <p className="text-sm text-foreground whitespace-pre-wrap">{shipmentNotes}</p>
+                    <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{shipmentNotes}</p>
                   </div>
                 )}
                 {!courierName && !trackingNumber && (

@@ -4,7 +4,7 @@ import { ReviewSection } from "@/components/orders/ReviewSection";
 import { CustomerTrackingPanel } from "@/components/shipping/CustomerTrackingPanel";
 import { Button } from "@/components/ui/Button";
 import { formatCurrency } from "@/lib/utils";
-import { Package, CreditCard, Calendar, ChevronLeft } from "lucide-react";
+import { Package, CreditCard, Calendar, ChevronLeft, Truck, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -65,36 +65,62 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </Link>
 
         {/* Header */}
-        <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-forest mb-2">
-                Order #{order.id.slice(0, 8).toUpperCase()}
-              </h1>
-              <div className="flex items-center gap-4 text-sm text-forest/60">
-                <div className="flex items-center gap-2">
+        <div className="mb-6 overflow-hidden rounded-3xl border border-forest/15 bg-gradient-to-br from-cream/80 via-white to-moss/10 shadow-[0_18px_50px_rgba(46,75,36,0.08)]">
+          <div className="border-b border-forest/10 px-6 py-5 sm:px-8">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-forest/55">Order Detail</p>
+                <h1 className="mt-2 text-2xl font-bold text-forest sm:text-3xl">
+                  Order #{order.id.slice(0, 8).toUpperCase()}
+                </h1>
+                <p className="mt-2 flex items-center gap-2 text-sm text-forest/65">
                   <Calendar size={16} />
-                  <span>Placed on {new Date(order.created_at).toLocaleDateString('en-US', { 
-                    month: 'long', 
-                    day: 'numeric', 
-                    year: 'numeric' 
+                  <span>Placed on {new Date(order.created_at).toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric"
                   })}</span>
-                </div>
+                </p>
               </div>
+
+              {["pending", "confirmed"].includes(order.status) && (
+                <form action={async (formData) => {
+                  "use server";
+                  await cancelOrderAction(formData);
+                  revalidatePath(`/orders/${order.id}`);
+                }} className="shrink-0">
+                  <input type="hidden" name="id" value={order.id} />
+                  <Button type="submit" variant="outline" className="border-red-500/40 text-red-700 hover:bg-red-50">
+                    Cancel Order
+                  </Button>
+                </form>
+              )}
             </div>
-            
-            {["pending", "confirmed"].includes(order.status) && (
-              <form action={async (formData) => {
-                "use server";
-                await cancelOrderAction(formData);
-                revalidatePath(`/orders/${order.id}`);
-              }}>
-                <input type="hidden" name="id" value={order.id} />
-                <Button type="submit" variant="outline" className="border-red-500 text-red-600 hover:bg-red-50">
-                  Cancel Order
-                </Button>
-              </form>
-            )}
+          </div>
+
+          <div className="grid gap-3 px-6 py-5 sm:grid-cols-2 xl:grid-cols-4 sm:px-8">
+            <div className="rounded-2xl border border-forest/10 bg-white/70 p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Order Number</p>
+              <p className="mt-2 break-all font-mono text-sm font-semibold text-forest">{order.id}</p>
+            </div>
+            <div className="rounded-2xl border border-forest/10 bg-white/70 p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Payment</p>
+              <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-forest">
+                <CheckCircle2 size={16} className={order.payment_status === "paid" ? "text-emerald-600" : "text-amber-600"} />
+                <span className="capitalize">{order.payment_status}</span>
+              </p>
+            </div>
+            <div className="rounded-2xl border border-forest/10 bg-white/70 p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Shipping</p>
+              <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-forest">
+                <Truck size={16} className="text-forest/70" />
+                <span>{order.shiprocket_courier_name || order.courier_name || "Preparing"}</span>
+              </p>
+            </div>
+            <div className="rounded-2xl border border-forest/10 bg-white/70 p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Status</p>
+              <p className="mt-2 text-sm font-semibold text-forest capitalize">{order.status}</p>
+            </div>
           </div>
         </div>
 
@@ -102,13 +128,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Order Timeline */}
-            <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
+            <div className="overflow-hidden rounded-3xl border border-forest/15 bg-white/80 p-6 shadow-[0_12px_35px_rgba(46,75,36,0.06)]">
               <h2 className="text-xl font-semibold text-forest mb-4">Order Status</h2>
               <OrderTimeline status={order.status} shipmentStatus={order.shiprocket_status} />
             </div>
 
             {/* Order Items */}
-            <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
+            <div className="overflow-hidden rounded-3xl border border-forest/15 bg-white/80 p-6 shadow-[0_12px_35px_rgba(46,75,36,0.06)]">
               <h2 className="text-xl font-semibold text-forest mb-4">Order Items</h2>
               <div className="space-y-4">
                 {orderItems.map((item: any) => {
@@ -139,14 +165,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     <Link
                       key={item.id}
                       href={`/products/${productSlug}`}
-                      className="flex items-center gap-4 p-4 bg-white/50 border border-forest/10 rounded-xl hover:bg-white/70 hover:border-forest/30 transition-all"
+                      className="flex items-center gap-4 rounded-2xl border border-forest/10 bg-cream/20 p-4 transition-all hover:border-forest/25 hover:bg-cream/35"
                     >
                       {itemContent}
                     </Link>
                   ) : (
                     <div
                       key={item.id}
-                      className="flex items-center gap-4 p-4 bg-white/50 border border-forest/10 rounded-xl"
+                      className="flex items-center gap-4 rounded-2xl border border-forest/10 bg-cream/20 p-4"
                     >
                       {itemContent}
                     </div>
@@ -155,18 +181,18 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </div>
 
               {/* Order Summary */}
-              <div className="mt-6 pt-6 border-t border-forest/20 space-y-2">
-                <div className="flex justify-between text-forest/70">
-                  <span>Subtotal</span>
-                  <span>{formatCurrency(orderTotal)}</span>
+              <div className="mt-6 grid gap-3 border-t border-forest/15 pt-6 sm:grid-cols-3">
+                <div className="rounded-2xl bg-forest/5 p-4">
+                  <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Subtotal</p>
+                  <p className="mt-2 text-base font-semibold text-forest">{formatCurrency(orderTotal)}</p>
                 </div>
-                <div className="flex justify-between text-forest/70">
-                  <span>Shipping</span>
-                  <span>{formatCurrency(0)}</span>
+                <div className="rounded-2xl bg-forest/5 p-4">
+                  <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Shipping</p>
+                  <p className="mt-2 text-base font-semibold text-forest">{formatCurrency(0)}</p>
                 </div>
-                <div className="flex justify-between text-xl font-bold text-forest pt-2 border-t border-forest/20">
-                  <span>Total</span>
-                  <span>{formatCurrency(order.total_amount)}</span>
+                <div className="rounded-2xl bg-gradient-to-br from-forest to-moss p-4 text-white">
+                  <p className="text-xs uppercase tracking-[0.22em] text-white/70">Total</p>
+                  <p className="mt-2 text-lg font-bold">{formatCurrency(order.total_amount)}</p>
                 </div>
               </div>
             </div>
@@ -189,34 +215,30 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             )}
 
             {/* Payment Info */}
-            <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
+            <div className="rounded-3xl border border-forest/15 bg-white/80 p-6 shadow-[0_12px_35px_rgba(46,75,36,0.06)]">
               <div className="flex items-center gap-2 mb-4">
                 <CreditCard size={20} className="text-forest" />
                 <h3 className="font-semibold text-forest">Payment Information</h3>
               </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-forest/60">Status</span>
-                  <span className={`font-medium ${
-                    order.payment_status === 'paid' 
-                      ? 'text-green-600' 
-                      : 'text-yellow-600'
-                  }`}>
-                    {order.payment_status === 'paid' ? 'Paid' : 'Pending'}
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between text-forest/70">
+                  <span>Status</span>
+                  <span className={order.payment_status === "paid" ? "text-emerald-700 font-medium" : "text-amber-700 font-medium"}>
+                    {order.payment_status === "paid" ? "Paid" : "Pending"}
                   </span>
                 </div>
                 {order.notes && (
-                  <div className="flex justify-between">
-                    <span className="text-forest/60">Method</span>
-                    <span className="font-medium text-forest">
-                      {order.notes.replace('Payment method: ', '')}
-                    </span>
+                  <div className="rounded-2xl bg-cream/30 p-3">
+                    <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Method</p>
+                    <p className="mt-2 break-words font-medium text-forest">
+                      {order.notes.replace("Payment method: ", "")}
+                    </p>
                   </div>
                 )}
                 {order.razorpay_payment_id && (
-                  <div className="pt-2 border-t border-forest/10">
-                    <span className="text-forest/60 text-xs">Transaction ID</span>
-                    <p className="text-forest font-mono text-xs mt-1 break-all">
+                  <div className="rounded-2xl bg-cream/30 p-3">
+                    <span className="text-xs uppercase tracking-[0.22em] text-forest/45">Transaction ID</span>
+                    <p className="mt-2 break-all font-mono text-xs text-forest">
                       {order.razorpay_payment_id}
                     </p>
                   </div>
@@ -228,13 +250,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <CustomerTrackingPanel order={order} />
 
             {/* Help */}
-            <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
+            <div className="rounded-3xl border border-forest/15 bg-gradient-to-br from-forest/5 to-white p-6">
               <h3 className="font-semibold text-forest mb-2">Need Help?</h3>
               <p className="text-sm text-forest/70 mb-4">
                 Have questions about your order? We're here to help!
               </p>
               <Link href="/contact">
-                <Button variant="outline" className="w-full border-forest text-forest hover:bg-forest/5">
+                <Button variant="outline" className="w-full border-forest/30 text-forest hover:bg-forest/5">
                   Contact Support
                 </Button>
               </Link>
