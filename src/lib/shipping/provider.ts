@@ -21,12 +21,27 @@ export async function getGlobalShippingMode(): Promise<"AUTOMATIC" | "MANUAL"> {
   const supabase = createAdminClient();
   
   const { data: setting } = await supabase
-    .from("application_settings")
+    .from("settings")
     .select("value")
     .eq("key", "shipping_mode")
     .single();
 
-  return (setting?.value as "AUTOMATIC" | "MANUAL") || "AUTOMATIC";
+  if (!setting || !setting.value) {
+    return "AUTOMATIC";
+  }
+
+  // The value is stored as JSON string, need to parse it
+  const value = setting.value;
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return parsed as "AUTOMATIC" | "MANUAL";
+    } catch {
+      return "AUTOMATIC";
+    }
+  }
+  
+  return (value as "AUTOMATIC" | "MANUAL") || "AUTOMATIC";
 }
 
 /**
@@ -36,10 +51,10 @@ export async function updateGlobalShippingMode(mode: "AUTOMATIC" | "MANUAL"): Pr
   const supabase = createAdminClient();
   
   await supabase
-    .from("application_settings")
+    .from("settings")
     .upsert({
       key: "shipping_mode",
-      value: mode,
+      value: JSON.stringify(mode), // Store as JSON string
       updated_at: new Date().toISOString()
     });
 }
