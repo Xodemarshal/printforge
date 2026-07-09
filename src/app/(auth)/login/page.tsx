@@ -100,9 +100,9 @@ export default function LoginPage({
 
         <div className="relative flex items-center justify-center my-2">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-forest/10 dark:border-forest/25"></div>
+            <div className="w-full border-t border-forest/25"></div>
           </div>
-          <span className="relative bg-[#fbfcfb] dark:bg-[#0f1810] px-3 text-xs uppercase tracking-widest text-secondary-light font-medium">
+          <span className="relative bg-[#0f1810] px-3 text-xs uppercase tracking-widest text-secondary-light font-medium">
             Or
           </span>
         </div>
@@ -131,13 +131,6 @@ export default function LoginPage({
             <Link href="/register" className="font-medium text-interactive">
               Sign up
             </Link>
-          </p>
-          <p className="text-xs text-muted-light">
-            Admin portal access uses the same login. Sign in with an account whose role is admin, then open{" "}
-            <Link href="/admin/dashboard" className="font-medium text-interactive">
-              /admin/dashboard
-            </Link>
-            .
           </p>
         </div>
       </form>

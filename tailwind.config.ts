@@ -1,7 +1,6 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: ["class"],
   content: [
     "./src/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
@@ -48,9 +47,6 @@ const config: Config = {
 
         moss: "hsl(var(--moss))",
         cream: "hsl(var(--cream))",
-        alabaster: "hsl(var(--alabaster))",
-        gold: "hsl(var(--gold))",
-        wood: "hsl(var(--wood))",
       },
 
       borderRadius: {

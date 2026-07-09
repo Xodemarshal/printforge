@@ -228,7 +228,6 @@ export async function addAddressAction(formData: FormData): Promise<ActionResult
     ...parsed.data,
     is_default: false
   });
-
   if (error) {
     return { error: error.message };
   }

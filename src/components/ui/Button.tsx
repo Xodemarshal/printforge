@@ -13,7 +13,7 @@ export function Button({ className, variant = "default", ...props }: Props) {
       ? "bg-accent-warm text-primary-dark hover:bg-accent-warm/90 shadow-md"
       : variant === "secondary"
       ? "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-      : "border border-forest/20 bg-cream/90 text-primary-medium hover:bg-cream hover:border-forest/30 dark:border-forest/30 dark:bg-primary/10 dark:text-foreground dark:hover:bg-primary/15";
+      : "border border-forest/30 bg-primary/10 text-foreground hover:bg-primary/15 hover:border-forest/40";
 
   return (
     <button

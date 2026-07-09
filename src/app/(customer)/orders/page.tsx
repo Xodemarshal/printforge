@@ -3,6 +3,7 @@ import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
 import { Package, ArrowRight } from "lucide-react";
 import { getCustomerOrders } from "@/actions/orders";
+import { requireUser } from "@/lib/guards";
 
 export const metadata: Metadata = {
   title: "My Orders - PrintForge",
@@ -19,6 +20,7 @@ const statusColors = {
 };
 
 export default async function OrdersPage() {
+  await requireUser();
   let orders = [];
   let errorMessage = null;
   

@@ -3,42 +3,7 @@
 @tailwind utilities;
 
 :root {
-  /* Alabaster/Warm Off-White Backgrounds */
-  --background: 45 25% 96%;
-  --foreground: 145 45% 15%;
-  --card: 145 20% 95%;
-  --card-foreground: 145 45% 15%;
-  
-  /* Forest Green/Deep Moss Primary - Main Theme */
-  --primary: 145 45% 20%;
-  --primary-foreground: 45 25% 96%;
-  
-  /* Forest Green Secondary Variants */
-  --secondary: 145 35% 28%;
-  --secondary-foreground: 45 25% 96%;
-  
-  /* Forest Green Muted tones */
-  --muted: 145 15% 90%;
-  --muted-foreground: 145 25% 40%;
-  
-  /* Forest Green Accent */
-  --accent: 145 40% 25%;
-  --accent-foreground: 45 25% 96%;
-  
-  /* Forest Green Borders */
-  --border: 145 20% 75%;
-  --input: 145 15% 88%;
-  --ring: 145 45% 20%;
-  
-  /* Custom forest theme colors */
-  --forest-light: 145 35% 35%;
-  --forest-dark: 145 50% 15%;
-  --moss: 145 30% 25%;
-  --cream: 45 25% 96%;
-}
-
-.dark {
-  /* Charcoal/Obsidian with Forest Green accents */
+  /* Charcoal/Obsidian with Forest Green accents - Dark Mode Only */
   --background: 145 15% 8%;
   --foreground: 145 8% 82%;
   --card: 145 20% 12%;
@@ -79,13 +44,6 @@ html {
 body {
   @apply bg-background text-foreground antialiased;
   background:
-    radial-gradient(circle at top left, rgba(88, 107, 68, 0.15), transparent 50%),
-    radial-gradient(circle at top right, rgba(68, 92, 52, 0.12), transparent 40%),
-    linear-gradient(180deg, #f8faf7 0%, #f2f6f0 60%, #edf3ea 100%);
-}
-
-.dark body {
-  background:
     radial-gradient(circle at top left, rgba(88, 107, 68, 0.25), transparent 40%),
     radial-gradient(circle at top right, rgba(68, 92, 52, 0.35), transparent 35%),
     linear-gradient(180deg, #0f1810 0%, #0a130c 60%, #050a06 100%);
@@ -120,10 +78,10 @@ body {
 }
 
 .panel-alabaster {
-  background: rgba(248, 250, 247, 0.90);
-  border: 1px solid rgba(88, 107, 68, 0.15);
-  box-shadow: 0 12px 48px rgba(88, 107, 68, 0.08);
-  backdrop-filter: blur(20px);
+  background: linear-gradient(145deg, rgba(15, 24, 16, 0.95), rgba(10, 16, 11, 0.98));
+  border: 1px solid rgba(88, 107, 68, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
 }
 
 .accent-forest {
@@ -148,7 +106,7 @@ body {
 
 /* Artisan Panels & Containers */
 .panel-premium {
-  @apply border border-forest/15 bg-gradient-to-br from-cream/95 to-forest-light/5 shadow-2xl shadow-forest/10;
+  @apply border border-forest/15 bg-gradient-to-br from-forest-dark/20 to-forest-light/5 shadow-2xl shadow-forest/30;
 }
 
 .panel-moss {
@@ -180,150 +138,93 @@ body {
 }/* Opti
 mized Typography Colors for Forest Green Theme */
 
-/* Primary Text Colors */
+/* Primary Text Colors for Dark Mode */
 .text-primary-dark {
-  color: hsl(145 50% 12%);  /* Very dark forest for maximum contrast */
+  color: hsl(145 45% 62%);  /* Bright forest but darkened for comfort */
 }
 
 .text-primary-medium {
-  color: hsl(145 45% 20%);  /* Main forest green for headings */
+  color: hsl(145 40% 58%);  /* Vibrant but darkened forest */
 }
 
 .text-primary-light {
-  color: hsl(145 35% 35%);  /* Lighter forest for secondary text */
+  color: hsl(145 35% 60%);  /* Lighter forest for secondary text */
 }
 
-/* Secondary Text Colors */
+/* Secondary Text Colors for Dark Mode */
 .text-secondary-dark {
-  color: hsl(145 40% 25%);  /* Deep moss for important secondary text */
+  color: hsl(145 40% 58%);  /* Deep moss for important secondary text */
 }
 
 .text-secondary-medium {
-  color: hsl(145 30% 40%);  /* Medium moss for body text */
+  color: hsl(145 35% 60%);  /* Medium moss for body text */
 }
 
 .text-secondary-light {
-  color: hsl(145 20% 55%);  /* Light moss for muted text */
+  color: hsl(145 25% 55%);  /* Light moss for muted text */
 }
 
 /* Accent Text Colors */
 .text-accent-warm {
-  color: hsl(38 60% 45%);   /* Warm gold for highlights */
+  color: hsl(38 70% 50%);   /* Warm gold for highlights */
 }
 
 .text-accent-bright {
-  color: hsl(145 50% 25%);  /* Bright forest for CTAs */
+  color: hsl(145 50% 48%);  /* Bright forest for CTAs */
 }
 
 /* Context-Specific Text Colors */
-.text-on-light {
-  color: hsl(145 50% 15%);  /* Dark text on light backgrounds */
-}
-
 .text-on-dark {
-  color: hsl(45 25% 92%);   /* Light text on dark backgrounds */
+  color: hsl(145 8% 82%);   /* Light text on dark backgrounds */
 }
 
 .text-on-forest {
-  color: hsl(45 25% 96%);   /* Cream text on forest backgrounds */
-}
-
-.text-muted-light {
-  color: hsl(145 15% 60%);  /* Subtle text on light backgrounds */
+  color: hsl(145 8% 82%);   /* Light text on forest backgrounds */
 }
 
 .text-muted-dark {
-  color: hsl(145 10% 70%);  /* Subtle text on dark backgrounds */
+  color: hsl(145 20% 58%);  /* Subtle text on dark backgrounds */
 }
 
 /* Interactive Text Colors */
 .text-interactive {
-  @apply text-forest hover:text-forest-light transition-colors duration-200;
+  @apply text-primary hover:text-accent transition-colors duration-200;
 }
 
 .text-interactive-inverse {
   @apply text-cream hover:text-cream/80 transition-colors duration-200;
 }
 
-/* Brand Text Colors */
+/* Brand Text Colors for Dark Mode */
 .text-brand-primary {
-  color: hsl(145 45% 20%);
+  color: hsl(145 45% 58%);
   font-weight: 600;
 }
 
 .text-brand-secondary {
-  color: hsl(145 30% 25%);
+  color: hsl(145 35% 55%);
   font-weight: 500;
 }
 
 /* Status Text Colors */
 .text-success {
-  color: hsl(145 60% 30%);
+  color: hsl(145 60% 45%);
 }
 
 .text-warning {
-  color: hsl(38 70% 40%);
+  color: hsl(38 70% 50%);
 }
 
 .text-error {
-  color: hsl(0 65% 45%);
+  color: hsl(0 65% 55%);
 }
 
 .text-info {
-  color: hsl(145 40% 35%);
-}/* A
-uth & Panel Styles */
+  color: hsl(145 40% 48%);
+}/* Auth & Panel Styles */
 .panel-soft {
-  background: rgba(248, 250, 247, 0.95);
-  border: 1px solid rgba(88, 107, 68, 0.12);
-  box-shadow: 0 20px 60px rgba(88, 107, 68, 0.08);
-  backdrop-filter: blur(12px);
-}
-
-.dark .panel-soft {
-  background: rgba(15, 24, 16, 0.95);
-  border: 1px solid rgba(88, 107, 68, 0.25);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-}/*
- Dark Mode Typography Overrides */
-.dark .text-primary-dark {
-  color: hsl(145 45% 62%);  /* Bright forest but darkened for comfort */
-}
-
-.dark .text-primary-medium {
-  color: hsl(145 40% 58%);  /* Vibrant but darkened forest */
-}
-
-.dark .text-secondary-medium {
-  color: hsl(145 35% 60%);  /* Bright moss but darkened */
-}
-
-.dark .text-secondary-light {
-  color: hsl(145 25% 55%);  /* Visible forest but darkened */
-}
-
-.dark .text-muted-light {
-  color: hsl(145 20% 58%);  /* Subtle but visible text */
-}
-
-.dark .text-interactive {
-  @apply text-primary hover:text-accent transition-colors duration-200;
-}
-
-/* Dark Mode Brand Colors - Vibrant but Darkened */
-.dark .text-brand-primary {
-  color: hsl(145 45% 58%);
-  font-weight: 600;
-}
-
-.dark .text-brand-secondary {
-  color: hsl(145 35% 55%);
-  font-weight: 500;
-}
-
-/* Auth Page Specific Dark Mode */
-.dark .panel-soft {
   background: linear-gradient(145deg, rgba(15, 24, 16, 0.95), rgba(10, 16, 11, 0.98));
   border: 1px solid rgba(88, 107, 68, 0.3);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
 }

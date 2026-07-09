@@ -2,8 +2,10 @@ import { addAddressAction, deleteAddressAction, updateAddressAction } from "@/ac
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import { requireUser } from "@/lib/guards";
 
-export default function AddressesPage() {
+export default async function AddressesPage() {
+  await requireUser();
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <h1 className="text-3xl font-semibold text-foreground">Addresses</h1>
