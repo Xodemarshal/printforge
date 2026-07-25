@@ -9,13 +9,11 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { formatCurrency } from "@/lib/utils";
+import { SHIPPING_DELIVERY_CHARGE, SHIPPING_FREE_THRESHOLD } from "@/lib/constants";
 import { CreditCard, Truck, Shield, ArrowLeft, Smartphone, Wallet } from "lucide-react";
 import Link from "next/link";
 import { createOrderAction, verifyPaymentAction } from "@/actions/checkout";
 import { validateCouponAction } from "@/actions/coupons";
-
-const SHIPPING_COST = 15;
-const FREE_SHIPPING_THRESHOLD = 299;
 
 type PaymentMethod = "razorpay";
 
@@ -35,7 +33,7 @@ export function CheckoutClient() {
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
   const subtotal = getTotalPrice();
-  const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+  const shippingCost = subtotal >= SHIPPING_FREE_THRESHOLD ? 0 : SHIPPING_DELIVERY_CHARGE;
   const totalBeforeDiscount = subtotal + shippingCost;
   const total = Math.max(0, totalBeforeDiscount - discountAmount);
 

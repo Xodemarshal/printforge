@@ -4,14 +4,13 @@ import Link from "next/link";
 import { Minus, Plus, X } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { formatCurrency } from "@/lib/utils";
-
-const FREE_SHIPPING_THRESHOLD = 299;
+import { SHIPPING_FREE_THRESHOLD } from "@/lib/constants";
 
 export function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, getTotalPrice } = useCart();
   const subtotal = getTotalPrice();
-  const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
-  const progress = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
+  const remaining = Math.max(0, SHIPPING_FREE_THRESHOLD - subtotal);
+  const progress = Math.min(100, (subtotal / SHIPPING_FREE_THRESHOLD) * 100);
 
   return (
     <>

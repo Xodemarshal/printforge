@@ -13,6 +13,7 @@ import { productImage } from "@/lib/design";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/useToast";
 import { useWishlist } from "@/hooks/useWishlist";
+import { SHIPPING_FREE_THRESHOLD } from "@/lib/constants";
 
 interface ProductDetailClientProps {
   product: any;
@@ -455,9 +456,9 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
             </div>
 
             <div className="bg-gray-900/50 rounded-2xl p-6 space-y-3" style={{ borderColor: 'rgb(197, 160, 89)' }}>
-              {[
+              {[ 
                 { icon: <ShieldCheck size={20} />, text: "Secure Payment" },
-                { icon: <Truck size={20} />, text: "Free Shipping over $50" },
+                { icon: <Truck size={20} />, text: `Free shipping over ${formatCurrency(SHIPPING_FREE_THRESHOLD)}` },
                 { icon: <RotateCcw size={20} />, text: "10-Day Returns" }
               ].map((feature, i) => (
                 <div key={i} className="flex items-center gap-3" style={{ color: 'rgb(197, 160, 89)' }}>

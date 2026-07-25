@@ -6,6 +6,8 @@ export { ORDER_STATUSES };
 export const SUPPORTED_UPLOAD_TYPES = [".stl", ".obj", ".3mf"] as const;
 export const SUPPORTED_IMAGE_TYPES = [".png", ".jpg", ".jpeg", ".webp", ".gif"] as const;
 export const PAGE_SIZE = 12;
+export const SHIPPING_FREE_THRESHOLD = 399;
+export const SHIPPING_DELIVERY_CHARGE = 50;
 
 export const MATERIALS: { value: Material; label: string; density: number; baseRate: number }[] = [
   { value: "PLA", label: "PLA", density: 1.24, baseRate: 1.5 },
