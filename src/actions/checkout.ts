@@ -233,8 +233,33 @@ export async function createOrderAction(data: CheckoutData) {
       try {
         await supabase.rpc('increment_coupon_usage', { coupon_id: data.couponId });
       } catch (rpcError) {
-        // RPC might not exist in mock mode, that's ok
-        console.warn('Could not increment coupon usage (expected in mock mode)');
+        // Fallback for environments without the RPC or when it fails.
+        const { data: couponRow, error: couponFetchError } = await supabase
+          .from("coupons")
+          .select("times_used, usage_limit")
+          .eq("id", data.couponId)
+          .maybeSingle();
+
+        if (couponFetchError) {
+          console.warn("Could not fetch coupon for usage update:", couponFetchError);
+        } else if (couponRow) {
+          const nextTimesUsed = Number(couponRow.times_used ?? 0) + 1;
+          const usageLimit = Number(couponRow.usage_limit ?? 0);
+          const updatePayload: Record<string, any> = { times_used: nextTimesUsed };
+
+          if (usageLimit > 0 && nextTimesUsed >= usageLimit) {
+            updatePayload.active = false;
+          }
+
+          const { error: couponUpdateError } = await supabase
+            .from("coupons")
+            .update(updatePayload)
+            .eq("id", data.couponId);
+
+          if (couponUpdateError) {
+            console.warn("Could not update coupon usage:", couponUpdateError);
+          }
+        }
       }
     }
 
