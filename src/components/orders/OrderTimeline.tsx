@@ -2,9 +2,20 @@ import { ORDER_STATUSES, type OrderStatus } from "@/types";
 import { SHIPROCKET_TRACKING_STAGES } from "@/lib/constants";
 import { Badge } from "@/components/ui/Badge";
 
-export function OrderTimeline({ status, shipmentStatus }: { status: OrderStatus; shipmentStatus?: string | null }) {
+export function OrderTimeline({
+  status,
+  shipmentStatus,
+  shippingMode
+}: {
+  status: OrderStatus;
+  shipmentStatus?: string | null;
+  shippingMode?: string | null;
+}) {
   const currentIndex = ORDER_STATUSES.indexOf(status);
-  const shipmentIndex = shipmentStatus ? SHIPROCKET_TRACKING_STAGES.indexOf(shipmentStatus as (typeof SHIPROCKET_TRACKING_STAGES)[number]) : -1;
+  const isAutomatic = (shippingMode || "").toUpperCase() === "AUTOMATIC";
+  const shipmentIndex = shipmentStatus
+    ? SHIPROCKET_TRACKING_STAGES.indexOf(shipmentStatus as (typeof SHIPROCKET_TRACKING_STAGES)[number])
+    : -1;
   return (
     <div className="space-y-4">
       <div>
@@ -17,7 +28,7 @@ export function OrderTimeline({ status, shipmentStatus }: { status: OrderStatus;
           ))}
         </div>
       </div>
-      {shipmentIndex >= 0 && (
+      {isAutomatic && shipmentIndex >= 0 && (
         <div>
           <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.3em] text-forest/50">Delivery Timeline</p>
           <div className="flex flex-wrap gap-2">

@@ -164,7 +164,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             {/* Order Timeline */}
             <div className="overflow-hidden rounded-3xl border border-forest/15 bg-cream/15 p-6 shadow-[0_10px_24px_rgba(46,75,36,0.04)]">
               <h2 className="text-xl font-semibold text-forest mb-4">Order Status</h2>
-              <OrderTimeline status={order.status} shipmentStatus={order.shiprocket_status} />
+              <OrderTimeline status={order.status} shipmentStatus={order.shiprocket_status} shippingMode={shippingMode} />
             </div>
 
             {/* Order Items */}
