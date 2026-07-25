@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import ProductReviewsDashboard from './ProductReviewsDashboard';
 
 export const metadata = {
-  title: 'Product Reviews - PrintForge Admin',
+  title: 'Product Reviews - ArchiveVault Admin',
   description: 'Approve and manage customer product reviews'
 };
 

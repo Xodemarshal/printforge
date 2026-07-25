@@ -4,7 +4,7 @@ import InventoryDashboard from "./InventoryDashboard";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Inventory - PrintForge Admin",
+  title: "Inventory - ArchiveVault Admin",
   description: "Manage material inventory and stock levels"
 };
 

@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import AlertCenterDashboard from './AlertCenterDashboard';
 
 export const metadata = {
-  title: 'Alert Center - PrintForge Admin',
+  title: 'Alert Center - ArchiveVault Admin',
   description: 'Monitor and manage admin alerts'
 };
 

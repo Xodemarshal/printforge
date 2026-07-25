@@ -179,7 +179,7 @@ export async function sendDailyReportEmail(recipientEmail: string) {
   </div>
   
   <div style="text-align: center; padding: 20px; color: #6b7280; font-size: 12px;">
-    <p>&copy; ${new Date().getFullYear()} PrintForge. All rights reserved.</p>
+    <p>&copy; ${new Date().getFullYear()} ArchiveVault. All rights reserved.</p>
   </div>
 </body>
 </html>
@@ -265,7 +265,7 @@ export async function sendWeeklyReportEmail(recipientEmail: string) {
   </div>
   
   <div style="text-align: center; padding: 20px; color: #6b7280; font-size: 12px;">
-    <p>&copy; ${new Date().getFullYear()} PrintForge. All rights reserved.</p>
+    <p>&copy; ${new Date().getFullYear()} ArchiveVault. All rights reserved.</p>
   </div>
 </body>
 </html>

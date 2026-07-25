@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import ProfitabilityDashboard from './ProfitabilityDashboard';
 
 export const metadata = {
-  title: 'Profitability Dashboard - PrintForge Admin',
+  title: 'Profitability Dashboard - ArchiveVault Admin',
   description: 'Product and order profitability tracking'
 };
 

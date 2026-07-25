@@ -67,7 +67,7 @@ export async function sendEmail(
 
     // Send email via Resend
     const { data, error } = await resend.emails.send({
-      from: 'PrintForge <noreply@theorigin.site>',
+      from: 'ArchiveVault <noreply@theorigin.site>',
       to: options.to,
       subject: options.subject,
       html: options.html,
@@ -164,7 +164,7 @@ export function getOrderConfirmationEmail(data: OrderEmailData): EmailOptions {
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background-color: #4F46E5; color: white; padding: 20px; text-align: center;">
-    <h1 style="margin: 0;">PrintForge</h1>
+    <h1 style="margin: 0;">ArchiveVault</h1>
   </div>
   
   <div style="background-color: #f9fafb; padding: 30px; border: 1px solid #e5e7eb;">
@@ -215,7 +215,7 @@ export function getOrderConfirmationEmail(data: OrderEmailData): EmailOptions {
   </div>
   
   <div style="text-align: center; padding: 20px; color: #6b7280; font-size: 12px;">
-    <p>&copy; ${new Date().getFullYear()} PrintForge. All rights reserved.</p>
+    <p>&copy; ${new Date().getFullYear()} ArchiveVault. All rights reserved.</p>
   </div>
 </body>
 </html>
@@ -239,7 +239,7 @@ export function getPrintingStartedEmail(data: OrderEmailData): EmailOptions {
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background-color: #4F46E5; color: white; padding: 20px; text-align: center;">
-    <h1 style="margin: 0;">PrintForge</h1>
+    <h1 style="margin: 0;">ArchiveVault</h1>
   </div>
   
   <div style="background-color: #f9fafb; padding: 30px; border: 1px solid #e5e7eb;">
@@ -265,7 +265,7 @@ export function getPrintingStartedEmail(data: OrderEmailData): EmailOptions {
   </div>
   
   <div style="text-align: center; padding: 20px; color: #6b7280; font-size: 12px;">
-    <p>&copy; ${new Date().getFullYear()} PrintForge. All rights reserved.</p>
+    <p>&copy; ${new Date().getFullYear()} ArchiveVault. All rights reserved.</p>
   </div>
 </body>
 </html>
@@ -289,7 +289,7 @@ export function getShippedEmail(data: OrderEmailData): EmailOptions {
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background-color: #4F46E5; color: white; padding: 20px; text-align: center;">
-    <h1 style="margin: 0;">PrintForge</h1>
+    <h1 style="margin: 0;">ArchiveVault</h1>
   </div>
   
   <div style="background-color: #f9fafb; padding: 30px; border: 1px solid #e5e7eb;">
@@ -325,7 +325,7 @@ export function getShippedEmail(data: OrderEmailData): EmailOptions {
   </div>
   
   <div style="text-align: center; padding: 20px; color: #6b7280; font-size: 12px;">
-    <p>&copy; ${new Date().getFullYear()} PrintForge. All rights reserved.</p>
+    <p>&copy; ${new Date().getFullYear()} ArchiveVault. All rights reserved.</p>
   </div>
 </body>
 </html>
@@ -354,7 +354,7 @@ export function getAbandonedCartEmail(data: {
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background-color: #4F46E5; color: white; padding: 20px; text-align: center;">
-    <h1 style="margin: 0;">PrintForge</h1>
+    <h1 style="margin: 0;">ArchiveVault</h1>
   </div>
   
   <div style="background-color: #f9fafb; padding: 30px; border: 1px solid #e5e7eb;">
@@ -382,7 +382,7 @@ export function getAbandonedCartEmail(data: {
   </div>
   
   <div style="text-align: center; padding: 20px; color: #6b7280; font-size: 12px;">
-    <p>&copy; ${new Date().getFullYear()} PrintForge. All rights reserved.</p>
+    <p>&copy; ${new Date().getFullYear()} ArchiveVault. All rights reserved.</p>
   </div>
 </body>
 </html>

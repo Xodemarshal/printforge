@@ -18,7 +18,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   // Load wishlist from localStorage on mount
   useEffect(() => {
-    const savedWishlist = localStorage.getItem("printforge-wishlist");
+    const savedWishlist = localStorage.getItem("archivevault-wishlist");
     if (savedWishlist) {
       try {
         setItems(JSON.parse(savedWishlist));
@@ -30,7 +30,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   // Save wishlist to localStorage whenever items change
   useEffect(() => {
-    localStorage.setItem("printforge-wishlist", JSON.stringify(items));
+    localStorage.setItem("archivevault-wishlist", JSON.stringify(items));
   }, [items]);
 
   const toggle = (productId: string) => {

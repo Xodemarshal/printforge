@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import BusinessHealthDashboard from './BusinessHealthDashboard';
 
 export const metadata = {
-  title: 'Business Health - PrintForge Admin',
+  title: 'Business Health - ArchiveVault Admin',
   description: 'Monitor overall business health score'
 };
 

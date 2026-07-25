@@ -20,7 +20,7 @@ export default async function CouponsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">PrintForge Admin</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">ArchiveVault Admin</p>
           <h1 className="text-3xl font-bold text-white">Coupons & Discounts</h1>
           <p className="text-gray-400 mt-1 text-sm">Create and manage promo codes and customer discounts.</p>
         </div>

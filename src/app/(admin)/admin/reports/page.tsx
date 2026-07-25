@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import ReportsDashboard from './ReportsDashboard';
 
 export const metadata = {
-  title: 'Reports - PrintForge Admin',
+  title: 'Reports - ArchiveVault Admin',
   description: 'Manage automated business reports and subscriptions'
 };
 

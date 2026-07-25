@@ -31,7 +31,7 @@ export function HeroBanner({ settings }: { settings?: HeroSectionSettings }) {
             <div className="group relative min-h-[500px] overflow-hidden rounded-[40px] bg-cream lg:min-h-[660px] lg:col-span-1">
               <img
                 src={imageUrl}
-                alt="PrintForge product showcase"
+                alt="ArchiveVault product showcase"
                 className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />

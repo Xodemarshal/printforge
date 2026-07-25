@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { FAQSection } from "@/components/home/FAQSection";
 
 export const metadata: Metadata = {
-  title: "FAQ | PrintForge",
-  description: "Frequently asked questions about PrintForge."
+  title: "FAQ | ArchiveVault",
+  description: "Frequently asked questions about ArchiveVault."
 };
 
 export default function FaqPage() {

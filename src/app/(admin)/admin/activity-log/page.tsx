@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import ActivityLogDashboard from './ActivityLogDashboard';
 
 export const metadata = {
-  title: 'Activity Log - PrintForge Admin',
+  title: 'Activity Log - ArchiveVault Admin',
   description: 'Admin audit trail and activity monitoring'
 };
 

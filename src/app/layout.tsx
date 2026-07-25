@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
     const faviconUrl = settings.faviconUrl || settings.logoUrl || "/design/logo.png";
 
     return {
-      title: settings.siteName || "PrintForge",
+      title: settings.siteName || "ArchiveVault",
       description: "Creative product storefront and admin platform.",
       icons: {
         icon: faviconUrl,
@@ -25,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   } catch (error) {
     return {
-      title: "PrintForge",
+      title: "ArchiveVault",
       description: "Creative product storefront and admin platform.",
       icons: {
         icon: "/design/logo.png",
