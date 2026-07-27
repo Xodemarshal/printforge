@@ -65,6 +65,7 @@ export type ProductRow = {
   shipping_length_cm?: number | null;
   shipping_width_cm?: number | null;
   shipping_height_cm?: number | null;
+  view_count: number;
   rating: number;
   review_count: number;
   featured: boolean;

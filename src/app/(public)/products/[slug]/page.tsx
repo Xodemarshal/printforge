@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getProductBySlug, getProducts } from "@/actions/products";
 import { trackEvent } from "@/lib/utils";
 import { ProductDetailClient } from "./ProductDetailClient";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params
@@ -27,6 +30,12 @@ export default async function ProductPage({
     return <div className="mx-auto max-w-7xl px-4 py-16 text-primary-dark">Product not found.</div>;
   }
 
+  const supabase = createAdminClient();
+  try {
+    await supabase.rpc("increment_product_view_count", { product_id: product.id });
+  } catch (error) {
+    console.warn("Failed to increment product view count:", error);
+  }
   await trackEvent("product_viewed", null, { slug });
   const related = product.category_id ? await getProducts({ category: String(product.category_id) }) : { items: [] };
 

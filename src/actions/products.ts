@@ -17,6 +17,12 @@ function isMissingColumnError(error: unknown) {
     (error as { message: string }).message.includes("image_url"));
 }
 
+function isMissingViewCountError(error: unknown) {
+  return Boolean(error && typeof error === "object" && "message" in error &&
+    typeof (error as { message?: string }).message === "string" &&
+    (error as { message: string }).message.includes("view_count"));
+}
+
 export async function getProducts(input: ProductFilterInput = {}) {
   const supabase = createAdminClient();
   const { data, error } = await supabase.from("products").select("*").order("created_at", { ascending: false });
@@ -57,6 +63,53 @@ export async function getFeaturedProducts() {
   const supabase = createAdminClient();
   const { data } = await supabase.from("products").select("*").eq("featured", true).eq("active", true).limit(8);
   return data ?? (mockData.products as any[]).filter((product) => product.featured && product.active).slice(0, 8);
+}
+
+export async function getNewArrivals(limit = 8) {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("active", true)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    if (isMissingTableError(error)) {
+      return (mockData.products as any[])
+        .filter((product) => product.active)
+        .slice()
+        .sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")))
+        .slice(0, limit);
+    }
+    throw error;
+  }
+
+  return data ?? [];
+}
+
+export async function getMostVisitedProducts(limit = 8) {
+  const supabase = createAdminClient();
+  const { data: products, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("active", true)
+    .order("view_count", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    if (isMissingTableError(error) || isMissingViewCountError(error)) {
+      return getNewArrivals(limit);
+    }
+    throw error;
+  }
+
+  if (!products || products.length === 0) {
+    return getNewArrivals(limit);
+  }
+
+  return products;
 }
 
 export async function getBestSellers() {

@@ -1,14 +1,17 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/guards";
 import Link from "next/link";
 import {
   ShoppingBag, Printer, Users, IndianRupee, TrendingUp, Bell,
   Package, ClipboardList, Activity, FileText, MessageSquare,
   Layers, AlertTriangle, ArrowRight
 } from "lucide-react";
+import { CommunicationToolsPanel } from "@/components/admin/CommunicationToolsPanel";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
+  const admin = await requireAdmin();
   const supabase = createAdminClient();
   const today = new Date().toISOString().slice(0, 10);
   const todayStart = `${today}T00:00:00Z`;
@@ -47,6 +50,8 @@ export default async function AdminDashboardPage() {
   const unreadAlerts = (alerts || []).length;
   const criticalAlerts = (alerts || []).filter(a => a.severity === "critical").length;
   const lowStock = (inventoryItems || []).filter((item: any) => item.quantity < item.threshold).length;
+  const adminEmail = admin.email || "";
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || process.env.WHATSAPP_NUMBER || "";
 
   const kpiCards = [
     { label: "Revenue Today", value: `₹${revenueToday.toLocaleString("en-IN")}`, sub: profitToday !== 0 ? `₹${profitToday.toLocaleString("en-IN")} profit` : "Profit pending", icon: IndianRupee, accent: "text-green-400" },
@@ -155,6 +160,7 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
+        <div className="space-y-6">
         {/* Operations Hub */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-800">
@@ -176,6 +182,9 @@ export default async function AdminDashboardPage() {
               </Link>
             ))}
           </div>
+        </div>
+
+        <CommunicationToolsPanel adminEmail={adminEmail} whatsappNumber={whatsappNumber} />
         </div>
       </div>
 

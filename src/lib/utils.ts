@@ -16,7 +16,9 @@ export async function trackEvent(
   metadata: Record<string, unknown> = {}
 ) {
   const supabase = createAdminClient();
+  const eventName = type === "product_viewed" ? "product_view" : type;
   await supabase.from("analytics_events").insert({
+    event_name: eventName,
     event_type: type,
     user_id: userId,
     metadata

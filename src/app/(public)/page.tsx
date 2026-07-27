@@ -7,7 +7,7 @@ import { TrendingProducts } from "@/components/home/TrendingProducts";
 import { CategoryGrid } from "@/components/home/CategoryGrid";
 import { CustomerReviews } from "@/components/home/CustomerReviews";
 import { FAQSection } from "@/components/home/FAQSection";
-import { getBestSellers, getFeaturedProducts } from "@/actions/products";
+import { getBestSellers, getFeaturedProducts, getMostVisitedProducts, getNewArrivals } from "@/actions/products";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { mockData } from "@/lib/mock-supabase";
 import { getSiteSettings } from "@/actions/settings";
@@ -19,6 +19,8 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const featured = await getFeaturedProducts();
+  const newArrivals = await getNewArrivals();
+  const mostVisited = await getMostVisitedProducts();
   const bestSellers = await getBestSellers();
   const supabase = createAdminClient();
   const categoriesResult = await supabase.from("categories").select("*").limit(8);
@@ -31,9 +33,9 @@ export default async function HomePage() {
     <>
       <HeroBanner settings={settings.hero} />
       <TrustBar />
-      <FeaturedProducts products={featured} />
+      <FeaturedProducts products={newArrivals} />
       <BestSellers products={bestSellers} />
-      <TrendingProducts products={featured} />
+      <TrendingProducts products={mostVisited.length > 0 ? mostVisited : featured} />
       <CategoryGrid categories={categories ?? []} />
       <CustomerReviews
         reviews={(reviews ?? []).map((review: any) => ({
