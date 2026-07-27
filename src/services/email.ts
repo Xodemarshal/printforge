@@ -67,7 +67,7 @@ export async function sendEmail(
 
     // Send email via Resend
     const { data, error } = await resend.emails.send({
-      from: 'ArchiveVault <noreply@theorigin.site>',
+      from: process.env.EMAIL_FROM || 'ArchiveVault <noreply@archivevault.in>',
       to: options.to,
       subject: options.subject,
       html: options.html,
@@ -436,17 +436,23 @@ export async function sendAbandonedCartEmail(data: {
  * Resend Domain Management Utilities
  */
 export async function createResendDomain(domainName?: string) {
-  const name = domainName || process.env.RESEND_DOMAIN || 'theorigin.site';
+  const name = domainName || process.env.RESEND_DOMAIN || 'archivevault.in';
   return await resend.domains.create({ name });
 }
 
 export async function getResendDomain(domainId?: string) {
-  const id = domainId || process.env.RESEND_DOMAIN_ID || '31bac63c-4f97-4ce6-9d5e-015bbb46d22a';
+  const id = domainId || process.env.RESEND_DOMAIN_ID;
+  if (!id) {
+    throw new Error('RESEND_DOMAIN_ID is not configured');
+  }
   return await resend.domains.get(id);
 }
 
 export async function verifyResendDomain(domainId?: string) {
-  const id = domainId || process.env.RESEND_DOMAIN_ID || '31bac63c-4f97-4ce6-9d5e-015bbb46d22a';
+  const id = domainId || process.env.RESEND_DOMAIN_ID;
+  if (!id) {
+    throw new Error('RESEND_DOMAIN_ID is not configured');
+  }
   return await resend.domains.verify(id);
 }
 
@@ -454,7 +460,10 @@ export async function updateResendDomain(
   domainId?: string,
   trackingOptions?: { openTracking?: boolean; clickTracking?: boolean }
 ) {
-  const id = domainId || process.env.RESEND_DOMAIN_ID || '31bac63c-4f97-4ce6-9d5e-015bbb46d22a';
+  const id = domainId || process.env.RESEND_DOMAIN_ID;
+  if (!id) {
+    throw new Error('RESEND_DOMAIN_ID is not configured');
+  }
   return await resend.domains.update({
     id,
     openTracking: trackingOptions?.openTracking ?? false,
