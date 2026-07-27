@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
+import { ensureUserProfile } from "@/lib/user-profile";
 
 export async function getCurrentUser() {
   const supabase = await createClient();
@@ -19,6 +20,8 @@ export async function requireUser(redirectOnFail = true) {
     }
     throw new Error("Unauthorized");
   }
+
+  await ensureUserProfile(user);
 
   return user;
 }

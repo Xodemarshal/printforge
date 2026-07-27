@@ -1,5 +1,6 @@
 import { getOrderById, cancelOrderAction } from "@/actions/orders";
 import { OrderTimeline } from "@/components/orders/OrderTimeline";
+import { RetryPaymentButton } from "@/components/orders/RetryPaymentButton";
 import { ReviewSection } from "@/components/orders/ReviewSection";
 import { CustomerTrackingPanel } from "@/components/shipping/CustomerTrackingPanel";
 import { Button } from "@/components/ui/Button";
@@ -42,6 +43,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const awbNumber = order.shiprocket_awb_number || order.tracking_number || "Pending";
   const trackingUrl = order.shiprocket_tracking_url || order.tracking_url || null;
   const shippingMode = order.shipping_mode || "AUTOMATIC";
+  const canRetryPayment = order.payment_status === "pending" && Boolean(order.razorpay_order_id) && Boolean(process.env.RAZORPAY_KEY_ID);
 
   // Pre-fetch which products the user already reviewed for THIS order
   const productIds = orderItems.map((i: any) => i.product_id).filter(Boolean);
@@ -276,6 +278,27 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                       {order.razorpay_payment_id}
                     </p>
                   </div>
+                )}
+                {canRetryPayment && (
+                  <div className="pt-2">
+                    <RetryPaymentButton
+                      orderId={order.id}
+                      razorpayOrderId={order.razorpay_order_id}
+                      razorpayKeyId={process.env.RAZORPAY_KEY_ID || ""}
+                      amount={Number(order.total_amount || 0)}
+                      customerName={order.customer_name}
+                      customerEmail={order.customer_email}
+                      customerPhone={order.shipping_phone}
+                    />
+                    <p className="mt-2 text-xs text-forest/55">
+                      Your order is saved. Tap Pay Now to reopen Razorpay and complete the payment.
+                    </p>
+                  </div>
+                )}
+                {order.payment_status !== "paid" && !canRetryPayment && (
+                  <p className="text-xs text-forest/55">
+                    This order is waiting for payment. If the checkout was closed, please contact support to retry.
+                  </p>
                 )}
               </div>
             </div>
