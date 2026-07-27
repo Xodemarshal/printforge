@@ -1,7 +1,10 @@
 "use server";
 
+import { Resend } from "resend";
 import { requireAdmin } from "@/lib/guards";
-import { sendEmail } from "@/services/email";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+const MAILER_CHECK_FROM = "ArchiveVault <noreply@archivevault.in>";
 
 export type MailerCheckState = {
   success: boolean;
@@ -24,8 +27,9 @@ export async function sendMailerCheckAction(
       };
     }
 
-    const result = await sendEmail("admin_mailer_check", {
-      to: recipient,
+    const { error } = await resend.emails.send({
+      from: MAILER_CHECK_FROM,
+      to: [recipient],
       subject: "Mailer check from admin dashboard",
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937;">
@@ -36,10 +40,10 @@ export async function sendMailerCheckAction(
       `
     });
 
-    if (!result.success) {
+    if (error) {
       return {
         success: false,
-        error: result.error || "Failed to send the test email."
+        error: error.message || "Failed to send the test email."
       };
     }
 
