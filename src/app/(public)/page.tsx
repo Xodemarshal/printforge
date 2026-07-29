@@ -19,9 +19,9 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const featured = await getFeaturedProducts();
-  const newArrivals = await getNewArrivals();
-  const mostVisited = await getMostVisitedProducts();
-  const bestSellers = await getBestSellers();
+  const newArrivals = await getNewArrivals(4);
+  const mostVisited = await getMostVisitedProducts(8);
+  const bestSellers = await getBestSellers(8);
   const supabase = createAdminClient();
   const categoriesResult = await supabase.from("categories").select("*").limit(8);
   const reviewsResult = await supabase.from("reviews").select("id, comment, user_id").limit(3);

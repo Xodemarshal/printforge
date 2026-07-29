@@ -112,10 +112,10 @@ export async function getMostVisitedProducts(limit = 8) {
   return products;
 }
 
-export async function getBestSellers() {
+export async function getBestSellers(limit = 8) {
   const supabase = createAdminClient();
-  const { data } = await supabase.from("products").select("*").eq("best_seller", true).eq("active", true).limit(8);
-  return data ?? (mockData.products as any[]).filter((product) => product.best_seller && product.active).slice(0, 8);
+  const { data } = await supabase.from("products").select("*").eq("best_seller", true).eq("active", true).limit(limit);
+  return data ?? (mockData.products as any[]).filter((product) => product.best_seller && product.active).slice(0, limit);
 }
 
 export async function getCategories() {
