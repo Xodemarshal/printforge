@@ -134,10 +134,10 @@ export async function registerAction(formData: FormData): Promise<ActionResult> 
   if (confirmLink) {
     const { error: emailError } = await sendEmail("signup_confirmation", {
       to: parsed.data.email,
-      subject: "Confirm your PrintForge Account",
+      subject: "Confirm your ArchiveVault Account",
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e1d6c1; border-radius: 12px; background-color: #FAF6EE;">
-          <h2 style="color: #2D5016; text-align: center;">Welcome to PrintForge!</h2>
+          <h2 style="color: #2D5016; text-align: center;">Welcome to ArchiveVault!</h2>
           <p>Hi ${parsed.data.name},</p>
           <p>Thank you for signing up. Please click the button below to verify your email address and activate your account:</p>
           <div style="text-align: center; margin: 30px 0;">

@@ -67,7 +67,7 @@ export async function sendEmail(
 
     // Send email via Resend
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'ArchiveVault <noreply@archivevault.in>',
+      from: 'ArchiveVault <noreply@archivevault.in>',
       to: options.to,
       subject: options.subject,
       html: options.html,
