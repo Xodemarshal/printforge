@@ -55,26 +55,26 @@ export function NotificationBell() {
         type="button"
         aria-label="Notifications"
         onClick={() => setOpen((value) => !value)}
-        className="relative inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full border border-forest/15 bg-cream/60 text-primary-medium transition-all duration-300 hover:bg-cream/90 backdrop-blur-sm shrink-0"
+        className="relative inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 text-cream transition-all duration-300 hover:bg-white/10 backdrop-blur-md shrink-0"
       >
-        <Bell size={16} className="sm:w-5 sm:h-5" />
+        <Bell size={16} className="sm:w-5 sm:h-5 text-emerald-400" />
         <span className="sr-only">Notifications</span>
         {unreadCount > 0 ? (
-          <span className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] text-white font-bold">
+          <span className="absolute -right-1 -top-1 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[10px] text-white font-bold shadow-md shadow-emerald-950">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         ) : null}
       </button>
       
       {open ? (
-        <div className="absolute right-0 z-50 mt-2 w-80 rounded-3xl border border-forest/15 panel-alabaster shadow-2xl shadow-forest/10">
-          <div className="p-4 border-b border-forest/10">
+        <div className="absolute right-0 z-50 mt-2 w-80 rounded-3xl border border-white/10 bg-[#0a130c]/95 backdrop-blur-xl shadow-2xl shadow-black/60 text-cream">
+          <div className="p-4 border-b border-white/10">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-forest">Notifications</h3>
+              <h3 className="font-semibold text-emerald-400">Notifications</h3>
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="flex items-center gap-1 text-xs text-forest/60 hover:text-forest transition-colors"
+                  className="flex items-center gap-1 text-xs text-cream/60 hover:text-emerald-400 transition-colors"
                 >
                   <CheckCheck size={12} />
                   Mark all read
@@ -85,36 +85,36 @@ export function NotificationBell() {
           
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="p-4 text-center">
-                <p className="text-sm text-secondary-light">No notifications yet.</p>
+              <div className="p-6 text-center">
+                <p className="text-sm text-cream/50">No notifications yet.</p>
               </div>
             ) : (
-              <div className="space-y-1 p-2">
+              <div className="space-y-1.5 p-2">
                 {notifications.slice(0, 10).map((notification) => (
                   <div 
                     key={notification.id} 
-                    className={`rounded-2xl p-3 cursor-pointer transition-colors ${
+                    className={`rounded-2xl p-3 cursor-pointer transition-colors border ${
                       notification.read 
-                        ? "bg-cream/30 hover:bg-cream/50" 
-                        : "bg-forest/5 border border-forest/10 hover:bg-forest/10"
+                        ? "bg-white/5 border-white/5 hover:bg-white/10" 
+                        : "bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20"
                     }`}
                     onClick={() => markAsRead(notification.id)}
                   >
                     <div className="flex items-start gap-3">
                       <span className="text-lg">{getNotificationIcon(notification.type)}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-primary-medium">
+                        <p className="text-sm font-semibold text-cream">
                           {notification.title}
                         </p>
-                        <p className="text-xs text-secondary-light mt-1">
+                        <p className="text-xs text-cream/70 mt-1 leading-relaxed">
                           {notification.message}
                         </p>
-                        <p className="text-xs text-secondary-light mt-2">
+                        <p className="text-[10px] text-cream/40 mt-2 font-medium">
                           {getTimeAgo(notification.createdAt)}
                         </p>
                       </div>
                       {!notification.read && (
-                        <div className="w-2 h-2 bg-forest rounded-full shrink-0 mt-1"></div>
+                        <div className="w-2 h-2 bg-emerald-400 rounded-full shrink-0 mt-1 shadow-sm shadow-emerald-400"></div>
                       )}
                     </div>
                   </div>
@@ -123,10 +123,10 @@ export function NotificationBell() {
             )}
           </div>
           
-          <div className="p-3 border-t border-forest/10">
+          <div className="p-3 border-t border-white/10">
             <Link 
-              href="/api/notifications" 
-              className="block text-center text-sm text-forest hover:text-forest-dark transition-colors"
+              href="/dashboard" 
+              className="block text-center text-sm text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
               onClick={() => setOpen(false)}
             >
               View all notifications →
