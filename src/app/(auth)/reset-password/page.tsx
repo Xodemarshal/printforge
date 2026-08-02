@@ -20,17 +20,15 @@ function ResetPasswordContent() {
   const router = useRouter();
   const toast = useToast();
 
-  const token = searchParams.get("token");
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     startTransition(async () => {
       const formData = new FormData();
       formData.append("password", password);
       formData.append("confirmPassword", confirmPassword);
-      
+
       const result = await resetPasswordWithTokenAction(formData);
-      
+
       if (result.error) {
         toast.error("Error", result.error);
       } else {
@@ -43,20 +41,13 @@ function ResetPasswordContent() {
     });
   };
 
-  if (!token) {
+  if (isSuccess) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-2 rounded-xl bg-red-50 p-4 text-sm text-red-800 border border-red-200">
-          <AlertTriangle className="h-4 w-4 shrink-0 text-red-600" />
-          <span>Invalid or expired reset link. Please request a new password reset.</span>
+        <div className="flex items-center gap-2 rounded-xl bg-green-50 p-4 text-sm text-green-800 border border-green-200">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" />
+          <span>Password reset successfully! Redirecting to login...</span>
         </div>
-        <Link 
-          href="/forgot-password" 
-          className="inline-flex items-center gap-2 text-interactive hover:text-primary-medium transition-colors"
-        >
-          <ArrowLeft size={14} />
-          Request New Reset Link
-        </Link>
       </div>
     );
   }
@@ -119,8 +110,8 @@ function ResetPasswordContent() {
         </div>
       </div>
 
-      <Button 
-        type="submit" 
+      <Button
+        type="submit"
         disabled={isPending || password.length < 6 || password !== confirmPassword}
         className="w-full"
       >
@@ -128,8 +119,8 @@ function ResetPasswordContent() {
       </Button>
 
       <div className="pt-4 text-center text-sm text-secondary-light">
-        <Link 
-          href="/login" 
+        <Link
+          href="/login"
           className="inline-flex items-center gap-2 text-interactive hover:text-primary-medium transition-colors"
         >
           <ArrowLeft size={14} />
@@ -137,28 +128,6 @@ function ResetPasswordContent() {
         </Link>
       </div>
     </form>
-  );
-}
-
-// AlertTriangle component for the token check
-function AlertTriangle(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-      <path d="M12 9v4" />
-      <path d="M12 17h.01" />
-    </svg>
   );
 }
 

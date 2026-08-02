@@ -769,6 +769,11 @@ class MockAuth {
     console.log("Mock code exchange for session:", code);
     return { data: { session: null, user: null }, error: null };
   }
+
+  async updateUser(options: { password?: string }) {
+    console.log("Mock update user with options:", options);
+    return { data: { user: null }, error: null };
+  }
 }
 
 export function createMockSupabaseClient() {

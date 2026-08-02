@@ -179,7 +179,7 @@ export async function resetPasswordAction(formData: FormData): Promise<ActionRes
   const appUrl = await getAppUrl();
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${appUrl}/reset-password`
+    redirectTo: `${appUrl}/api/auth/callback?next=/reset-password`
   });
 
   if (error) {
@@ -317,7 +317,7 @@ export async function changePasswordAction(formData: FormData): Promise<ActionRe
     }
 
     // Update password
-    const { error: updateError } = await (supabase.auth as any).updateUser({
+    const { error: updateError } = await supabase.auth.updateUser({
       password: newPassword
     });
 
@@ -357,7 +357,7 @@ export async function requestPasswordResetAction(formData: FormData): Promise<Ac
     const appUrl = await getAppUrl();
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${appUrl}/reset-password`
+      redirectTo: `${appUrl}/api/auth/callback?next=/reset-password`
     });
 
     if (error) {
@@ -387,7 +387,16 @@ export async function resetPasswordWithTokenAction(formData: FormData): Promise<
     }
 
     const supabase = await createClient();
-    const { error } = await (supabase.auth as any).updateUser({
+    
+    // First check if user is authenticated (should be after clicking reset link)
+    const { data: { user }, error: getUserError } = await supabase.auth.getUser();
+    
+    if (getUserError || !user) {
+      return { error: "Invalid or expired reset link. Please request a new password reset." };
+    }
+    
+    // Update password for authenticated user
+    const { error } = await supabase.auth.updateUser({
       password
     });
 

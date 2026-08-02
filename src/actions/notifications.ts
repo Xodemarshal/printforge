@@ -1,10 +1,13 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { requireUser } from "@/lib/guards";
+import { requireUser, getCurrentUser } from "@/lib/guards";
 
 export async function getUserNotifications() {
-  const user = await requireUser();
+  const user = await getCurrentUser();
+  if (!user) {
+    return [];
+  }
   const supabase = createAdminClient();
   
   const { data, error } = await supabase
