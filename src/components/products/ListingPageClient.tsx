@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight, LayoutGrid, List, ChevronDown, Star, SlidersHorizontal } from "lucide-react";
 import { ProductCard } from "./ProductCard";
+
 interface ListingPageClientProps {
   initialProducts: any[];
   categories: any[];
@@ -91,19 +92,19 @@ export function ListingPageClient({
   const ratings = [5, 4, 3, 2, 1];
 
   return (
-    <div className="min-h-screen bg-alabaster">
+    <div className="min-h-screen bg-[#0f1810]">
       {/* Header with breadcrumb */}
-      <div className="bg-cream/30 border-b border-forest/10">
+      <div className="bg-white/5 border-b border-white/10 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <nav className="flex items-center gap-2 text-sm text-forest/60 mb-6">
-            <Link href="/" className="hover:text-forest transition-colors">Home</Link>
+          <nav className="flex items-center gap-2 text-sm text-cream/50 mb-6">
+            <Link href="/" className="hover:text-cream transition-colors">Home</Link>
             <ChevronRight size={14} />
-            <span className="text-forest font-medium">{title}</span>
+            <span className="text-emerald-400 font-medium">{title}</span>
           </nav>
           
-          <h1 className="display-font text-4xl lg:text-5xl text-forest font-bold mb-4">{title}</h1>
+          <h1 className="display-font text-4xl lg:text-5xl text-emerald-400 font-bold mb-4">{title}</h1>
           {subtitle && (
-            <p className="text-forest/60 max-w-2xl">
+            <p className="text-cream/60 max-w-2xl text-base">
               {subtitle}
             </p>
           )}
@@ -118,22 +119,22 @@ export function ListingPageClient({
             {/* Categories */}
             <div className="space-y-4">
               <div className="flex items-center justify-between group cursor-pointer">
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-forest">Categories</h3>
-                <ChevronDown size={14} className="text-forest/30" />
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-400">Categories</h3>
+                <ChevronDown size={14} className="text-cream/40" />
               </div>
               <div className="space-y-1">
                 <Link 
                   href="/shop"
-                  className="flex items-center justify-between px-3 py-2 rounded-xl bg-forest/5 text-forest font-bold text-xs"
+                  className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold text-xs"
                 >
                   <span>All Products</span>
-                  <span className="text-[10px] opacity-40">{total}</span>
+                  <span className="text-[10px] opacity-70">{total}</span>
                 </Link>
                 {categories.map((cat) => (
                   <Link 
                     key={cat.id}
                     href={`/categories/${cat.slug}`}
-                    className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-forest/5 text-forest/60 hover:text-forest transition-all duration-300 text-xs"
+                    className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl hover:bg-white/5 text-cream/60 hover:text-cream transition-all duration-200 text-xs"
                   >
                     <span>{cat.name}</span>
                     <span className="text-[10px] opacity-40">{cat.product_count || 0}</span>
@@ -144,14 +145,14 @@ export function ListingPageClient({
 
             {/* Filter By */}
             <div className="space-y-6">
-              <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-forest flex items-center justify-between">
+              <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-400 flex items-center justify-between">
                 Filter By
-                <ChevronDown size={14} className="text-forest/30" />
+                <ChevronDown size={14} className="text-cream/40" />
               </h3>
 
               {/* Material */}
               <div className="space-y-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-forest/40">Material</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-cream/40">Material</p>
                 <div className="space-y-3">
                   {materials.map((m) => {
                     const materialCount = initialProducts.filter(p => 
@@ -165,19 +166,19 @@ export function ListingPageClient({
                             onClick={() => setSelectedMaterial(m.id)}
                             className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
                               selectedMaterial === m.id 
-                                ? 'bg-forest border-forest' 
-                                : 'border-forest/20 group-hover:border-forest/40'
+                                ? 'bg-emerald-500 border-emerald-500' 
+                                : 'border-white/20 group-hover:border-white/40'
                             }`}
                           >
                             {selectedMaterial === m.id && (
                               <div className="w-1.5 h-1.5 rounded-full bg-white" />
                             )}
                           </div>
-                          <span className="text-xs text-forest/60 group-hover:text-forest transition-colors">
+                          <span className="text-xs text-cream/60 group-hover:text-cream transition-colors">
                             {m.label}
                           </span>
                         </div>
-                        <span className="text-[10px] text-forest/30">{materialCount}</span>
+                        <span className="text-[10px] text-cream/30">{materialCount}</span>
                       </label>
                     );
                   })}
@@ -186,7 +187,7 @@ export function ListingPageClient({
 
               {/* Price Range */}
               <div className="space-y-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-forest/40">Price Range</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-cream/40">Price Range</p>
                 <div className="space-y-4">
                   <input 
                     type="range" 
@@ -195,18 +196,18 @@ export function ListingPageClient({
                     step="500"
                     value={priceRange}
                     onChange={(e) => setPriceRange(parseInt(e.target.value))}
-                    className="w-full h-1 bg-forest/10 rounded-full appearance-none cursor-pointer accent-forest"
+                    className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-emerald-400"
                   />
-                  <div className="flex items-center justify-between text-[11px] font-bold text-forest">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-cream">
                     <span>{formatRupees(0)}</span>
-                    <span>{formatRupees(priceRange)}+</span>
+                    <span className="text-emerald-400">{formatRupees(priceRange)}+</span>
                   </div>
                 </div>
               </div>
 
               {/* Rating */}
               <div className="space-y-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-forest/40">Rating</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-cream/40">Rating</p>
                 <div className="space-y-3">
                   {ratings.map((r) => {
                     const ratingCount = initialProducts.filter(p => (p.rating || 0) >= r).length;
@@ -219,7 +220,7 @@ export function ListingPageClient({
                               <Star 
                                 key={i} 
                                 size={12} 
-                                className={i < r ? "text-accent fill-accent" : "text-forest/10 fill-forest/10"} 
+                                className={i < r ? "text-amber-400 fill-amber-400" : "text-white/10 fill-white/10"} 
                               />
                             ))}
                           </div>
@@ -228,8 +229,8 @@ export function ListingPageClient({
                           onClick={() => setSelectedRating(selectedRating === r ? null : r)}
                           className={`text-[10px] px-2 py-0.5 rounded transition-colors ${
                             selectedRating === r 
-                              ? 'bg-forest text-white' 
-                              : 'text-forest/30 hover:bg-forest/5'
+                              ? 'bg-emerald-600 text-white' 
+                              : 'text-cream/40 hover:bg-white/5'
                           }`}
                         >
                           ({ratingCount})
@@ -248,7 +249,7 @@ export function ListingPageClient({
                     setPriceRange(4000);
                     setSelectedRating(null);
                   }}
-                  className="w-full mt-4 px-4 py-2 bg-accent/10 text-accent text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-accent/20 transition-colors"
+                  className="w-full mt-4 px-4 py-2.5 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-widest rounded-2xl hover:bg-emerald-500/25 transition-colors"
                 >
                   Clear Filters
                 </button>
@@ -260,15 +261,15 @@ export function ListingPageClient({
           <section className="space-y-6">
             {/* Controls */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <p className="text-[11px] font-medium text-forest/40">
-                Showing <span className="text-forest">1-{sortedProducts.length}</span> of <span className="text-forest">{total}</span> products
+              <p className="text-[11px] font-medium text-cream/40">
+                Showing <span className="text-cream">{sortedProducts.length > 0 ? 1 : 0}-{sortedProducts.length}</span> of <span className="text-emerald-400">{total}</span> products
               </p>
 
               <div className="flex items-center gap-4">
                 {/* Mobile filter toggle */}
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className="lg:hidden flex items-center gap-2 px-4 py-2 bg-white border border-forest/10 rounded-xl text-xs font-bold text-forest hover:bg-forest/5 transition-colors"
+                  className="lg:hidden flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold text-cream hover:bg-white/10 transition-colors"
                 >
                   <SlidersHorizontal size={14} />
                   Filters
@@ -279,28 +280,28 @@ export function ListingPageClient({
                   <select 
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="appearance-none bg-white border border-forest/5 px-4 py-2 pr-10 rounded-xl text-xs font-bold text-forest hover:border-forest/20 transition-all cursor-pointer focus:outline-none focus:border-forest"
+                    className="appearance-none bg-white/5 border border-white/10 px-4 py-2 pr-10 rounded-2xl text-xs font-bold text-cream hover:border-white/20 transition-all cursor-pointer focus:outline-none focus:border-emerald-500/50"
                   >
-                    <option value="popular">Sort by: Popular</option>
-                    <option value="newest">Sort by: Newest</option>
-                    <option value="price-asc">Sort by: Price (Low)</option>
-                    <option value="price-desc">Sort by: Price (High)</option>
-                    <option value="rating">Sort by: Rating</option>
+                    <option value="popular" className="bg-[#142117] text-cream">Sort by: Popular</option>
+                    <option value="newest" className="bg-[#142117] text-cream">Sort by: Newest</option>
+                    <option value="price-asc" className="bg-[#142117] text-cream">Sort by: Price (Low)</option>
+                    <option value="price-desc" className="bg-[#142117] text-cream">Sort by: Price (High)</option>
+                    <option value="rating" className="bg-[#142117] text-cream">Sort by: Rating</option>
                   </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-forest/30 pointer-events-none" />
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-cream/40 pointer-events-none" />
                 </div>
 
                 {/* View Toggles */}
-                <div className="flex items-center p-1 bg-forest/5 rounded-xl">
+                <div className="flex items-center p-1 bg-white/5 border border-white/10 rounded-2xl">
                   <button 
                     onClick={() => setView("grid")}
-                    className={`p-2 rounded-lg transition-all ${view === 'grid' ? 'bg-white text-forest shadow-sm' : 'text-forest/40 hover:text-forest'}`}
+                    className={`p-2 rounded-xl transition-all ${view === 'grid' ? 'bg-emerald-600 text-white shadow-sm' : 'text-cream/40 hover:text-cream'}`}
                   >
                     <LayoutGrid size={16} />
                   </button>
                   <button 
                     onClick={() => setView("list")}
-                    className={`p-2 rounded-lg transition-all ${view === 'list' ? 'bg-white text-forest shadow-sm' : 'text-forest/40 hover:text-forest'}`}
+                    className={`p-2 rounded-xl transition-all ${view === 'list' ? 'bg-emerald-600 text-white shadow-sm' : 'text-cream/40 hover:text-cream'}`}
                   >
                     <List size={16} />
                   </button>
@@ -324,16 +325,16 @@ export function ListingPageClient({
                 ))}
               </div>
             ) : (
-              <div className="bg-cream/30 border border-forest/10 rounded-3xl p-12 text-center">
-                <p className="text-lg text-forest/70 mb-2">No products match your filters</p>
-                <p className="text-sm text-forest/50 mb-6">Try adjusting your filter criteria</p>
+              <div className="bg-white/5 border border-white/10 rounded-3xl p-12 text-center backdrop-blur-md shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
+                <p className="text-lg text-cream mb-2 font-semibold">No products match your filters</p>
+                <p className="text-sm text-cream/50 mb-6">Try adjusting your filter criteria</p>
                 <button
                   onClick={() => {
                     setSelectedMaterial("all");
                     setPriceRange(4000);
                     setSelectedRating(null);
                   }}
-                  className="px-6 py-2 bg-forest text-white text-sm font-bold rounded-xl hover:bg-forest/90 transition-colors"
+                  className="px-6 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-2xl hover:bg-emerald-500 transition-colors"
                 >
                   Clear All Filters
                 </button>
@@ -342,24 +343,24 @@ export function ListingPageClient({
 
             {/* Pagination */}
             {sortedProducts.length > 0 && Math.ceil(total / pageSize) > 1 && (
-              <div className="flex items-center justify-center pt-10 border-t border-forest/5">
+              <div className="flex items-center justify-center pt-10 border-t border-white/10">
                 <div className="flex items-center gap-2">
-                  <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-forest/5 text-forest/40 hover:text-forest transition-colors">
+                  <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-cream/40 hover:text-cream transition-colors">
                     <ChevronRight size={16} className="rotate-180" />
                   </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-forest text-alabaster font-bold text-xs shadow-lg shadow-forest/20">
+                  <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-lg shadow-emerald-950/30">
                     1
                   </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-forest/5 text-forest/60 transition-colors font-bold text-xs">
+                  <button className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 text-cream/60 transition-colors font-bold text-xs">
                     2
                   </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-forest/5 text-forest/60 transition-colors font-bold text-xs">
+                  <button className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 text-cream/60 transition-colors font-bold text-xs">
                     3
                   </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-forest/5 text-forest/60 transition-colors font-bold text-xs">
+                  <button className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 text-cream/60 transition-colors font-bold text-xs">
                     ...
                   </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-forest/5 text-forest/40 hover:text-forest transition-colors">
+                  <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-cream/40 hover:text-cream transition-colors">
                     <ChevronRight size={16} />
                   </button>
                 </div>

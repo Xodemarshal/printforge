@@ -9,11 +9,11 @@
   --card: 145 20% 12%;
   --card-foreground: 145 8% 82%;
   
-  /* Forest Green primary in dark - bright but darkened */
-  --primary: 145 50% 42%;
+  /* Stylish Vibrant Emerald/Forest Green primary for headings & accents */
+  --primary: 150 70% 48%;
   --primary-foreground: 145 15% 8%;
   
-  /* Deep forest secondary - vibrant but darkened */
+  /* Deep forest secondary */
   --secondary: 145 40% 32%;
   --secondary-foreground: 145 8% 82%;
   
@@ -21,17 +21,17 @@
   --muted: 145 15% 18%;
   --muted-foreground: 145 12% 68%;
   
-  /* Forest accent in dark - vibrant but darkened */
-  --accent: 145 45% 38%;
+  /* Forest accent in dark */
+  --accent: 150 70% 48%;
   --accent-foreground: 145 15% 8%;
   
   /* Dark forest borders */
   --border: 145 18% 28%;
   --input: 145 15% 22%;
-  --ring: 145 50% 42%;
+  --ring: 150 70% 48%;
   
-  /* Custom forest theme colors for dark mode - vibrant but darkened */
-  --forest-light: 145 40% 48%;
+  /* Custom forest theme colors for dark mode */
+  --forest-light: 150 70% 48%;
   --forest-dark: 145 55% 28%;
   --moss: 145 35% 42%;
   --cream: 145 8% 82%;
@@ -44,8 +44,8 @@ html {
 body {
   @apply bg-background text-foreground antialiased;
   background:
-    radial-gradient(circle at top left, rgba(88, 107, 68, 0.25), transparent 40%),
-    radial-gradient(circle at top right, rgba(68, 92, 52, 0.35), transparent 35%),
+    radial-gradient(circle at top left, rgba(52, 211, 153, 0.12), transparent 40%),
+    radial-gradient(circle at top right, rgba(16, 185, 129, 0.15), transparent 35%),
     linear-gradient(180deg, #0f1810 0%, #0a130c 60%, #050a06 100%);
 }
 
@@ -61,31 +61,31 @@ body {
 }
 
 .label-font {
-  @apply text-[10px] font-bold uppercase tracking-[0.3em] text-forest/80;
+  @apply text-[10px] font-bold uppercase tracking-[0.3em] text-emerald-400;
 }
 
 /* Premium Theme Classes */
 .panel-forest {
-  background: linear-gradient(145deg, rgba(88, 107, 68, 0.95), rgba(68, 82, 52, 0.98));
-  border: 1px solid rgba(88, 107, 68, 0.3);
-  box-shadow: 0 8px 32px rgba(88, 107, 68, 0.2);
+  background: linear-gradient(145deg, rgba(15, 24, 16, 0.95), rgba(10, 16, 11, 0.98));
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .panel-moss {
-  background: linear-gradient(145deg, rgba(68, 92, 52, 0.90), rgba(56, 72, 42, 0.95));
-  border: 1px solid rgba(88, 107, 68, 0.25);
-  box-shadow: 0 12px 40px rgba(68, 92, 52, 0.15);
+  background: linear-gradient(145deg, rgba(15, 24, 16, 0.90), rgba(10, 16, 11, 0.95));
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
 .panel-alabaster {
   background: linear-gradient(145deg, rgba(15, 24, 16, 0.95), rgba(10, 16, 11, 0.98));
-  border: 1px solid rgba(88, 107, 68, 0.3);
+  border: 1px solid rgba(52, 211, 153, 0.3);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(12px);
 }
 
 .accent-forest {
-  color: hsl(var(--primary));
+  color: #34d399;
 }
 
 .bg-moss {
@@ -93,11 +93,11 @@ body {
 }
 
 .bg-forest {
-  background-color: hsl(var(--primary));
+  background-color: #10b981;
 }
 
 .text-forest {
-  color: hsl(var(--primary));
+  color: #34d399;
 }
 
 .text-moss {

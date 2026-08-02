@@ -21,12 +21,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     return (
       <div className="page-shell py-16">
         <div className="max-w-2xl mx-auto text-center">
-          <Package size={64} className="text-forest/30 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-forest mb-2">Order not found</h1>
-          <p className="text-forest/70 mb-8">We couldn't find the order you're looking for.</p>
+          <Package size={64} className="text-cream/20 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-cream mb-2">Order not found</h1>
+          <p className="text-cream/60 mb-8">We couldn't find the order you're looking for.</p>
           <Link 
             href="/orders"
-            className="inline-block bg-forest text-white px-6 py-3 rounded-lg font-semibold hover:bg-forest-dark transition-colors"
+            className="inline-block bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-emerald-500 transition-colors"
           >
             View All Orders
           </Link>
@@ -64,22 +64,22 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         {/* Back Button */}
         <Link 
           href="/orders"
-          className="inline-flex items-center gap-2 text-forest/60 hover:text-forest transition-colors mb-6"
+          className="inline-flex items-center gap-2 text-cream/50 hover:text-cream transition-colors mb-6"
         >
           <ChevronLeft size={20} />
           Back to Orders
         </Link>
 
         {/* Header */}
-        <div className="mb-6 overflow-hidden rounded-3xl border border-forest/15 bg-cream/20 shadow-[0_10px_24px_rgba(46,75,36,0.04)]">
-          <div className="border-b border-forest/10 px-6 py-5 sm:px-8">
+        <div className="mb-6 overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
+          <div className="border-b border-white/10 px-6 py-5 sm:px-8">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-forest/55">Order Detail</p>
-                <h1 className="mt-2 text-2xl font-bold text-forest sm:text-3xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-400/80">Order Detail</p>
+                <h1 className="mt-2 text-2xl font-bold text-emerald-400 sm:text-3xl">
                   Order #{order.id.slice(0, 8).toUpperCase()}
                 </h1>
-                <p className="mt-2 flex items-center gap-2 text-sm text-forest/65">
+                <p className="mt-2 flex items-center gap-2 text-sm text-cream/50">
                   <Calendar size={16} />
                   <span>Placed on {new Date(order.created_at).toLocaleDateString("en-US", {
                     month: "long",
@@ -96,7 +96,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   revalidatePath(`/orders/${order.id}`);
                 }} className="shrink-0">
                   <input type="hidden" name="id" value={order.id} />
-                  <Button type="submit" variant="outline" className="border-red-300 text-red-700 hover:bg-red-50">
+                  <Button type="submit" variant="outline" className="border-red-500/40 text-red-400 hover:bg-red-500/10">
                     Cancel Order
                   </Button>
                 </form>
@@ -105,58 +105,58 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </div>
 
           <div className="grid gap-3 px-6 py-5 sm:grid-cols-2 xl:grid-cols-4 sm:px-8">
-            <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Order Number</p>
-              <p className="mt-2 break-all font-mono text-sm font-semibold text-forest">{order.id}</p>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-cream/40">Order Number</p>
+              <p className="mt-2 break-all font-mono text-sm font-semibold text-cream">{order.id}</p>
             </div>
-            <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Payment</p>
-              <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-forest">
-                <CheckCircle2 size={16} className={order.payment_status === "paid" ? "text-forest" : "text-amber-600"} />
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-cream/40">Payment</p>
+              <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-cream">
+                <CheckCircle2 size={16} className={order.payment_status === "paid" ? "text-emerald-400" : "text-amber-400"} />
                 <span className="capitalize">{order.payment_status}</span>
               </p>
             </div>
-            <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Shipping</p>
-              <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-forest">
-                <Truck size={16} className="text-forest/70" />
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-cream/40">Shipping</p>
+              <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-cream">
+                <Truck size={16} className="text-cream/60" />
                 <span>{order.shiprocket_courier_name || order.courier_name || "Preparing"}</span>
               </p>
             </div>
-            <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Status</p>
-              <p className="mt-2 text-sm font-semibold text-forest capitalize">{order.status}</p>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-cream/40">Status</p>
+              <p className="mt-2 text-sm font-semibold text-cream capitalize">{order.status}</p>
             </div>
           </div>
         </div>
 
         <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
-            <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Delivery Partner</p>
-            <p className="mt-2 break-words text-sm font-medium text-forest">{deliveryPartner}</p>
+          <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4">
+            <p className="text-xs uppercase tracking-[0.22em] text-cream/40">Delivery Partner</p>
+            <p className="mt-2 break-words text-sm font-medium text-cream">{deliveryPartner}</p>
           </div>
-          <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
-            <p className="text-xs uppercase tracking-[0.22em] text-forest/45">AWB / Tracking</p>
-            <p className="mt-2 break-all font-mono text-sm font-semibold text-forest">{awbNumber}</p>
+          <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4">
+            <p className="text-xs uppercase tracking-[0.22em] text-cream/40">AWB / Tracking</p>
+            <p className="mt-2 break-all font-mono text-sm font-semibold text-cream">{awbNumber}</p>
           </div>
-          <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
-            <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Tracking Link</p>
+          <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4">
+            <p className="text-xs uppercase tracking-[0.22em] text-cream/40">Tracking Link</p>
             {trackingUrl ? (
               <a
                 href={trackingUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-2 block break-all text-sm font-medium text-forest underline decoration-forest/30 underline-offset-4"
+                className="mt-2 block break-all text-sm font-medium text-emerald-400 underline decoration-emerald-400/30 underline-offset-4 hover:text-emerald-300"
               >
                 Open tracking page
               </a>
             ) : (
-              <p className="mt-2 text-sm text-forest/60">Not available yet</p>
+              <p className="mt-2 text-sm text-cream/40">Not available yet</p>
             )}
           </div>
-          <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
-            <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Shipping Mode</p>
-            <p className="mt-2 text-sm font-semibold text-forest">{shippingMode}</p>
+          <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4">
+            <p className="text-xs uppercase tracking-[0.22em] text-cream/40">Shipping Mode</p>
+            <p className="mt-2 text-sm font-semibold text-cream">{shippingMode}</p>
           </div>
         </div>
 
@@ -164,33 +164,33 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Order Timeline */}
-            <div className="overflow-hidden rounded-3xl border border-forest/15 bg-cream/15 p-6 shadow-[0_10px_24px_rgba(46,75,36,0.04)]">
-              <h2 className="text-xl font-semibold text-forest mb-4">Order Status</h2>
+            <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-6 shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
+              <h2 className="text-xl font-semibold text-emerald-400 mb-4">Order Status</h2>
               <OrderTimeline status={order.status} shipmentStatus={order.shiprocket_status} shippingMode={shippingMode} />
             </div>
 
             {/* Order Items */}
-            <div className="overflow-hidden rounded-3xl border border-forest/15 bg-cream/15 p-6 shadow-[0_10px_24px_rgba(46,75,36,0.04)]">
-              <h2 className="text-xl font-semibold text-forest mb-4">Order Items</h2>
+            <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-6 shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
+              <h2 className="text-xl font-semibold text-emerald-400 mb-4">Order Items</h2>
               <div className="space-y-4">
                 {orderItems.map((item: any) => {
                   const productSlug = item.products?.slug;
                   
                   const itemContent = (
                     <>
-                      <div className="w-20 h-20 rounded-lg border border-forest/10 bg-cream/20 flex items-center justify-center shrink-0">
-                        <Package size={32} className="text-forest/25" />
+                      <div className="w-20 h-20 rounded-lg border border-white/10 bg-white/5 flex items-center justify-center shrink-0">
+                        <Package size={32} className="text-cream/20" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-forest">{item.name}</h3>
-                        <p className="text-sm text-forest/60">Quantity: {item.quantity}</p>
-                        <p className="text-sm text-forest/60">Price: {formatCurrency(item.unit_price)}</p>
+                        <h3 className="font-semibold text-cream">{item.name}</h3>
+                        <p className="text-sm text-cream/50">Quantity: {item.quantity}</p>
+                        <p className="text-sm text-cream/50">Price: {formatCurrency(item.unit_price)}</p>
                         {productSlug && (
-                          <p className="text-xs text-forest/50 mt-1">Click to view product →</p>
+                          <p className="text-xs text-cream/40 mt-1">Click to view product →</p>
                         )}
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-forest">
+                        <p className="font-semibold text-cream">
                           {formatCurrency(item.unit_price * item.quantity)}
                         </p>
                       </div>
@@ -201,14 +201,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     <Link
                       key={item.id}
                       href={`/products/${productSlug}`}
-                      className="flex items-center gap-4 rounded-2xl border border-forest/10 bg-cream/20 p-4 transition-all hover:border-forest/25 hover:bg-cream/35"
+                      className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-white/20 hover:bg-white/[0.07]"
                     >
                       {itemContent}
                     </Link>
                   ) : (
                     <div
                       key={item.id}
-                      className="flex items-center gap-4 rounded-2xl border border-forest/10 bg-cream/20 p-4"
+                      className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-4"
                     >
                       {itemContent}
                     </div>
@@ -217,18 +217,18 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </div>
 
               {/* Order Summary */}
-              <div className="mt-6 grid gap-3 border-t border-forest/15 pt-6 sm:grid-cols-3">
-                <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Subtotal</p>
-                  <p className="mt-2 text-base font-semibold text-forest">{formatCurrency(orderTotal)}</p>
+              <div className="mt-6 grid gap-3 border-t border-white/10 pt-6 sm:grid-cols-3">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-[0.22em] text-cream/40">Subtotal</p>
+                  <p className="mt-2 text-base font-semibold text-cream">{formatCurrency(orderTotal)}</p>
                 </div>
-                <div className="rounded-2xl border border-forest/10 bg-cream/15 p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Shipping</p>
-                  <p className="mt-2 text-base font-semibold text-forest">{formatCurrency(0)}</p>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-[0.22em] text-cream/40">Shipping</p>
+                  <p className="mt-2 text-base font-semibold text-cream">{formatCurrency(0)}</p>
                 </div>
-                <div className="rounded-2xl border border-forest/15 bg-cream/20 p-4 text-forest">
-                  <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Total</p>
-                  <p className="mt-2 text-lg font-bold">{formatCurrency(order.total_amount)}</p>
+                <div className="rounded-2xl border border-white/15 bg-white/[0.07] p-4">
+                  <p className="text-xs uppercase tracking-[0.22em] text-cream/40">Total</p>
+                  <p className="mt-2 text-lg font-bold text-cream">{formatCurrency(order.total_amount)}</p>
                 </div>
               </div>
             </div>
@@ -251,30 +251,30 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             )}
 
             {/* Payment Info */}
-            <div className="rounded-3xl border border-forest/15 bg-cream/15 p-6 shadow-[0_10px_24px_rgba(46,75,36,0.04)]">
+            <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-6 shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
               <div className="flex items-center gap-2 mb-4">
-                <CreditCard size={20} className="text-forest" />
-                <h3 className="font-semibold text-forest">Payment Information</h3>
+                <CreditCard size={20} className="text-cream" />
+                <h3 className="font-semibold text-cream">Payment Information</h3>
               </div>
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between text-forest/70">
+                <div className="flex justify-between text-cream/60">
                   <span>Status</span>
-                  <span className={order.payment_status === "paid" ? "text-emerald-700 font-medium" : "text-amber-700 font-medium"}>
+                  <span className={order.payment_status === "paid" ? "text-emerald-400 font-medium" : "text-amber-400 font-medium"}>
                     {order.payment_status === "paid" ? "Paid" : "Pending"}
                   </span>
                 </div>
                 {order.notes && (
-              <div className="rounded-2xl bg-cream/20 p-3">
-                    <p className="text-xs uppercase tracking-[0.22em] text-forest/45">Method</p>
-                    <p className="mt-2 break-words font-medium text-forest">
+              <div className="rounded-2xl bg-white/5 p-3">
+                    <p className="text-xs uppercase tracking-[0.22em] text-cream/40">Method</p>
+                    <p className="mt-2 break-words font-medium text-cream">
                       {order.notes.replace("Payment method: ", "")}
                     </p>
                   </div>
                 )}
                 {order.razorpay_payment_id && (
-              <div className="rounded-2xl bg-cream/20 p-3">
-                    <span className="text-xs uppercase tracking-[0.22em] text-forest/45">Transaction ID</span>
-                    <p className="mt-2 break-all font-mono text-xs text-forest">
+              <div className="rounded-2xl bg-white/5 p-3">
+                    <span className="text-xs uppercase tracking-[0.22em] text-cream/40">Transaction ID</span>
+                    <p className="mt-2 break-all font-mono text-xs text-cream">
                       {order.razorpay_payment_id}
                     </p>
                   </div>
@@ -290,13 +290,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                       customerEmail={order.customer_email}
                       customerPhone={order.shipping_phone}
                     />
-                    <p className="mt-2 text-xs text-forest/55">
+                    <p className="mt-2 text-xs text-cream/40">
                       Your order is saved. Tap Pay Now to reopen Razorpay and complete the payment.
                     </p>
                   </div>
                 )}
                 {order.payment_status !== "paid" && !canRetryPayment && (
-                  <p className="text-xs text-forest/55">
+                  <p className="text-xs text-cream/40">
                     This order is waiting for payment. If the checkout was closed, please contact support to retry.
                   </p>
                 )}
@@ -307,13 +307,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <CustomerTrackingPanel order={order} />
 
             {/* Help */}
-            <div className="rounded-3xl border border-forest/15 bg-cream/15 p-6 shadow-[0_10px_24px_rgba(46,75,36,0.04)]">
-              <h3 className="font-semibold text-forest mb-2">Need Help?</h3>
-              <p className="text-sm text-forest/70 mb-4">
+            <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-6 shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
+              <h3 className="font-semibold text-cream mb-2">Need Help?</h3>
+              <p className="text-sm text-cream/50 mb-4">
                 Have questions about your order? We're here to help!
               </p>
               <Link href="/contact">
-                <Button variant="outline" className="w-full border-forest/30 text-forest hover:bg-forest/5">
+                <Button variant="outline" className="w-full border-white/20 text-cream hover:bg-white/10">
                   Contact Support
                 </Button>
               </Link>

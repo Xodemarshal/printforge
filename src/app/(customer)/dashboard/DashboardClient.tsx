@@ -31,8 +31,8 @@ export function DashboardClient({
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-forest mb-2">Welcome back!</h1>
-          <p className="text-forest/70">Here's an overview of your account activity</p>
+          <h1 className="text-3xl font-bold text-emerald-400 mb-2">Welcome back!</h1>
+          <p className="text-cream/60">Here's an overview of your account activity</p>
         </div>
 
         {/* Quick Stats */}
@@ -43,15 +43,15 @@ export function DashboardClient({
               <Link
                 key={stat.label}
                 href={stat.href as any}
-                className="bg-cream/30 border border-forest/20 rounded-2xl p-6 hover:bg-cream/50 transition-colors group"
+                className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md hover:bg-white/[0.08] hover:border-white/15 transition-all group shadow-[0_10px_24px_rgba(0,0,0,0.2)]"
               >
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-forest/10 rounded-xl group-hover:bg-forest/20 transition-colors">
-                    <Icon size={24} className="text-forest" />
+                  <div className="p-3 bg-white/10 rounded-2xl group-hover:bg-emerald-500/20 transition-colors">
+                    <Icon size={24} className="text-emerald-400" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-forest">{stat.value}</p>
-                    <p className="text-sm text-forest/60">{stat.label}</p>
+                    <p className="text-2xl font-bold text-cream">{stat.value}</p>
+                    <p className="text-sm text-cream/50">{stat.label}</p>
                   </div>
                 </div>
               </Link>
@@ -62,12 +62,12 @@ export function DashboardClient({
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Recent Orders */}
           <div className="lg:col-span-2">
-            <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-forest">Recent Orders</h2>
+                <h2 className="text-xl font-semibold text-emerald-400">Recent Orders</h2>
                 <Link 
                   href={"/orders" as any}
-                  className="text-forest/60 hover:text-forest transition-colors text-sm"
+                  className="text-cream/60 hover:text-cream transition-colors text-sm"
                 >
                   View All
                 </Link>
@@ -78,20 +78,20 @@ export function DashboardClient({
                   <Link 
                     key={order.id}
                     href={`/orders/${order.id}` as any}
-                    className="flex items-center justify-between p-4 bg-white/50 border border-forest/10 rounded-lg hover:bg-white/70 transition-colors"
+                    className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/[0.08] transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-forest/10 rounded-lg">
-                        <Package size={16} className="text-forest" />
+                      <div className="p-2.5 bg-emerald-500/15 rounded-xl">
+                        <Package size={18} className="text-emerald-400" />
                       </div>
                       <div>
-                        <p className="font-medium text-forest">Order #{order.id.slice(0, 8)}</p>
-                        <p className="text-sm text-forest/60">{order.date}</p>
+                        <p className="font-medium text-cream">Order #{order.id.slice(0, 8)}</p>
+                        <p className="text-sm text-cream/50">{order.date}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-forest">{order.total}</p>
-                      <p className="text-sm text-forest/60">{order.status}</p>
+                      <p className="font-semibold text-cream">{order.total}</p>
+                      <p className="text-sm text-cream/50 capitalize">{order.status}</p>
                     </div>
                   </Link>
                 ))}
@@ -99,11 +99,11 @@ export function DashboardClient({
 
               {recentOrders.length === 0 && (
                 <div className="text-center py-8">
-                  <Package size={48} className="text-forest/30 mx-auto mb-3" />
-                  <p className="text-forest/60 mb-4">No orders yet</p>
+                  <Package size={48} className="text-cream/20 mx-auto mb-3" />
+                  <p className="text-cream/50 mb-4">No orders yet</p>
                   <Link 
                     href={"/shop" as any}
-                    className="inline-block bg-forest text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-forest-dark transition-colors"
+                    className="inline-block bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-emerald-500 transition-colors"
                   >
                     Start Shopping
                   </Link>
@@ -114,57 +114,57 @@ export function DashboardClient({
 
           {/* Quick Actions */}
           <div className="space-y-6">
-            <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
-              <h2 className="text-xl font-semibold text-forest mb-4">Quick Actions</h2>
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
+              <h2 className="text-xl font-semibold text-emerald-400 mb-4">Quick Actions</h2>
               <div className="space-y-3">
                 <Link 
                   href={"/shop" as any}
-                  className="flex items-center gap-3 p-3 bg-white/50 border border-forest/10 rounded-lg hover:bg-white/70 transition-colors"
+                  className="flex items-center gap-3 p-3.5 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/[0.08] transition-colors text-cream"
                 >
-                  <ShoppingBag size={20} className="text-forest" />
-                  <span className="text-forest">Browse Products</span>
+                  <ShoppingBag size={20} className="text-emerald-400" />
+                  <span>Browse Products</span>
                 </Link>
                 <Link 
                   href={"/upload-stl" as any}
-                  className="flex items-center gap-3 p-3 bg-white/50 border border-forest/10 rounded-lg hover:bg-white/70 transition-colors"
+                  className="flex items-center gap-3 p-3.5 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/[0.08] transition-colors text-cream"
                 >
-                  <Upload size={20} className="text-forest" />
-                  <span className="text-forest">Special Item</span>
+                  <Upload size={20} className="text-emerald-400" />
+                  <span>Special Item</span>
                 </Link>
                 <Link 
                   href={"/wishlist" as any}
-                  className="flex items-center gap-3 p-3 bg-white/50 border border-forest/10 rounded-lg hover:bg-white/70 transition-colors"
+                  className="flex items-center gap-3 p-3.5 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/[0.08] transition-colors text-cream"
                 >
-                  <Heart size={20} className="text-forest" />
-                  <span className="text-forest">View Wishlist</span>
+                  <Heart size={20} className="text-emerald-400" />
+                  <span>View Wishlist</span>
                 </Link>
                 <Link 
                   href={"/settings" as any}
-                  className="flex items-center gap-3 p-3 bg-white/50 border border-forest/10 rounded-lg hover:bg-white/70 transition-colors"
+                  className="flex items-center gap-3 p-3.5 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/[0.08] transition-colors text-cream"
                 >
-                  <Settings size={20} className="text-forest" />
-                  <span className="text-forest">Account Settings</span>
+                  <Settings size={20} className="text-emerald-400" />
+                  <span>Account Settings</span>
                 </Link>
               </div>
             </div>
 
             {/* Account Status */}
-            <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
-              <h2 className="text-xl font-semibold text-forest mb-4">Account Status</h2>
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
+              <h2 className="text-xl font-semibold text-emerald-400 mb-4">Account Status</h2>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-forest/70 text-sm">Member Since</span>
-                  <span className="text-forest font-medium text-sm">
+                  <span className="text-cream/50 text-sm">Member Since</span>
+                  <span className="text-cream font-medium text-sm">
                     {memberSince.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-forest/70 text-sm">Total Spent</span>
-                  <span className="text-forest font-medium text-sm">₹{totalSpent.toFixed(2)}</span>
+                  <span className="text-cream/50 text-sm">Total Spent</span>
+                  <span className="text-cream font-medium text-sm">₹{totalSpent.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-forest/70 text-sm">Status</span>
-                  <span className="bg-forest/10 text-forest px-2 py-1 rounded text-xs font-medium">Active</span>
+                  <span className="text-cream/50 text-sm">Status</span>
+                  <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full text-xs font-medium">Active</span>
                 </div>
               </div>
             </div>

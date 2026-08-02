@@ -34,14 +34,15 @@ export async function calculateOrderProfitability(orderId: string) {
 
     const totalRevenue = Number(order.total_amount);
     const profitAmount = totalRevenue - totalCost;
-    const profitMargin = totalRevenue > 0 ? (profitAmount / totalRevenue) * 100 : 0;
+    const rawMargin = totalRevenue > 0 ? (profitAmount / totalRevenue) * 100 : 0;
+    const profitMargin = Number(Math.max(-999.99, Math.min(999.99, rawMargin)).toFixed(2));
 
     // Update order
     const { error } = await supabase
       .from('orders')
       .update({
-        total_cost: totalCost,
-        profit_amount: profitAmount,
+        total_cost: Number(totalCost.toFixed(2)),
+        profit_amount: Number(profitAmount.toFixed(2)),
         profit_margin: profitMargin
       })
       .eq('id', orderId);

@@ -31,7 +31,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroBanner settings={settings.hero} />
+      <HeroBanner settings={settings.hero} categories={categories ?? []} />
       <TrustBar />
       <FeaturedProducts products={newArrivals} />
       <BestSellers products={bestSellers} />

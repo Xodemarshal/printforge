@@ -204,24 +204,24 @@ export function CheckoutClient() {
 
   if (orderPreparing) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#FAF8F5]" style={{ fontFamily: "Inter, sans-serif" }}>
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0f1810] text-cream" style={{ fontFamily: "Inter, sans-serif" }}>
         <div className="text-center max-w-sm px-6">
           <div className="relative mb-8">
-            <div className="w-24 h-24 mx-auto rounded-full bg-[#2C5F2D]/10 flex items-center justify-center">
-              <CheckCircle size={48} className="text-[#2C5F2D]" />
+            <div className="w-24 h-24 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+              <CheckCircle size={48} className="text-emerald-400" />
             </div>
             <span className="absolute bottom-0 right-1/2 translate-x-12 translate-y-1">
-              <Loader2 size={22} className="text-[#D4A017] animate-spin" />
+              <Loader2 size={22} className="text-amber-400 animate-spin" />
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-[#2C5F2D] mb-2">Payment Successful!</h1>
-          <p className="text-lg font-semibold text-[#4a3728] mb-1">Your order is being prepared</p>
-          <p className="text-sm text-[#7a6a5a] mb-6">Please wait a moment while we confirm your order details and get everything ready...</p>
+          <h1 className="text-2xl font-bold text-cream mb-2">Payment Successful!</h1>
+          <p className="text-lg font-semibold text-emerald-400 mb-1">Your order is being prepared</p>
+          <p className="text-sm text-cream/60 mb-6">Please wait a moment while we confirm your order details and get everything ready...</p>
           <div className="flex justify-center gap-1.5 mt-2">
             {[0, 1, 2].map(i => (
               <span
                 key={i}
-                className="w-2 h-2 rounded-full bg-[#2C5F2D] animate-bounce"
+                className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce"
                 style={{ animationDelay: `${i * 0.15}s` }}
               />
             ))}
@@ -235,11 +235,11 @@ export function CheckoutClient() {
     return (
       <div className="page-shell py-16">
         <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-3xl font-bold text-forest mb-4">Your cart is empty</h1>
-          <p className="text-forest/70 mb-8">Add some products to your cart before checking out.</p>
+          <h1 className="text-3xl font-bold text-cream mb-4">Your cart is empty</h1>
+          <p className="text-cream/60 mb-8">Add some products to your cart before checking out.</p>
           <Link 
             href="/shop"
-            className="inline-block bg-forest text-white px-6 py-3 rounded-lg font-semibold hover:bg-forest-dark transition-colors"
+            className="inline-block bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-emerald-500 transition-colors"
           >
             Continue Shopping
           </Link>
@@ -254,9 +254,9 @@ export function CheckoutClient() {
         <div className="flex items-center gap-4 mb-8">
           <Link 
             href="/shop"
-            className="flex items-center gap-2 text-forest/60 hover:text-forest transition-colors"
+            className="flex items-center gap-2 text-cream/60 hover:text-cream transition-colors text-sm"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={18} />
             Back to Shop
           </Link>
         </div>
@@ -264,13 +264,13 @@ export function CheckoutClient() {
         <div className="grid lg:grid-cols-2 gap-12">
           <div className="space-y-8">
             <div>
-              <h1 className="text-3xl font-bold text-forest mb-2">Checkout</h1>
-              <p className="text-forest/70">Complete your order details below</p>
+              <h1 className="text-3xl font-bold text-emerald-400 mb-2">Checkout</h1>
+              <p className="text-cream/60">Complete your order details below</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
-                <h2 className="text-xl font-semibold text-forest mb-4">Contact Information</h2>
+              <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
+                <h2 className="text-xl font-semibold text-emerald-400 mb-4">Contact Information</h2>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Input name="firstName" placeholder="First Name" required />
                   <Input name="lastName" placeholder="Last Name" required />
@@ -279,83 +279,90 @@ export function CheckoutClient() {
                 <Input type="tel" name="phone" placeholder="Phone Number" className="mt-4" required />
               </div>
 
-              <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
-                <h2 className="text-xl font-semibold text-forest mb-4">Shipping Address</h2>
+              <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
+                <h2 className="text-xl font-semibold text-emerald-400 mb-4">Shipping Address</h2>
                 <div className="space-y-4">
                   <Input name="address" placeholder="Street Address" required />
-                <div className="grid md:grid-cols-3 gap-4">
-                  <Input name="city" placeholder="City" required />
-                  <Input name="state" placeholder="State" required />
-                  <Input name="zipCode" placeholder="ZIP Code" required />
-                </div>
-                  <select name="country" defaultValue="IN" className="w-full px-3 py-2 border border-forest/30 rounded-lg focus:border-forest focus:outline-none" required>
-                    <option value="IN">India</option>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <Input name="city" placeholder="City" required />
+                    <Input name="state" placeholder="State" required />
+                    <Input name="zipCode" placeholder="ZIP Code" required />
+                  </div>
+                  <select 
+                    name="country" 
+                    defaultValue="IN" 
+                    className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-2xl text-sm font-medium text-cream focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" 
+                    required
+                  >
+                    <option value="IN" className="bg-[#142117] text-cream">India</option>
                   </select>
-                  <p className="text-xs text-forest/60">Shiprocket shipping is enabled for Indian delivery addresses.</p>
+                  <p className="text-xs text-cream/40">Shiprocket shipping is enabled for Indian delivery addresses.</p>
                 </div>
               </div>
 
-              <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
-                <h2 className="text-xl font-semibold text-forest mb-4">Payment Method</h2>
-                <div className="flex items-center gap-4 p-4 rounded-xl border border-forest/10 bg-white/50">
-                  <div className="p-2 rounded-lg bg-cream/50"><CreditCard size={20} className="text-forest" /></div>
+              <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
+                <h2 className="text-xl font-semibold text-emerald-400 mb-4">Payment Method</h2>
+                <div className="flex items-center gap-4 p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400">
+                    <CreditCard size={22} />
+                  </div>
                   <div className="flex-1 text-left">
-                    <p className="font-semibold text-forest">Pay Online</p>
-                    <p className="text-sm text-forest/60">Pay securely via Razorpay (UPI, Cards, Netbanking, Wallets)</p>
+                    <p className="font-semibold text-cream">Pay Online</p>
+                    <p className="text-sm text-cream/60">Pay securely via Razorpay (UPI, Cards, Netbanking, Wallets)</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6">
-                <h2 className="text-xl font-semibold text-forest mb-4">Order Notes (Optional)</h2>
+              <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
+                <h2 className="text-xl font-semibold text-emerald-400 mb-4">Order Notes (Optional)</h2>
                 <Textarea name="instructions" placeholder="Any special delivery instructions..." rows={3} />
               </div>
 
-              <Button type="submit" disabled={isProcessing} className="w-full bg-forest hover:bg-forest-dark text-white py-4 text-lg font-semibold">
+              <Button type="submit" disabled={isProcessing} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 text-lg font-semibold rounded-2xl transition-all shadow-lg shadow-emerald-950/50">
                 {isProcessing ? "Processing..." : `Place Order - ${formatCurrency(total)}`}
               </Button>
             </form>
           </div>
 
           <div className="lg:sticky lg:top-8 lg:self-start">
-            <div className="bg-cream/50 border border-forest/20 rounded-2xl p-6">
-              <h2 className="text-xl font-semibold text-forest mb-6">Order Summary</h2>
-              <div className="space-y-4 mb-6">
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
+              <h2 className="text-xl font-semibold text-emerald-400 mb-6">Order Summary</h2>
+              <div className="space-y-3 mb-6">
                 {items.map((item: any) => (
-                  <div key={item.productId} className="flex items-center gap-3 p-3 bg-white/50 border border-forest/10 rounded-lg">
+                  <div key={item.productId} className="flex items-center gap-3 p-3.5 bg-white/5 border border-white/10 rounded-2xl">
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-forest truncate">{item.name}</p>
-                      <p className="text-sm text-forest/60">Qty: {item.quantity}</p>
+                      <p className="font-medium text-cream truncate">{item.name}</p>
+                      <p className="text-xs text-cream/50">Qty: {item.quantity}</p>
                     </div>
-                    <p className="font-semibold text-forest">{formatCurrency(item.price * item.quantity)}</p>
+                    <p className="font-semibold text-cream">{formatCurrency(item.price * item.quantity)}</p>
                   </div>
                 ))}
               </div>
               {/* Totals */}
-              <div className="border-t border-forest/20 pt-4 space-y-2">
-                <div className="flex justify-between text-forest/70">
+              <div className="border-t border-white/10 pt-4 space-y-3">
+                <div className="flex justify-between text-sm text-cream/60">
                   <span>Subtotal</span>
-                  <span>{formatCurrency(subtotal)}</span>
+                  <span className="text-cream">{formatCurrency(subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-forest/70">
+                <div className="flex justify-between text-sm text-cream/60">
                   <span>Shipping</span>
-                  <span>{shippingCost === 0 ? 'Free' : formatCurrency(shippingCost)}</span>
+                  <span className="text-cream">{shippingCost === 0 ? 'Free' : formatCurrency(shippingCost)}</span>
                 </div>
                 
                 {discountAmount > 0 && (
-                  <div className="flex justify-between text-red-600 font-medium">
+                  <div className="flex justify-between text-sm text-emerald-400 font-medium">
                     <span>Discount {appliedCoupon && `(${appliedCoupon.code})`}</span>
                     <span>-{formatCurrency(discountAmount)}</span>
                   </div>
                 )}
 
-                <div className="pt-4 pb-2">
+                <div className="pt-2 pb-2">
                   <div className="flex gap-2">
                     <Input 
                       placeholder="Coupon Code" 
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      className="h-10 border-forest/20"
+                      className="h-11"
                       disabled={appliedCoupon || isValidatingCoupon}
                     />
                     {appliedCoupon ? (
@@ -367,7 +374,7 @@ export function CheckoutClient() {
                           setDiscountAmount(0);
                           setCouponCode("");
                         }}
-                        className="h-10 border-red-200 text-red-600 hover:bg-red-50"
+                        className="h-11 border-red-500/40 text-red-400 hover:bg-red-500/10 rounded-2xl"
                       >
                         Remove
                       </Button>
@@ -376,7 +383,7 @@ export function CheckoutClient() {
                         type="button" 
                         onClick={handleApplyCoupon}
                         disabled={!couponCode || isValidatingCoupon}
-                        className="h-10 bg-forest text-white"
+                        className="h-11 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl px-5"
                       >
                         {isValidatingCoupon ? "..." : "Apply"}
                       </Button>
@@ -384,9 +391,9 @@ export function CheckoutClient() {
                   </div>
                 </div>
 
-                <div className="flex justify-between text-lg font-semibold text-forest border-t border-forest/20 pt-2">
+                <div className="flex justify-between text-lg font-bold text-cream border-t border-white/10 pt-4">
                   <span>Total</span>
-                  <span>{formatCurrency(total)}</span>
+                  <span className="text-emerald-400">{formatCurrency(total)}</span>
                 </div>
               </div>
             </div>

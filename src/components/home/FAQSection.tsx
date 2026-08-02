@@ -21,9 +21,9 @@ export function FAQSection() {
   return (
     <section className="page-shell py-10 lg:py-14">
       <div className="mb-6 max-w-2xl">
-        <p className="text-sm uppercase tracking-[0.3em] text-[#c5a059]/80">Support</p>
-        <h2 className="display-font text-4xl text-[#c5a059] md:text-5xl">Frequently asked questions</h2>
-        <p className="mt-3 text-sm leading-7 text-[#6d5a3a]">
+        <p className="text-sm uppercase tracking-[0.3em] text-emerald-400/70">Support</p>
+        <h2 className="display-font text-4xl text-emerald-400 md:text-5xl font-bold">Frequently asked questions</h2>
+        <p className="mt-3 text-sm leading-7 text-cream/60">
           Need help before sending a request? Start here.
         </p>
       </div>
@@ -38,15 +38,15 @@ export function FAQSection() {
               type="button"
               onClick={() => setOpenIndex(isOpen ? null : index)}
               aria-expanded={isOpen}
-              className="wood-texture rounded-[24px] border border-[#8c6f42]/20 p-5 text-left text-[#f4ecd9] transition-transform hover:-translate-y-0.5"
+              className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-5 text-left text-cream transition-transform hover:-translate-y-0.5 shadow-[0_10px_24px_rgba(0,0,0,0.2)]"
             >
               <div className="flex items-start justify-between gap-4">
-                <p className="font-semibold text-[#f4ecd9]">{item.question}</p>
-                <span className="mt-1 grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[#c5a059]/20 bg-black/20 text-[#c5a059]">
+                <p className="font-semibold text-cream">{item.question}</p>
+                <span className="mt-1 grid h-7 w-7 shrink-0 place-items-center rounded-full border border-white/10 bg-black/30 text-emerald-400">
                   {isOpen ? "−" : "+"}
                 </span>
               </div>
-              {isOpen ? <p className="mt-3 text-sm leading-7 text-[#e4d8c3]">{item.answer}</p> : null}
+              {isOpen ? <p className="mt-3 text-sm leading-7 text-cream/60">{item.answer}</p> : null}
             </button>
           );
         })}

@@ -55,7 +55,7 @@ function StarPicker({
               className={
                 n <= active
                   ? "text-amber-400 fill-amber-400 drop-shadow-sm"
-                  : "text-forest/15 fill-transparent"
+                  : "text-white/20 fill-transparent"
               }
             />
           </button>
@@ -126,14 +126,14 @@ function ReviewCard({
   /* ─── Success State ─── */
   if (submitted) {
     return (
-      <div className="relative overflow-hidden bg-gradient-to-br from-green-50/80 to-emerald-50/60 border border-green-200/70 rounded-2xl p-5">
+      <div className="relative overflow-hidden bg-emerald-950/40 border border-emerald-500/30 rounded-2xl p-5 backdrop-blur-md">
         <div className="flex items-start gap-4">
-          <div className="shrink-0 w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-            <CheckCircle2 size={22} className="text-green-600" />
+          <div className="shrink-0 w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+            <CheckCircle2 size={22} className="text-emerald-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-green-800 text-sm">{item.name}</p>
-            <p className="text-green-700 text-xs mt-0.5 font-medium">
+            <p className="font-semibold text-emerald-300 text-sm">{item.name}</p>
+            <p className="text-emerald-400/80 text-xs mt-0.5 font-medium">
               ✓ Review submitted — pending approval
             </p>
             <div className="flex gap-0.5 mt-2">
@@ -144,13 +144,13 @@ function ReviewCard({
                   className={
                     n <= rating
                       ? "text-amber-400 fill-amber-400"
-                      : "text-green-200 fill-green-200"
+                      : "text-emerald-800 fill-emerald-800"
                   }
                 />
               ))}
             </div>
             {text && (
-              <p className="mt-2.5 text-xs text-green-800/85 italic border-l-2 border-green-300 pl-2 leading-relaxed break-words">
+              <p className="mt-2.5 text-xs text-emerald-200/90 italic border-l-2 border-emerald-500/40 pl-2 leading-relaxed break-words">
                 "{text}"
               </p>
             )}
@@ -159,7 +159,7 @@ function ReviewCard({
         {/* Decorative checkmark watermark */}
         <CheckCircle2
           size={80}
-          className="absolute -right-4 -bottom-4 text-green-100 opacity-60 pointer-events-none"
+          className="absolute -right-4 -bottom-4 text-emerald-500/10 pointer-events-none"
         />
       </div>
     );
@@ -167,17 +167,17 @@ function ReviewCard({
 
   /* ─── Review Form ─── */
   return (
-    <div className="bg-white/70 border border-forest/15 rounded-2xl overflow-hidden shadow-sm">
+    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-sm backdrop-blur-md">
       {/* Product name header */}
-      <div className="flex items-center gap-2.5 px-5 py-3.5 bg-cream/60 border-b border-forest/10">
-        <MessageSquare size={15} className="text-forest/50 shrink-0" />
-        <span className="font-semibold text-forest text-sm truncate">{item.name}</span>
+      <div className="flex items-center gap-2.5 px-5 py-3.5 bg-white/5 border-b border-white/10">
+        <MessageSquare size={15} className="text-cream/40 shrink-0" />
+        <span className="font-semibold text-cream text-sm truncate">{item.name}</span>
       </div>
 
       <div className="px-5 py-4 space-y-4">
         {/* Star Picker */}
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-forest/40 mb-2">
+          <p className="text-xs font-semibold uppercase tracking-widest text-cream/40 mb-2">
             Your Rating
           </p>
           <StarPicker
@@ -189,7 +189,7 @@ function ReviewCard({
 
         {/* Text Area */}
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-forest/40 mb-2">
+          <p className="text-xs font-semibold uppercase tracking-widest text-cream/40 mb-2">
             Your Review
           </p>
           <textarea
@@ -199,24 +199,24 @@ function ReviewCard({
             placeholder="Share your experience — print quality, accuracy, packaging, speed..."
             rows={4}
             maxLength={500}
-            className="w-full px-4 py-3 border border-forest/20 rounded-xl text-sm bg-white/80 text-forest placeholder:text-forest/30 focus:outline-none focus:border-forest/50 focus:ring-2 focus:ring-forest/10 resize-none transition-all disabled:opacity-50"
+            className="w-full px-4 py-3 border border-white/10 rounded-xl text-sm bg-black/30 text-cream placeholder:text-cream/30 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 resize-none transition-all disabled:opacity-50"
           />
           {/* Character counter */}
           <div className="flex justify-between items-center mt-1.5 px-0.5">
             <p
               className={`text-xs transition-colors ${
                 charCount === 0
-                  ? "text-forest/30"
+                  ? "text-cream/30"
                   : charCount < 10
                   ? "text-red-400 font-medium"
-                  : "text-green-600"
+                  : "text-emerald-400"
               }`}
             >
               {charCount < 10
                 ? `${Math.max(0, 10 - charCount)} more characters needed`
                 : `${charCount} characters ✓`}
             </p>
-            <p className="text-xs text-forest/25">{charCount}/500</p>
+            <p className="text-xs text-cream/30">{charCount}/500</p>
           </div>
         </div>
 
@@ -227,8 +227,8 @@ function ReviewCard({
           disabled={isPending || rating < 1 || charCount < 10}
           className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold tracking-wide transition-all duration-200 ${
             isPending || rating < 1 || charCount < 10
-              ? "bg-forest/10 text-forest/30 cursor-not-allowed"
-              : "bg-forest hover:bg-forest-dark text-white shadow-sm hover:shadow-md active:scale-[0.98]"
+              ? "bg-white/10 text-cream/30 cursor-not-allowed"
+              : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm hover:shadow-md active:scale-[0.98]"
           }`}
         >
           {isPending ? (
@@ -253,13 +253,13 @@ export function ReviewSection({ orderId, orderItems, reviewedList }: ReviewSecti
   if (reviewableItems.length === 0) return null;
 
   return (
-    <div className="bg-cream/30 border border-forest/20 rounded-2xl p-6 space-y-5">
+    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-5 backdrop-blur-md">
       {/* Section header */}
       <div>
-        <h2 className="text-xl font-bold text-forest">
+        <h2 className="text-xl font-bold text-cream">
           Rate Your Purchase
         </h2>
-        <p className="text-sm text-forest/55 mt-0.5">
+        <p className="text-sm text-cream/60 mt-0.5">
           Your honest review helps other customers and supports our craftspeople.
         </p>
       </div>
