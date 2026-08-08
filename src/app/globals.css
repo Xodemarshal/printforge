@@ -117,7 +117,7 @@ body {
 
 /* Premium Button Styles */
 .btn-artisan-forest {
-  @apply inline-flex items-center justify-center gap-2 rounded-full bg-forest text-cream px-8 py-4 text-sm font-bold uppercase tracking-widest transition-all duration-300 hover:bg-forest-light hover:shadow-lg hover:shadow-forest/25;
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-forest text-black px-8 py-4 text-sm font-bold uppercase tracking-widest transition-all duration-300 hover:bg-forest-light hover:shadow-lg hover:shadow-forest/25;
 }
 
 .btn-artisan-outline {

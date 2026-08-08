@@ -90,8 +90,9 @@ export function HeroBanner({ settings, categories = [] }: { settings?: HeroSecti
               </span>
 
               {/* Headline */}
-              <h1 className="display-font text-5xl leading-[0.9] text-emerald-300 lg:text-6xl font-bold">
-                {coloredTitle}
+              <h1 className="display-font leading-tight font-bold">
+                <span className="text-5xl lg:text-6xl text-white">{title} </span>
+                <span className="text-5xl lg:text-6xl text-emerald-300">{coloredTitle}</span>
               </h1>
 
               {/* Description */}
