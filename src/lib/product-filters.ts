@@ -4,6 +4,7 @@ export type ProductFilterInput = {
   query?: string;
   category?: string;
   page?: number;
+  includeInactive?: boolean;
 };
 
 export function filterProducts<

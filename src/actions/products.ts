@@ -25,22 +25,37 @@ function isMissingViewCountError(error: unknown) {
 
 export async function getProducts(input: ProductFilterInput = {}) {
   const supabase = createAdminClient();
-  const { data, error } = await supabase.from("products").select("*").order("created_at", { ascending: false });
+  let query = supabase.from("products").select("*").order("created_at", { ascending: false });
+  if (!input.includeInactive) {
+    query = query.eq("active", true);
+  }
+
+  const { data, error } = await query;
   if (error) {
     if (isMissingTableError(error)) {
-      return filterProducts(mockData.products as any[], input);
+      const fallbackProducts = input.includeInactive
+        ? (mockData.products as any[])
+        : (mockData.products as any[]).filter((product) => product.active);
+      return filterProducts(fallbackProducts, input);
     }
     throw error;
   }
   return filterProducts(data ?? [], input);
 }
 
-export async function getProductBySlug(slug: string) {
+export async function getProductBySlug(slug: string, includeInactive = false) {
   const supabase = createAdminClient();
-  const { data, error } = await supabase.from("products").select("*").eq("slug", slug).maybeSingle();
+  let query = supabase.from("products").select("*").eq("slug", slug);
+  if (!includeInactive) {
+    query = query.eq("active", true);
+  }
+  const { data, error } = await query.maybeSingle();
   if (error) {
     if (isMissingTableError(error)) {
-      return (mockData.products as any[]).find((product) => product.slug === slug) ?? null;
+      const products = includeInactive
+        ? (mockData.products as any[])
+        : (mockData.products as any[]).filter((product) => product.active);
+      return products.find((product) => product.slug === slug) ?? null;
     }
     throw error;
   }
@@ -244,6 +259,11 @@ export async function createProductAction(formData: FormData) {
   await trackEvent("admin_action", null, { action: "create_product", slug });
   revalidatePath("/admin/products");
   revalidatePath("/");
+  revalidatePath("/shop");
+  revalidatePath("/new-arrivals");
+  revalidatePath("/best-sellers");
+  revalidatePath("/categories/[slug]", "page");
+  revalidatePath("/products/[slug]", "page");
   return {
     success: true,
     message: `Product "${name}" created successfully`,
@@ -326,6 +346,11 @@ export async function updateProductAction(formData: FormData) {
     revalidatePath("/admin/products");
     revalidatePath(`/admin/products/edit/${id}`);
     revalidatePath("/");
+    revalidatePath("/shop");
+    revalidatePath("/new-arrivals");
+    revalidatePath("/best-sellers");
+    revalidatePath("/categories/[slug]", "page");
+    revalidatePath("/products/[slug]", "page");
     return {
       success: true,
       message: `Product "${productName}" updated successfully`,
@@ -352,6 +377,11 @@ export async function deleteProductAction(formData: FormData) {
   await trackEvent("admin_action", null, { action: "delete_product", id });
   revalidatePath("/admin/products");
   revalidatePath("/");
+  revalidatePath("/shop");
+  revalidatePath("/new-arrivals");
+  revalidatePath("/best-sellers");
+  revalidatePath("/categories/[slug]", "page");
+  revalidatePath("/products/[slug]", "page");
   return {
     success: true,
     message: `Product "${productName}" deleted successfully`,

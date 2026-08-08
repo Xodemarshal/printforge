@@ -12,7 +12,8 @@ export default async function AdminProductsPage({
   const { items, total } = await getProducts({
     query: params.q,
     category: params.category,
-    page: Number(params.page ?? 1)
+    page: Number(params.page ?? 1),
+    includeInactive: true
   });
 
   const hasFilters = params.q || params.category;

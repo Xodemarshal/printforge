@@ -22,6 +22,7 @@ export const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/shop", label: "Collections" },
   { href: "/best-sellers", label: "Best Sellers" },
+  { href: "/prebook", label: "Prebook" },
   { href: "/upload-stl", label: "Special Item" },
   { href: "/new-arrivals", label: "New Arrivals" }
 ];
@@ -30,6 +31,7 @@ export const ADMIN_NAV_LINKS = [
   { href: "/admin/dashboard", label: "Dashboard" },
   { href: "/admin/print-queue", label: "Requests" },
   { href: "/admin/products", label: "Products" },
+  { href: "/admin/preorders", label: "Preorders" },
   { href: "/admin/categories", label: "Categories" },
   { href: "/admin/orders", label: "Orders" },
   { href: "/admin/shipping/not-picked-up", label: "Shipping" },

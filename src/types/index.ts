@@ -176,3 +176,38 @@ export type PrintJobRow = {
   created_at: string;
   updated_at: string;
 };
+
+export type PreOrderStatus = "DRAFT" | "ACTIVE" | "ENDED" | "SOLD_OUT" | "CANCELLED";
+
+export type PreOrderRow = {
+  id: string;
+  product_id: string;
+  title: string;
+  description?: string | null;
+  banner_url?: string | null;
+  discount_percentage: number;
+  start_date: string;
+  end_date: string;
+  max_quantity?: number | null;
+  status: PreOrderStatus;
+  created_at: string;
+  updated_at: string;
+  products?: ProductRow | null;
+  registration_count?: number;
+};
+
+export type PreOrderRegistrationRow = {
+  id: string;
+  user_id: string;
+  preorder_id: string;
+  product_id: string;
+  discount_percentage: number;
+  locked_price: number;
+  status: "REGISTERED" | "PURCHASED" | "CANCELLED";
+  created_at: string;
+  updated_at: string;
+  users?: UserRow | null;
+  preorders?: PreOrderRow | null;
+  products?: ProductRow | null;
+};
+

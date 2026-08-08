@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { HeroBanner } from "@/components/home/HeroBanner";
+import { PreOrderHero } from "@/components/preorder/PreOrderHero";
 import { TrustBar } from "@/components/home/TrustBar";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { BestSellers } from "@/components/home/BestSellers";
@@ -8,6 +9,7 @@ import { CategoryGrid } from "@/components/home/CategoryGrid";
 import { CustomerReviews } from "@/components/home/CustomerReviews";
 import { FAQSection } from "@/components/home/FAQSection";
 import { getBestSellers, getFeaturedProducts, getMostVisitedProducts, getNewArrivals } from "@/actions/products";
+import { getActivePreorder } from "@/actions/preorders";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { mockData } from "@/lib/mock-supabase";
 import { getSiteSettings } from "@/actions/settings";
@@ -18,10 +20,13 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const featured = await getFeaturedProducts();
-  const newArrivals = await getNewArrivals(4);
-  const mostVisited = await getMostVisitedProducts(8);
-  const bestSellers = await getBestSellers(8);
+  const [featured, newArrivals, mostVisited, bestSellers, activePreorder] = await Promise.all([
+    getFeaturedProducts(),
+    getNewArrivals(4),
+    getMostVisitedProducts(8),
+    getBestSellers(8),
+    getActivePreorder()
+  ]);
   const supabase = createAdminClient();
   const categoriesResult = await supabase.from("categories").select("*").limit(8);
   const reviewsResult = await supabase.from("reviews").select("id, comment, user_id").limit(3);
@@ -31,7 +36,12 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroBanner settings={settings.hero} categories={categories ?? []} />
+      {/* Conditionally render PreOrderHero when a live campaign is active, otherwise standard HeroBanner */}
+      {activePreorder ? (
+        <PreOrderHero preorder={activePreorder} />
+      ) : (
+        <HeroBanner settings={settings.hero} categories={categories ?? []} />
+      )}
       <TrustBar />
       <FeaturedProducts products={newArrivals} />
       <BestSellers products={bestSellers} />
