@@ -3,7 +3,7 @@ import { DESIGN_IMAGES } from "@/lib/design";
 import { IdeaRequestForm } from "./IdeaRequestForm";
 
 export const metadata: Metadata = {
-  title: "Special Item Request | Wooden Guardian",
+  title: "Special Item Request | ArchiveVault",
   description: "Share your Instagram handle, idea brief, and inspiration images so we can design a unique item for you."
 };
 

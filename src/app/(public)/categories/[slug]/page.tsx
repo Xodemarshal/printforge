@@ -25,7 +25,7 @@ export async function generateMetadata({
   const category = categories.find((c: any) => c.slug === slug);
 
   return {
-    title: `${category?.name || slug} | Wooden Guardian`,
+    title: `${category?.name || slug} | ArchiveVault`,
     description: `Browse our ${category?.name || slug} collection`
   };
 }

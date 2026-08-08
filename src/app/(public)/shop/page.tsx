@@ -3,7 +3,7 @@ import { getProducts, searchProducts, getCategories } from "@/actions/products";
 import { ListingPageClient } from "@/components/products/ListingPageClient";
 
 export const metadata: Metadata = {
-  title: "All Collections | Wooden Guardian",
+  title: "All Collections | ArchiveVault",
   description: "Browse our wide range of handcrafted collectibles"
 };
 

@@ -4,7 +4,7 @@ import { ListingPageClient } from "@/components/products/ListingPageClient";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "New Arrivals | Wooden Guardian",
+  title: "New Arrivals | ArchiveVault",
   description: "Discover the latest products."
 };
 
