@@ -186,6 +186,8 @@ export type PreOrderRow = {
   description?: string | null;
   banner_url?: string | null;
   discount_percentage: number;
+  preorder_price?: number | null;
+  reservation_fee: number;
   start_date: string;
   end_date: string;
   max_quantity?: number | null;
@@ -203,6 +205,12 @@ export type PreOrderRegistrationRow = {
   product_id: string;
   discount_percentage: number;
   locked_price: number;
+  reservation_fee_paid: number;
+  payment_status: "pending" | "paid" | "failed" | "refunded";
+  razorpay_order_id?: string | null;
+  razorpay_payment_id?: string | null;
+  granted_access: boolean;
+  granted_at?: string | null;
   status: "REGISTERED" | "PURCHASED" | "CANCELLED";
   created_at: string;
   updated_at: string;

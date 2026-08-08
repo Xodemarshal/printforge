@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, Eye, ShoppingCart } from "lucide-react";
+import { Heart, ShoppingCart, Lock, Sparkles } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useCart } from "@/hooks/useCart";
@@ -21,20 +21,23 @@ type ProductCardProps = {
     material_info?: string;
   };
   index?: number;
+  /** If set, this product is in Priority Vault mode — cart is locked, CTA links to prebook page */
+  preorderId?: string;
 };
 
-export function ProductCard({ product, index = 0 }: ProductCardProps) {
+export function ProductCard({ product, index = 0, preorderId }: ProductCardProps) {
   const { toggle, isInWishlist } = useWishlist();
   const { addItem } = useCart();
-  
+
   const imageUrl = product.image_url || productImage(product.slug);
   const badge = product.featured ? "Bestseller" : product.best_seller ? "New" : null;
+  const isPreorderOnly = Boolean(preorderId);
 
   return (
     <div className="group relative bg-white/5 rounded-3xl border border-white/10 overflow-hidden hover:border-emerald-500/30 hover:shadow-xl hover:shadow-black/40 transition-all duration-300 backdrop-blur-md">
       {/* Image Container */}
       <Link href={`/products/${product.slug}`} className="block relative aspect-square overflow-hidden bg-black/40">
-        <img 
+        <img
           src={imageUrl}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -43,11 +46,19 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             target.src = productImage(product.slug);
           }}
         />
-        
-        {/* Badge */}
-        {badge && (
+
+        {/* Standard Badge */}
+        {badge && !isPreorderOnly && (
           <div className={`absolute top-3 left-3 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${badge === "Bestseller" ? "bg-amber-400 text-gray-950" : "bg-emerald-500 text-white"}`}>
             {badge}
+          </div>
+        )}
+
+        {/* Preorder-only badge */}
+        {isPreorderOnly && (
+          <div className="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/90 text-gray-950 text-[9px] font-bold uppercase tracking-widest backdrop-blur-sm">
+            <Lock size={9} />
+            <span>Priority Pass Only</span>
           </div>
         )}
 
@@ -96,25 +107,38 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           <span className="text-[10px] text-cream/50 font-medium">({product.review_count || 0})</span>
         </div>
 
-        {/* Price & Cart */}
+        {/* Price & CTA */}
         <div className="flex items-center justify-between pt-3 border-t border-white/10">
           <span className="text-lg font-bold text-emerald-400">{formatCurrency(product.price)}</span>
-          <button
-            onClick={() => {
-              addItem({
-                id: product.id,
-                productId: product.id,
-                name: product.name,
-                slug: product.slug,
-                price: Number(product.price),
-                quantity: 1,
-                imageUrl: imageUrl
-              });
-            }}
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 transition-all shadow-md shadow-emerald-950/40"
-          >
-            <ShoppingCart size={15} />
-          </button>
+
+          {isPreorderOnly ? (
+            /* Locked — link to prebook page */
+            <Link
+              href={`/prebook/${preorderId}`}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-bold hover:bg-amber-500/30 transition-all"
+            >
+              <Sparkles size={11} />
+              <span>Get Pass</span>
+            </Link>
+          ) : (
+            /* Normal add-to-cart */
+            <button
+              onClick={() => {
+                addItem({
+                  id: product.id,
+                  productId: product.id,
+                  name: product.name,
+                  slug: product.slug,
+                  price: Number(product.price),
+                  quantity: 1,
+                  imageUrl: imageUrl
+                });
+              }}
+              className="w-9 h-9 flex items-center justify-center rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 transition-all shadow-md shadow-emerald-950/40"
+            >
+              <ShoppingCart size={15} />
+            </button>
+          )}
         </div>
       </div>
     </div>

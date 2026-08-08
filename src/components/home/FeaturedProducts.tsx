@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ProductGrid } from "@/components/products/ProductGrid";
 
-export function FeaturedProducts({ products }: { products: any[] }) {
+export function FeaturedProducts({ products, preorderProductMap = {} }: { products: any[]; preorderProductMap?: Record<string, string> }) {
   return (
     <section className="page-shell py-10 lg:py-14">
       <div className="mb-6 flex items-end justify-between gap-4">
@@ -13,7 +13,7 @@ export function FeaturedProducts({ products }: { products: any[] }) {
           Browse all
         </Link>
       </div>
-      <ProductGrid products={products} />
+      <ProductGrid products={products} preorderProductMap={preorderProductMap} />
     </section>
   );
 }

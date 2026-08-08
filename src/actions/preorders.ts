@@ -4,6 +4,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin, requireUser, getCurrentUser } from "@/lib/guards";
 import { revalidatePath } from "next/cache";
 import type { PreOrderRow, PreOrderRegistrationRow, PreOrderStatus } from "@/types";
+import { resolvePreorderPrice } from "@/lib/preorder-utils";
+
+
 
 /**
  * Get the currently active, valid preorder for display on the homepage or /prebook page.
@@ -12,22 +15,43 @@ import type { PreOrderRow, PreOrderRegistrationRow, PreOrderStatus } from "@/typ
 export async function getActivePreorder(): Promise<PreOrderRow | null> {
   try {
     const supabase = createAdminClient();
-    const now = new Date().toISOString();
 
+    // 1. Fetch preorders matching ACTIVE (or active) status
     const { data: preorders, error } = await supabase
       .from("preorders")
-      .select("*, products(*)")
-      .eq("status", "ACTIVE")
-      .lte("start_date", now)
-      .gte("end_date", now)
+      .select("*")
       .order("created_at", { ascending: false });
 
-    if (error || !preorders || preorders.length === 0) {
+    if (error) {
+      console.error("Error fetching preorders in getActivePreorder:", error);
       return null;
     }
 
-    // Filter through preorders to find one that hasn't exceeded max_quantity limit
+    if (!preorders || preorders.length === 0) {
+      return null;
+    }
+
+    const nowMs = Date.now();
+
+    // 2. Find first active preorder whose deadline has not passed
     for (const preorder of preorders) {
+      const statusUpper = String(preorder.status || "").toUpperCase();
+      if (statusUpper !== "ACTIVE") continue;
+
+      // Check if end_date has passed
+      if (preorder.end_date) {
+        const endDateMs = new Date(preorder.end_date).getTime();
+        if (endDateMs < nowMs) continue; // expired
+      }
+
+      // Fetch target product separately
+      const { data: product } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", preorder.product_id)
+        .maybeSingle();
+
+      // Get registrations count
       const { count } = await supabase
         .from("preorder_registrations")
         .select("id", { count: "exact", head: true })
@@ -37,6 +61,7 @@ export async function getActivePreorder(): Promise<PreOrderRow | null> {
       if (!preorder.max_quantity || regCount < preorder.max_quantity) {
         return {
           ...preorder,
+          products: product || null,
           registration_count: regCount
         };
       }
@@ -44,8 +69,41 @@ export async function getActivePreorder(): Promise<PreOrderRow | null> {
 
     return null;
   } catch (err) {
-    console.error("Error in getActivePreorder:", err);
+    console.error("Exception in getActivePreorder:", err);
     return null;
+  }
+}
+
+/**
+ * Returns a map of { [product_id]: preorder_id } for all currently active preorders.
+ * Used by shop/listing pages to gate cart access for prebook-only products.
+ */
+export async function getAllActivePreorderProductIds(): Promise<Record<string, string>> {
+  try {
+    const supabase = createAdminClient();
+
+    const { data: preorders, error } = await supabase
+      .from("preorders")
+      .select("id, product_id, status, end_date");
+
+    if (error || !preorders) return {};
+
+    const nowMs = Date.now();
+    const map: Record<string, string> = {};
+
+    for (const p of preorders) {
+      const statusUpper = String(p.status || "").toUpperCase();
+      if (statusUpper !== "ACTIVE") continue;
+      if (p.end_date && new Date(p.end_date).getTime() < nowMs) continue;
+      if (p.product_id) {
+        map[p.product_id] = p.id;
+      }
+    }
+
+    return map;
+  } catch (err) {
+    console.error("Exception in getAllActivePreorderProductIds:", err);
+    return {};
   }
 }
 
@@ -58,13 +116,19 @@ export async function getPreorderById(id: string): Promise<PreOrderRow | null> {
 
     const { data: preorder, error } = await supabase
       .from("preorders")
-      .select("*, products(*)")
+      .select("*")
       .eq("id", id)
       .maybeSingle();
 
     if (error || !preorder) {
       return null;
     }
+
+    const { data: product } = await supabase
+      .from("products")
+      .select("*")
+      .eq("id", preorder.product_id)
+      .maybeSingle();
 
     const { count } = await supabase
       .from("preorder_registrations")
@@ -73,10 +137,33 @@ export async function getPreorderById(id: string): Promise<PreOrderRow | null> {
 
     return {
       ...preorder,
+      products: product || null,
       registration_count: count || 0
     };
   } catch (err) {
     console.error("Error in getPreorderById:", err);
+    return null;
+  }
+}
+
+/**
+ * Get active preorder campaign associated with a product ID (if any).
+ */
+export async function getPreorderForProduct(productId: string): Promise<PreOrderRow | null> {
+  try {
+    const supabase = createAdminClient();
+    const { data: preorder } = await supabase
+      .from("preorders")
+      .select("*")
+      .eq("product_id", productId)
+      .maybeSingle();
+
+    if (!preorder || String(preorder.status || "").toUpperCase() !== "ACTIVE") {
+      return null;
+    }
+
+    return preorder as PreOrderRow;
+  } catch (err) {
     return null;
   }
 }
@@ -104,9 +191,16 @@ export async function getUserPreorderRegistration(preorderId: string): Promise<P
 }
 
 /**
- * Get user's locked preorder price for a product (if they have prebooked it).
+ * Get user's active preorder registration with granted access for a product.
+ * Returns registration details including special preorder price and reservation fee deduction.
  */
-export async function getUserPreorderForProduct(productId: string): Promise<PreOrderRegistrationRow | null> {
+export async function getUserPreorderForProduct(productId: string): Promise<{
+  hasAccess: boolean;
+  registration: PreOrderRegistrationRow | null;
+  specialPrice: number;
+  reservationFeePaid: number;
+  finalCheckoutPrice: number;
+} | null> {
   try {
     const user = await getCurrentUser();
     if (!user) return null;
@@ -114,14 +208,30 @@ export async function getUserPreorderForProduct(productId: string): Promise<PreO
     const supabase = createAdminClient();
     const { data: registration } = await supabase
       .from("preorder_registrations")
-      .select("*, products(*)")
+      .select("*, preorders(*), products(*)")
       .eq("user_id", user.id)
       .eq("product_id", productId)
+      .eq("payment_status", "paid")
+      .eq("granted_access", true)
       .eq("status", "REGISTERED")
       .order("created_at", { ascending: false })
       .maybeSingle();
 
-    return registration || null;
+    if (!registration) return null;
+
+    const baseProductPrice = registration.products?.price || 0;
+    // Special price can be locked_price or preorder_price if set, else base price
+    const specialPrice = registration.locked_price > 0 ? registration.locked_price : baseProductPrice;
+    const reservationFeePaid = Number(registration.reservation_fee_paid || 0);
+    const finalCheckoutPrice = Math.max(0, Math.round((specialPrice - reservationFeePaid) * 100) / 100);
+
+    return {
+      hasAccess: true,
+      registration: registration as PreOrderRegistrationRow,
+      specialPrice,
+      reservationFeePaid,
+      finalCheckoutPrice
+    };
   } catch (err) {
     return null;
   }
@@ -175,11 +285,8 @@ export async function createPreOrderRegistrationAction(preorderId: string) {
       };
     }
 
-    // 3. Lock price calculation based on Product's base price & Preorder discount %
-    const productPrice = preorder.products?.price || 0;
-    const discountPct = Number(preorder.discount_percentage || 0);
-    const discountAmount = (productPrice * discountPct) / 100;
-    const lockedPrice = Math.round((productPrice - discountAmount) * 100) / 100;
+    // 3. Resolve locked price — preorder_price takes priority over discount_percentage
+    const { lockedPrice, discountPercentage: discountPct, savedAmount } = resolvePreorderPrice(preorder);
 
     // 4. Insert registration record
     const { data: registration, error: insertError } = await supabase
@@ -204,13 +311,14 @@ export async function createPreOrderRegistrationAction(preorderId: string) {
     revalidatePath(`/prebook/${preorderId}`);
     revalidatePath("/");
 
+    const savingMsg = savedAmount > 0 ? ` (saving ₹${savedAmount})` : "";
     return {
       success: true,
       alreadyRegistered: false,
       registration,
       lockedPrice,
       discountPercentage: discountPct,
-      message: `Prebook successful! Your price of ₹${lockedPrice} (${discountPct}% off) has been locked.`
+      message: `Prebook confirmed! Your price of ₹${lockedPrice}${savingMsg} has been locked in.`
     };
   } catch (err: any) {
     if (err?.message === "Unauthorized") {
@@ -231,16 +339,22 @@ export async function getAdminPreorders(): Promise<PreOrderRow[]> {
 
   const { data: preorders, error } = await supabase
     .from("preorders")
-    .select("*, products(*)")
+    .select("*")
     .order("created_at", { ascending: false });
 
   if (error || !preorders) {
     return [];
   }
 
-  // Attach registration counts
+  // Attach products & registration counts
   const result: PreOrderRow[] = [];
   for (const item of preorders) {
+    const { data: product } = await supabase
+      .from("products")
+      .select("*")
+      .eq("id", item.product_id)
+      .maybeSingle();
+
     const { count } = await supabase
       .from("preorder_registrations")
       .select("id", { count: "exact", head: true })
@@ -248,6 +362,7 @@ export async function getAdminPreorders(): Promise<PreOrderRow[]> {
 
     result.push({
       ...item,
+      products: product || null,
       registration_count: count || 0
     });
   }
@@ -264,6 +379,9 @@ export async function createPreOrderAction(formData: FormData) {
   const description = formData.get("description") as string;
   const bannerUrl = formData.get("bannerUrl") as string;
   const discountPercentage = parseFloat((formData.get("discountPercentage") as string) || "0");
+  const preorderPriceRaw = formData.get("preorderPrice") as string;
+  const preorderPrice = preorderPriceRaw ? parseFloat(preorderPriceRaw) : null;
+  const reservationFee = parseFloat((formData.get("reservationFee") as string) || "10");
   const startDate = formData.get("startDate") as string;
   const endDate = formData.get("endDate") as string;
   const maxQuantityRaw = formData.get("maxQuantity") as string;
@@ -282,6 +400,8 @@ export async function createPreOrderAction(formData: FormData) {
       description: description || null,
       banner_url: bannerUrl || null,
       discount_percentage: discountPercentage,
+      preorder_price: preorderPrice,
+      reservation_fee: reservationFee,
       start_date: new Date(startDate).toISOString(),
       end_date: new Date(endDate).toISOString(),
       max_quantity: maxQuantity,
@@ -311,6 +431,9 @@ export async function updatePreOrderAction(id: string, formData: FormData) {
   const description = formData.get("description") as string;
   const bannerUrl = formData.get("bannerUrl") as string;
   const discountPercentage = parseFloat((formData.get("discountPercentage") as string) || "0");
+  const preorderPriceRaw = formData.get("preorderPrice") as string;
+  const preorderPrice = preorderPriceRaw ? parseFloat(preorderPriceRaw) : null;
+  const reservationFee = parseFloat((formData.get("reservationFee") as string) || "10");
   const startDate = formData.get("startDate") as string;
   const endDate = formData.get("endDate") as string;
   const maxQuantityRaw = formData.get("maxQuantity") as string;
@@ -325,6 +448,8 @@ export async function updatePreOrderAction(id: string, formData: FormData) {
       description: description || null,
       banner_url: bannerUrl || null,
       discount_percentage: discountPercentage,
+      preorder_price: preorderPrice,
+      reservation_fee: reservationFee,
       start_date: new Date(startDate).toISOString(),
       end_date: new Date(endDate).toISOString(),
       max_quantity: maxQuantity,
@@ -371,13 +496,41 @@ export async function togglePreOrderStatusAction(id: string, status: PreOrderSta
   return { success: true };
 }
 
+export async function toggleGrantAccessAction(registrationId: string, granted: boolean) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+
+  const { data: reg, error } = await supabase
+    .from("preorder_registrations")
+    .update({
+      granted_access: granted,
+      granted_at: granted ? new Date().toISOString() : null,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", registrationId)
+    .select("preorder_id")
+    .single();
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  if (reg?.preorder_id) {
+    revalidatePath(`/admin/preorders/${reg.preorder_id}`);
+    revalidatePath("/prebook");
+    revalidatePath("/");
+  }
+
+  return { success: true };
+}
+
 export async function getPreOrderRegistrations(preorderId: string): Promise<PreOrderRegistrationRow[]> {
   await requireAdmin();
   const supabase = createAdminClient();
 
   const { data: registrations, error } = await supabase
     .from("preorder_registrations")
-    .select("*, users(id, name, email, phone), products(*)")
+    .select("*")
     .eq("preorder_id", preorderId)
     .order("created_at", { ascending: false });
 
@@ -385,5 +538,20 @@ export async function getPreOrderRegistrations(preorderId: string): Promise<PreO
     return [];
   }
 
-  return registrations as PreOrderRegistrationRow[];
+  const result: PreOrderRegistrationRow[] = [];
+  for (const reg of registrations) {
+    const [{ data: user }, { data: product }] = await Promise.all([
+      supabase.from("users").select("id, name, email, phone").eq("id", reg.user_id).maybeSingle(),
+      supabase.from("products").select("*").eq("id", reg.product_id).maybeSingle()
+    ]);
+
+    result.push({
+      ...reg,
+      users: user || null,
+      products: product || null
+    } as PreOrderRegistrationRow);
+  }
+
+  return result;
 }
+

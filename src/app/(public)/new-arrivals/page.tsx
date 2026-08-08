@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getProducts, getCategories } from "@/actions/products";
+import { getAllActivePreorderProductIds } from "@/actions/preorders";
 import { ListingPageClient } from "@/components/products/ListingPageClient";
 import { Suspense } from "react";
 
@@ -9,9 +10,10 @@ export const metadata: Metadata = {
 };
 
 export default async function NewArrivalsPage() {
-  const [{ items, total, page, pageSize }, categories] = await Promise.all([
+  const [{ items, total, page, pageSize }, categories, preorderProductMap] = await Promise.all([
     getProducts({ page: 1 }),
-    getCategories()
+    getCategories(),
+    getAllActivePreorderProductIds()
   ]);
 
   return (
@@ -24,6 +26,7 @@ export default async function NewArrivalsPage() {
         pageSize={pageSize}
         title="New Arrivals"
         subtitle="Freshly crafted designs just added to our collection."
+        preorderProductMap={preorderProductMap}
       />
     </Suspense>
   );

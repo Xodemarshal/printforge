@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getProducts, searchProducts, getCategories } from "@/actions/products";
+import { getAllActivePreorderProductIds } from "@/actions/preorders";
 import { ListingPageClient } from "@/components/products/ListingPageClient";
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ export default async function ShopPage({
   searchParams: Promise<{ q?: string; category?: string; page?: string }>;
 }) {
   const params = await searchParams;
-  const [result, categories] = await Promise.all([
+  const [result, categories, preorderProductMap] = await Promise.all([
     params.q
       ? searchProducts(
           {
@@ -28,7 +29,8 @@ export default async function ShopPage({
           category: params.category,
           page: Number(params.page ?? 1)
         }),
-    getCategories()
+    getCategories(),
+    getAllActivePreorderProductIds()
   ]);
 
   const { items, total, page, pageSize } = result;
@@ -42,6 +44,7 @@ export default async function ShopPage({
       pageSize={pageSize}
       title="All Collections"
       subtitle="Discover our wide range of handcrafted collectibles, made for true collectors."
+      preorderProductMap={preorderProductMap}
     />
   );
 }

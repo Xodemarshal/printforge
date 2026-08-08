@@ -9,7 +9,7 @@ import { CategoryGrid } from "@/components/home/CategoryGrid";
 import { CustomerReviews } from "@/components/home/CustomerReviews";
 import { FAQSection } from "@/components/home/FAQSection";
 import { getBestSellers, getFeaturedProducts, getMostVisitedProducts, getNewArrivals } from "@/actions/products";
-import { getActivePreorder } from "@/actions/preorders";
+import { getActivePreorder, getAllActivePreorderProductIds } from "@/actions/preorders";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { mockData } from "@/lib/mock-supabase";
 import { getSiteSettings } from "@/actions/settings";
@@ -20,12 +20,13 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [featured, newArrivals, mostVisited, bestSellers, activePreorder] = await Promise.all([
+  const [featured, newArrivals, mostVisited, bestSellers, activePreorder, preorderProductMap] = await Promise.all([
     getFeaturedProducts(),
     getNewArrivals(4),
     getMostVisitedProducts(8),
     getBestSellers(8),
-    getActivePreorder()
+    getActivePreorder(),
+    getAllActivePreorderProductIds()
   ]);
   const supabase = createAdminClient();
   const categoriesResult = await supabase.from("categories").select("*").limit(8);
@@ -42,10 +43,9 @@ export default async function HomePage() {
       ) : (
         <HeroBanner settings={settings.hero} categories={categories ?? []} />
       )}
-      <TrustBar />
-      <FeaturedProducts products={newArrivals} />
-      <BestSellers products={bestSellers} />
-      <TrendingProducts products={mostVisited.length > 0 ? mostVisited : featured} />
+      <FeaturedProducts products={newArrivals} preorderProductMap={preorderProductMap} />
+      <BestSellers products={bestSellers} preorderProductMap={preorderProductMap} />
+      <TrendingProducts products={mostVisited.length > 0 ? mostVisited : featured} preorderProductMap={preorderProductMap} />
       <CategoryGrid categories={categories ?? []} />
       <CustomerReviews
         reviews={(reviews ?? []).map((review: any) => ({

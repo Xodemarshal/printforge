@@ -32,7 +32,7 @@ export function Header({
   return (
     <header className="sticky top-0 z-40">
       {/* Top Banner */}
-      <div className="bg-emerald-600 py-2">
+      <div className="bg-[#0a130c] border-b border-emerald-900/40 py-2">
         <div className="page-shell flex items-center justify-between text-white">
           <div className="flex items-center gap-2">
             <Leaf size={12} className="text-emerald-200" />
@@ -54,7 +54,7 @@ export function Header({
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group shrink-0">
             <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-emerald-600 text-white group-hover:scale-105 transition-transform overflow-hidden">
-               <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+              <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col">
               <span className="display-font text-xl font-bold tracking-tight text-emerald-400 leading-none">
@@ -84,14 +84,14 @@ export function Header({
 
           {/* Action Icons */}
           <div className="flex items-center gap-4 sm:gap-6 shrink-0">
-            <button 
+            <button
               onClick={() => setSearchOpen(!searchOpen)}
               className="text-cream/70 hover:text-emerald-400 transition-colors"
               aria-label="Search"
             >
               <Search size={20} />
             </button>
-            
+
             <Link href="/dashboard" className="text-cream/70 hover:text-emerald-400 transition-colors">
               <User size={20} />
             </Link>

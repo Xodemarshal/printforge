@@ -1,27 +1,44 @@
-import { Shield, Package, Globe, RotateCcw } from "lucide-react";
+import type { HeroSectionSettings } from "@/actions/settings";
 
-const TRUST_ITEMS = [
-  { icon: Shield, title: "Premium Quality", body: "Handcrafted with care" },
-  { icon: Package, title: "Secure Packaging", body: "Safe & reliable" },
-  { icon: Globe, title: "India Delivery", body: "Delivered across India" },
-  { icon: RotateCcw, title: "Easy Returns", body: "10-day guarantee" }
-];
+const formatMarkdown = (text: string) => {
+  if (!text) return "";
 
-export function TrustBar() {
+  if (text.includes("<") && text.includes(">")) {
+    return text
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+      .replace(/on\w+="[^"]*"/g, "")
+      .trim();
+  }
+
+  let formatted = text
+    .replace(/\*\*(.*?)\*\*/g, "<strong class='text-cream font-bold'>$1</strong>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(/_(.*?)_/g, "<em>$1</em>")
+    .replace(/`([^`]+)`/g, "<code class='bg-white/10 px-1.5 py-0.5 rounded text-emerald-300'>$1</code>")
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="underline text-emerald-400 hover:text-emerald-300">$1</a>')
+    .replace(/\n/g, "<br />");
+
+  return formatted;
+};
+
+export function TrustBar({ settings }: { settings?: HeroSectionSettings }) {
+  const title = settings?.title || "Ideas";
+  const description =
+    settings?.description ||
+    "Transform your ideas into stunning physical products with our premium design services and marketplace.";
+
   return (
-    <section className="border-y border-white/10 bg-white/5 backdrop-blur-md py-10">
-      <div className="page-shell grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-        {TRUST_ITEMS.map(({ icon: Icon, title, body }) => (
-          <div key={title} className="group flex items-start gap-5 transition-all duration-300 hover:scale-[1.02]">
-            <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-black/30 shadow-xl border border-white/10 text-emerald-400 transition-all duration-500 group-hover:bg-emerald-600 group-hover:text-white group-hover:-rotate-3">
-              <Icon size={24} />
-            </span>
-            <div className="space-y-1.5 pt-1">
-              <p className="display-font text-lg font-bold text-emerald-400 tracking-tight">{title}</p>
-              <p className="text-xs leading-relaxed text-cream/60 font-medium max-w-[180px]">{body}</p>
-            </div>
-          </div>
-        ))}
+    <section className="py-8 lg:py-12 bg-transparent">
+      <div className="page-shell">
+        <div className="w-full text-left space-y-3">
+          <h2 className="display-font text-3xl sm:text-4xl lg:text-5xl text-emerald-400 font-bold tracking-tight">
+            {title}
+          </h2>
+          <div
+            className="text-lg sm:text-xl lg:text-2xl text-cream/80 font-medium leading-relaxed w-full space-y-2"
+            dangerouslySetInnerHTML={{ __html: formatMarkdown(description) }}
+          />
+        </div>
       </div>
     </section>
   );

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getBestSellers, getCategories } from "@/actions/products";
+import { getAllActivePreorderProductIds } from "@/actions/preorders";
 import { ListingPageClient } from "@/components/products/ListingPageClient";
 import { Suspense } from "react";
 
@@ -9,9 +10,10 @@ export const metadata: Metadata = {
 };
 
 export default async function BestSellersPage() {
-  const [products, categories] = await Promise.all([
+  const [products, categories, preorderProductMap] = await Promise.all([
     getBestSellers(),
-    getCategories()
+    getCategories(),
+    getAllActivePreorderProductIds()
   ]);
 
   return (
@@ -24,6 +26,7 @@ export default async function BestSellersPage() {
         pageSize={products.length}
         title="Best Sellers"
         subtitle="The most popular handcrafted pieces from our artisan workshop."
+        preorderProductMap={preorderProductMap}
       />
     </Suspense>
   );

@@ -13,6 +13,7 @@ interface CollectionsPageClientProps {
   pageSize: number;
   pageTitle?: string;
   pageSubtitle?: string;
+  preorderProductMap?: Record<string, string>;
 }
 
 const MATERIALS = [
@@ -37,7 +38,8 @@ export function CollectionsPageClient({
   categories,
   total,
   currentPage,
-  pageSize
+  pageSize,
+  preorderProductMap = {}
 }: CollectionsPageClientProps) {
   const formatRupees = (value: number) =>
     new Intl.NumberFormat("en-IN", {
@@ -309,7 +311,7 @@ export function CollectionsPageClient({
             {/* Products Grid */}
             <div className={`grid gap-6 ${view === "grid" ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "grid-cols-1"}`}>
               {displayedProducts.map((product, index) => (
-                <ProductCard key={product.id} product={product} index={index} />
+                <ProductCard key={product.id} product={product} index={index} preorderId={preorderProductMap?.[product.id]} />
               ))}
             </div>
 

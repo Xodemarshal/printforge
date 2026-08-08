@@ -21,6 +21,7 @@ interface Product {
   material_info: string;
   color_options: string[];
   active: boolean;
+  dimensions?: string;
   filament_weight_grams?: number;
   estimated_power_cost?: number;
   estimated_packaging_cost?: number;
@@ -34,6 +35,7 @@ interface EditProductFormProps {
 
 export function EditProductForm({ product, categories }: EditProductFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const { success, error } = useToast();
   const router = useRouter();
 
@@ -199,6 +201,17 @@ export function EditProductForm({ product, categories }: EditProductFormProps) {
             className="bg-black border-gray-700 text-white placeholder:text-gray-400"
           />
         </div>
+      </div>
+
+      <div>
+        <label className="text-sm font-medium text-gray-300 block mb-1.5">Dimensions</label>
+        <Input
+          name="dimensions"
+          defaultValue={product.dimensions || ""}
+          placeholder="e.g. 12 x 8 x 5 cm"
+          className="bg-black border-gray-700 text-white placeholder:text-gray-400"
+        />
+        <p className="text-xs text-gray-500 mt-1">Physical size shown on the product page next to quantity</p>
       </div>
 
       {/* Manufacturing Cost Section */}

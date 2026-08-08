@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Users, Clock, Tag, Sparkles, CheckCircle2, Package } from "lucide-react";
+import { ArrowLeft, Users, ShieldCheck, CheckCircle2, PackageCheck } from "lucide-react";
 import { requireAdmin } from "@/lib/guards";
 import { getPreorderById, getPreOrderRegistrations } from "@/actions/preorders";
 import { formatCurrency } from "@/lib/utils";
 import type { PreOrderStatus } from "@/types";
+import { GrantAccessCheckbox } from "./GrantAccessCheckbox";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -15,7 +16,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { id } = await params;
   const preorder = await getPreorderById(id);
   return {
-    title: `${preorder?.title || "Preorder"} — Registrations | Admin`
+    title: `${preorder?.title || "Preorder"} — Demand & Registrations | Admin`
   };
 }
 
@@ -39,9 +40,12 @@ export default async function PreorderDetailPage({ params }: PageProps) {
   if (!preorder) notFound();
 
   const product = preorder.products;
-  const originalPrice = product?.price || 0;
-  const discountPct = Number(preorder.discount_percentage || 0);
-  const preorderPrice = Math.round((originalPrice - (originalPrice * discountPct) / 100) * 100) / 100;
+  const productPrice = product?.price || 0;
+  const reservationFee = Number(preorder.reservation_fee || 0);
+
+  const paidRegistrations = registrations.filter(r => r.payment_status === "paid");
+  const grantedCount = registrations.filter(r => r.granted_access).length;
+  const totalRevenue = paidRegistrations.reduce((acc, r) => acc + Number(r.reservation_fee_paid || 0), 0);
 
   return (
     <div className="space-y-8">
@@ -60,7 +64,7 @@ export default async function PreorderDetailPage({ params }: PageProps) {
             <h1 className="display-font text-3xl font-bold text-emerald-400">{preorder.title}</h1>
             {product && (
               <p className="text-sm text-cream/60">
-                Product: <Link href={`/products/${product.slug}`} className="text-emerald-400 hover:underline">{product.name}</Link>
+                Product: <Link href={`/products/${product.slug}`} className="text-emerald-400 hover:underline">{product.name}</Link> (Base Price: ₹{productPrice.toLocaleString("en-IN")})
               </p>
             )}
           </div>
@@ -78,46 +82,48 @@ export default async function PreorderDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Campaign Summary Cards */}
+      {/* Demand & Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md space-y-1">
-          <p className="text-[10px] uppercase tracking-widest text-cream/50 font-semibold">Registrations</p>
-          <p className="text-3xl font-bold text-emerald-400">{preorder.registration_count || 0}</p>
-          {preorder.max_quantity && (
-            <p className="text-xs text-cream/40">of {preorder.max_quantity} slots</p>
-          )}
+          <p className="text-[10px] uppercase tracking-widest text-cream/50 font-semibold">Verified Demand</p>
+          <p className="text-3xl font-bold text-emerald-400">{paidRegistrations.length}</p>
+          <p className="text-xs text-cream/40">paid reservation fee</p>
         </div>
+
         <div className="p-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md space-y-1">
-          <p className="text-[10px] uppercase tracking-widest text-cream/50 font-semibold">Discount</p>
-          <p className="text-3xl font-bold text-emerald-400">{discountPct}%</p>
-          <p className="text-xs text-cream/40">early bird</p>
+          <p className="text-[10px] uppercase tracking-widest text-cream/50 font-semibold">Access Granted</p>
+          <p className="text-3xl font-bold text-emerald-400">{grantedCount}</p>
+          <p className="text-xs text-cream/40">users allowed to buy</p>
         </div>
+
         <div className="p-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md space-y-1">
-          <p className="text-[10px] uppercase tracking-widest text-cream/50 font-semibold">Locked Price</p>
-          <p className="text-2xl font-bold text-emerald-400">₹{preorderPrice}</p>
-          <p className="text-xs text-cream/40 line-through">₹{originalPrice}</p>
+          <p className="text-[10px] uppercase tracking-widest text-cream/50 font-semibold">Reservation Fee</p>
+          <p className="text-2xl font-bold text-emerald-400">₹{reservationFee}</p>
+          <p className="text-xs text-cream/40">per customer reservation</p>
         </div>
+
         <div className="p-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md space-y-1">
-          <p className="text-[10px] uppercase tracking-widest text-cream/50 font-semibold">Deadline</p>
-          <p className="text-sm font-bold text-cream">
-            {new Date(preorder.end_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-          </p>
-          <p className="text-xs text-cream/40">
-            {new Date(preorder.end_date) < new Date() ? "Expired" : "Ongoing"}
-          </p>
+          <p className="text-[10px] uppercase tracking-widest text-cream/50 font-semibold">Fee Revenue Collected</p>
+          <p className="text-2xl font-bold text-emerald-400">₹{totalRevenue.toLocaleString("en-IN")}</p>
+          <p className="text-xs text-cream/40">deducted at final checkout</p>
         </div>
       </div>
 
-      {/* Registrations List */}
+      {/* Registrations List with Individual Access Grant Checkboxes */}
       <div className="space-y-4">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
-          <Users size={16} />
-          <span>Registered Users ({registrations.length})</span>
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+            <Users size={16} />
+            <span>Interested Customers & Production Access ({registrations.length})</span>
+          </h2>
+          <p className="text-xs text-cream/50">
+            Check the box to grant an individual user permission to buy this product.
+          </p>
+        </div>
 
         {registrations.length === 0 ? (
           <div className="p-12 rounded-3xl border border-white/10 bg-white/5 text-center space-y-2">
-            <p className="text-cream/40 text-sm">No users have prebooked this campaign yet.</p>
+            <p className="text-cream/40 text-sm">No customers have paid a reservation fee for this preorder yet.</p>
           </div>
         ) : (
           <div className="overflow-hidden rounded-2xl border border-white/10">
@@ -125,12 +131,12 @@ export default async function PreorderDetailPage({ params }: PageProps) {
               <table className="w-full text-sm">
                 <thead className="border-b border-white/10 bg-black/30">
                   <tr>
-                    <th className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-cream/50">User</th>
-                    <th className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-cream/50">Email</th>
-                    <th className="px-5 py-3.5 text-right text-[11px] font-bold uppercase tracking-wider text-cream/50">Locked Price</th>
-                    <th className="px-5 py-3.5 text-right text-[11px] font-bold uppercase tracking-wider text-cream/50">Discount</th>
-                    <th className="px-5 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider text-cream/50">Status</th>
-                    <th className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-cream/50">Registered At</th>
+                    <th className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-cream/50">Customer</th>
+                    <th className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-cream/50">Email / Contact</th>
+                    <th className="px-5 py-3.5 text-right text-[11px] font-bold uppercase tracking-wider text-cream/50">Fee Paid</th>
+                    <th className="px-5 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider text-cream/50">Payment Status</th>
+                    <th className="px-5 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider text-cream/50">Grant Purchase Access</th>
+                    <th className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-cream/50">Reserved Date</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 bg-white/[0.02]">
@@ -140,24 +146,30 @@ export default async function PreorderDetailPage({ params }: PageProps) {
                         {reg.users?.name || "—"}
                       </td>
                       <td className="px-5 py-4 text-cream/60 text-xs">
-                        {reg.users?.email || "—"}
+                        <div>{reg.users?.email || "—"}</div>
+                        {reg.users?.phone && <div className="text-[11px] text-cream/40">{reg.users.phone}</div>}
                       </td>
                       <td className="px-5 py-4 text-right font-bold text-emerald-400">
-                        ₹{reg.locked_price}
-                      </td>
-                      <td className="px-5 py-4 text-right text-cream/60">
-                        {reg.discount_percentage}%
+                        ₹{reg.reservation_fee_paid || reservationFee}
                       </td>
                       <td className="px-5 py-4 text-center">
                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${
-                          reg.status === "PURCHASED"
+                          reg.payment_status === "paid"
                             ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-                            : reg.status === "CANCELLED"
+                            : reg.payment_status === "failed"
                             ? "bg-red-900/20 text-red-400 border-red-500/30"
-                            : "bg-blue-500/15 text-blue-400 border-blue-500/30"
+                            : "bg-amber-500/15 text-amber-400 border-amber-500/30"
                         }`}>
-                          {reg.status}
+                          {reg.payment_status || "pending"}
                         </span>
+                      </td>
+                      <td className="px-5 py-4 text-center">
+                        <GrantAccessCheckbox
+                          registrationId={reg.id}
+                          initialGranted={reg.granted_access}
+                          userName={reg.users?.name || "Customer"}
+                          reservationFeePaid={reg.reservation_fee_paid || reservationFee}
+                        />
                       </td>
                       <td className="px-5 py-4 text-cream/50 text-xs">
                         {new Date(reg.created_at).toLocaleDateString("en-IN", {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type React from "react";
 import "./globals.css";
+import Script from "next/script";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/hooks/useToast";
 import { NotificationProvider } from "@/hooks/useNotifications";
@@ -44,6 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen" suppressHydrationWarning>
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <ToastProvider>
             <NotificationProvider>

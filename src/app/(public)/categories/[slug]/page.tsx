@@ -2,7 +2,9 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import { getCategories, getProducts } from "@/actions/products";
+import { getAllActivePreorderProductIds } from "@/actions/preorders";
 import { ListingPageClient } from "@/components/products/ListingPageClient";
+
 export async function generateStaticParams() {
   try {
     const categories = await getCategories();
@@ -33,38 +35,25 @@ export async function generateMetadata({
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
-  console.log('=== CATEGORY PAGE LOADED ===');
-  console.log('Slug:', slug);
-
   try {
-    const categories = await getCategories();
-    console.log('Total categories fetched:', categories.length);
+    const [categories, preorderProductMap] = await Promise.all([
+      getCategories(),
+      getAllActivePreorderProductIds()
+    ]);
 
-    // Try exact match first
+    // Try exact match first, then case-insensitive, then singular/plural
     let category = categories.find((c: any) => c.slug === slug);
-
-    // If not found, try case-insensitive match
     if (!category) {
       category = categories.find((c: any) => c.slug.toLowerCase() === slug.toLowerCase());
     }
-
-    // If still not found, try singular/plural variations
     if (!category) {
       const singularSlug = slug.endsWith('s') ? slug.slice(0, -1) : slug + 's';
-      category = categories.find((c: any) => c.slug === singularSlug || c.slug.toLowerCase() === singularSlug.toLowerCase());
+      category = categories.find((c: any) =>
+        c.slug === singularSlug || c.slug.toLowerCase() === singularSlug.toLowerCase()
+      );
     }
 
-    console.log('Category match result:', {
-      requestedSlug: slug,
-      foundCategory: category?.name,
-      foundSlug: category?.slug,
-      categoryId: category?.id,
-      allCategories: categories.map((c: any) => ({ id: c.id, name: c.name, slug: c.slug }))
-    });
-
-    // If category doesn't exist, show empty state with all categories
     if (!category) {
-      console.log('❌ Category not found, showing empty state');
       return (
         <ListingPageClient
           initialProducts={[]}
@@ -74,20 +63,12 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
           pageSize={12}
           title="Category Not Found"
           subtitle={`The category "${slug}" doesn't exist. Available categories are listed in the sidebar.`}
+          preorderProductMap={preorderProductMap}
         />
       );
     }
 
-    console.log('✅ Category found, fetching products for category ID:', category.id);
     const { items, total, page, pageSize } = await getProducts({ category: category.id });
-
-    console.log('Products result:', {
-      categoryId: category.id,
-      categoryName: category.name,
-      productsFound: items.length,
-      total,
-      firstProduct: items[0] ? { name: items[0].name, category_id: items[0].category_id } : null
-    });
 
     return (
       <ListingPageClient
@@ -98,12 +79,11 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         pageSize={pageSize}
         title={category.name}
         subtitle={`Explore our ${category.name.toLowerCase()} collection - handcrafted with precision and care.`}
+        preorderProductMap={preorderProductMap}
       />
     );
   } catch (error) {
     console.error('❌ ERROR loading category page:', error);
-
-    // Fallback error state
     return (
       <div className="min-h-screen bg-alabaster flex items-center justify-center">
         <div className="text-center max-w-md px-4">

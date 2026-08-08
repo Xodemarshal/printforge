@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getProductBySlug, getProducts } from "@/actions/products";
+import { getPreorderForProduct, getUserPreorderForProduct } from "@/actions/preorders";
 import { trackEvent } from "@/lib/utils";
 import { ProductDetailClient } from "./ProductDetailClient";
 
@@ -37,7 +38,19 @@ export default async function ProductPage({
     console.warn("Failed to increment product view count:", error);
   }
   await trackEvent("product_viewed", null, { slug });
-  const related = product.category_id ? await getProducts({ category: String(product.category_id) }) : { items: [] };
+  
+  const [related, preorder, userPreorderAccess] = await Promise.all([
+    product.category_id ? getProducts({ category: String(product.category_id) }) : Promise.resolve({ items: [] }),
+    getPreorderForProduct(product.id),
+    getUserPreorderForProduct(product.id)
+  ]);
 
-  return <ProductDetailClient product={product} related={related} />;
+  return (
+    <ProductDetailClient
+      product={product}
+      related={related}
+      preorder={preorder}
+      userPreorderAccess={userPreorderAccess}
+    />
+  );
 }

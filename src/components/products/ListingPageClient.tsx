@@ -14,6 +14,8 @@ interface ListingPageClientProps {
   pageSize: number;
   title: string;
   subtitle?: string;
+  /** Map of product_id -> preorder_id for active prebook-only products */
+  preorderProductMap?: Record<string, string>;
 }
 
 export function ListingPageClient({
@@ -23,7 +25,8 @@ export function ListingPageClient({
   currentPage,
   pageSize,
   title,
-  subtitle
+  subtitle,
+  preorderProductMap = {}
 }: ListingPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -320,7 +323,8 @@ export function ListingPageClient({
                   <ProductCard 
                     key={product.id} 
                     product={product} 
-                    index={index} 
+                    index={index}
+                    preorderId={preorderProductMap[product.id]}
                   />
                 ))}
               </div>

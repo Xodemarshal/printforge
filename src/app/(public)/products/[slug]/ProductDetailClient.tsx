@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Star, Heart, Share2, Plus, Minus, ShieldCheck,
-  Truck, RotateCcw, Award, ChevronRight, Check, Package2
+  Truck, RotateCcw, Award, ChevronRight, Check, Package2, Lock, KeyRound, Sparkles
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
@@ -13,76 +13,53 @@ import { productImage } from "@/lib/design";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/useToast";
 import { useWishlist } from "@/hooks/useWishlist";
-import { SHIPPING_FREE_THRESHOLD } from "@/lib/constants";
+
+const SHIPPING_FREE_THRESHOLD = 500;
 
 interface ProductDetailClientProps {
   product: any;
   related: { items: any[] };
+  preorder?: any;
+  userPreorderAccess?: any;
 }
 
-// Helper function to create HTML markup from text with basic formatting
-const createMarkup = (html: string) => {
-  return { __html: html };
-};
+const createMarkup = (html: string) => ({ __html: html });
 
-// Helper to format description text for HTML display
 const formatDescription = (description: string) => {
   if (!description) return '';
-  
-  // If it already looks like HTML (has tags), return as-is
   if (description.includes('<') && description.includes('>')) {
-    // Clean up any malformed HTML and ensure it's safe
     return description
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
-      .replace(/on\w+="[^"]*"/g, '') // Remove inline event handlers
-      .replace(/javascript:/gi, '') // Remove javascript: protocol
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/on\w+="[^"]*"/g, '')
+      .replace(/javascript:/gi, '')
       .trim();
   }
-  
-  // Otherwise format plain text into HTML with enhanced formatting
   const paragraphs = description.split('\n\n');
   const formattedParagraphs = paragraphs.map(p => {
     if (!p.trim()) return '';
-    
-    // Handle markdown-like formatting
     let formatted = p
-      // Headers
       .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
       .replace(/^### (.*$)/gim, '<h3>$1</h3>')
       .replace(/^## (.*$)/gim, '<h2>$1</h2>')
       .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-      // Bold and italic
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/_(.*?)_/g, '<em>$1</em>')
-      // Lists
       .replace(/^\* (.*$)/gim, '<li>$1</li>')
       .replace(/^- (.*$)/gim, '<li>$1</li>')
-      // Links
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-      // Code
       .replace(/`([^`]+)`/g, '<code>$1</code>');
-    
-    // If the paragraph starts with <li> tags, wrap it in <ul>
-    if (formatted.includes('<li>')) {
-      formatted = `<ul>${formatted}</ul>`;
-    }
-    
-    // Add line breaks within paragraphs
+    if (formatted.includes('<li>')) formatted = `<ul>${formatted}</ul>`;
     formatted = formatted.replace(/\n/g, '<br>');
-    
-    // Only wrap in <p> if it's not already a header, list, or other block element
     if (!formatted.startsWith('<h') && !formatted.startsWith('<ul') && !formatted.startsWith('<ol') && !formatted.startsWith('<blockquote')) {
       formatted = `<p>${formatted}</p>`;
     }
-    
     return formatted;
   });
-  
   return formattedParagraphs.filter(p => p).join('');
 };
 
-export function ProductDetailClient({ product, related }: ProductDetailClientProps) {
+export function ProductDetailClient({ product, related, preorder, userPreorderAccess }: ProductDetailClientProps) {
   const router = useRouter();
   const { addItem } = useCart();
   const { success } = useToast();
@@ -98,43 +75,28 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
 
-  // Build media array from uploaded content only
   const buildMediaArray = () => {
     const media: { type: 'image' | 'video'; url: string }[] = [];
-
-    // Add main image if exists
-    if (product.image_url) {
-      media.push({ type: 'image', url: product.image_url });
-    }
-
-    // Add gallery images if exist
+    if (product.image_url) media.push({ type: 'image', url: product.image_url });
     if (product.gallery_urls && Array.isArray(product.gallery_urls)) {
-      product.gallery_urls.forEach((url: string) => {
-        if (url) {
-          media.push({ type: 'image', url });
-        }
-      });
+      product.gallery_urls.forEach((url: string) => { if (url) media.push({ type: 'image', url }); });
     }
-
-    // Add video if exists
-    if (product.video_url) {
-      media.push({ type: 'video', url: product.video_url });
-    }
-
+    if (product.video_url) media.push({ type: 'video', url: product.video_url });
     return media;
   };
 
   const mediaItems = buildMediaArray();
   const hasMedia = mediaItems.length > 0;
-  // Use actual rating/review data or hide it
   const rating = product.rating || 0;
   const reviewCount = product.review_count || 0;
   const hasReviews = rating > 0 && reviewCount > 0;
-  
-  // Format the description for HTML display
   const descriptionHtml = formatDescription(
-    product.description || product.long_description || "Premium quality product handcrafted with care"
+    product.description || product.long_description || "Premium quality product handcrafted with care."
   );
+
+  const effectiveBasePrice = userPreorderAccess?.hasAccess
+    ? userPreorderAccess.finalCheckoutPrice
+    : Number(product.price);
 
   const handleAddToCart = () => {
     const firstImage = mediaItems.find(m => m.type === 'image')?.url || productImage(product.slug);
@@ -143,20 +105,19 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
       productId: product.id,
       name: product.name,
       slug: product.slug,
-      price: Number(product.price) + (typeof selectedSize === 'object' ? selectedSize.extra || 0 : 0),
+      price: effectiveBasePrice + (typeof selectedSize === 'object' ? selectedSize.extra || 0 : 0),
       quantity,
       imageUrl: firstImage
     });
-    // Toast is handled by useCart hook - no need for duplicate
   };
 
   const colorMap: Record<string, string> = {
     natural: "bg-amber-700",
     black: "bg-gray-900",
-    white: "bg-white border-2 border-gray-200",
-    green: "bg-green-700",
+    white: "bg-white border-2 border-white/20",
+    green: "bg-emerald-700",
     blue: "bg-blue-600",
-    forest: "bg-forest"
+    forest: "bg-emerald-800"
   };
 
   const getColorClass = (color: string) => {
@@ -165,15 +126,17 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0f1810' }}>
-      <div className="border-b border-gray-800" style={{ backgroundColor: '#0a130c', borderColor: 'rgb(197, 160, 89)' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0f1810 0%, #0a130c 60%, #050a06 100%)' }}>
+
+      {/* Breadcrumb */}
+      <div className="border-b border-white/10 bg-white/5 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <nav className="flex items-center gap-2 text-sm" style={{ color: 'rgb(197, 160, 89)' }}>
-            <Link href="/" className="hover:opacity-80 transition-opacity" style={{ color: 'rgb(197, 160, 89)' }}>Home</Link>
+          <nav className="flex items-center gap-2 text-sm text-cream/60">
+            <Link href="/" className="hover:text-emerald-400 transition-colors">Home</Link>
             <ChevronRight size={14} />
-            <Link href="/shop" className="hover:opacity-80 transition-opacity" style={{ color: 'rgb(197, 160, 89)' }}>Shop</Link>
+            <Link href="/shop" className="hover:text-emerald-400 transition-colors">Shop</Link>
             <ChevronRight size={14} />
-            <span className="font-medium" style={{ color: 'rgb(197, 160, 89)' }}>{product.name}</span>
+            <span className="text-cream font-medium">{product.name}</span>
           </nav>
         </div>
       </div>
@@ -181,28 +144,26 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
 
-          {/* Left - Images/Video Gallery */}
+          {/* ─── Left: Gallery ─── */}
           <div className="space-y-4">
-            {/* Thumbnails - Only show if multiple media items */}
+            {/* Thumbnails */}
             {mediaItems.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {mediaItems.map((media, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`relative w-20 h-20 shrink-0 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? 'border-gray-700' : 'border-gray-800 hover:border-gray-600'
-                      }`}
-                    style={selectedImage === index ? { borderColor: 'rgb(197, 160, 89)' } : { borderColor: '#374151' }}
+                    className={`relative w-20 h-20 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${
+                      selectedImage === index
+                        ? 'border-emerald-400'
+                        : 'border-white/10 hover:border-white/30'
+                    }`}
                   >
                     {media.type === 'image' ? (
-                      <img
-                        src={media.url}
-                        alt={`Thumbnail ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={media.url} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-                        <svg className="w-8 h-8" style={{ color: 'rgb(197, 160, 89)' }} fill="currentColor" viewBox="0 0 20 20">
+                      <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                         </svg>
                       </div>
@@ -212,9 +173,9 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
               </div>
             )}
 
-            {/* Main Media Display */}
+            {/* Main image */}
             {hasMedia ? (
-              <div className="relative aspect-square bg-gray-900/50 rounded-3xl overflow-hidden border border-gray-800 group" style={{ borderColor: 'rgb(197, 160, 89)' }}>
+              <div className="relative aspect-square bg-white/5 rounded-3xl overflow-hidden border border-white/10 group backdrop-blur-md">
                 {mediaItems[selectedImage].type === 'image' ? (
                   <img
                     src={mediaItems[selectedImage].url}
@@ -224,9 +185,10 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                 ) : (
                   <div className="w-full h-full bg-black">
                     <iframe
-                      src={mediaItems[selectedImage].url.includes('youtube.com') || mediaItems[selectedImage].url.includes('youtu.be')
-                        ? `https://www.youtube.com/embed/${mediaItems[selectedImage].url.split('v=')[1] || mediaItems[selectedImage].url.split('/').pop()}?rel=0`
-                        : mediaItems[selectedImage].url
+                      src={
+                        mediaItems[selectedImage].url.includes('youtube.com') || mediaItems[selectedImage].url.includes('youtu.be')
+                          ? `https://www.youtube.com/embed/${mediaItems[selectedImage].url.split('v=')[1] || mediaItems[selectedImage].url.split('/').pop()}?rel=0`
+                          : mediaItems[selectedImage].url
                       }
                       className="w-full h-full"
                       allowFullScreen
@@ -236,136 +198,116 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                   </div>
                 )}
 
+                {/* Wishlist overlay */}
                 <button
                   onClick={() => toggle(product.id)}
-                  className={`absolute top-4 right-4 p-3 rounded-full transition-all ${isInWishlist(product.id)
-                    ? "bg-red-900 text-red-300"
-                    : "bg-gray-900/90 backdrop-blur hover:bg-gray-800"
-                    }`}
-                  style={{ color: isInWishlist(product.id) ? '#f87171' : 'rgb(197, 160, 89)' }}
+                  className={`absolute top-4 right-4 p-3 rounded-full backdrop-blur-md border transition-all ${
+                    isInWishlist(product.id)
+                      ? 'bg-red-500/20 border-red-500/40 text-red-400'
+                      : 'bg-white/10 border-white/10 text-cream/70 hover:text-red-400 hover:border-red-500/30'
+                  }`}
                 >
                   <Heart size={20} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
                 </button>
 
+                {/* Badge */}
                 {product.badge && (
-                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold"
-                    style={{ backgroundColor: 'rgb(197, 160, 89)', color: '#0f1810' }}
-                  >
+                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500 text-white">
                     {product.badge}
                   </div>
                 )}
               </div>
             ) : (
-              // Fallback: No media uploaded
-              <div className="relative aspect-square bg-gray-900/50 rounded-3xl overflow-hidden border border-gray-800 flex items-center justify-center" style={{ borderColor: 'rgb(197, 160, 89)' }}>
-                <div className="text-center" style={{ color: 'rgb(197, 160, 89)' }}>
-                  <Package2 size={64} className="mx-auto mb-4 opacity-50" />
+              <div className="relative aspect-square bg-white/5 rounded-3xl overflow-hidden border border-white/10 flex items-center justify-center">
+                <div className="text-center text-cream/40">
+                  <Package2 size={64} className="mx-auto mb-4" />
                   <p className="text-sm font-medium">No image available</p>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="space-y-6" style={{ color: 'rgb(197, 160, 89)' }}>
-            <div className="space-y-4">
-              <h1 className="text-3xl lg:text-4xl font-bold" style={{ color: 'rgb(197, 160, 89)' }}>{product.name}</h1>
+          {/* ─── Right: Product Info ─── */}
+          <div className="space-y-6">
 
-              {/* Only show rating if there are actual reviews */}
+            {/* Title + Rating */}
+            <div className="space-y-3">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-emerald-400/70">
+                {product.category_name || 'Collectible'}
+              </p>
+              <h1 className="text-3xl lg:text-4xl font-bold text-cream display-font">{product.name}</h1>
+
               {hasReviews && (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        size={18}
-                        className={i < Math.floor(rating) ? "fill-current" : "text-gray-200 fill-gray-200"}
-                        style={{ color: i < Math.floor(rating) ? 'rgb(197, 160, 89)' : undefined }}
+                        size={16}
+                        className={i < Math.floor(rating) ? "fill-amber-400 text-amber-400" : "fill-white/20 text-white/20"}
                       />
                     ))}
                   </div>
-                  <span className="text-sm" style={{ color: 'rgb(197, 160, 89)' }}>
+                  <span className="text-sm text-cream/60">
                     {rating.toFixed(1)} ({reviewCount} reviews)
                   </span>
                 </div>
               )}
 
-              <div className="flex items-baseline gap-3">
-                <span className="text-4xl font-bold" style={{ color: 'rgb(197, 160, 89)' }}>
-                  {formatCurrency(
-                    Number(product.price) + (typeof selectedSize === 'object' ? selectedSize.extra || 0 : 0)
-                  )}
+              {/* Price */}
+              <div className="flex items-baseline gap-3 pt-1">
+                <span className="text-4xl font-bold text-emerald-400">
+                  {formatCurrency(effectiveBasePrice + (typeof selectedSize === 'object' ? selectedSize.extra || 0 : 0))}
                 </span>
+                {userPreorderAccess?.hasAccess && userPreorderAccess.reservationFeePaid > 0 && (
+                  <span className="text-lg line-through text-cream/30">
+                    {formatCurrency(Number(product.price) + (typeof selectedSize === 'object' ? selectedSize.extra || 0 : 0))}
+                  </span>
+                )}
               </div>
 
-              {/* Product Description with HTML markup support */}
-              <div 
-                className="rich-text-description space-y-4 leading-relaxed max-w-full overflow-hidden"
-                style={{ color: 'rgb(197, 160, 89)' }}
+              {/* Description */}
+              <div
+                className="rich-text-description leading-relaxed text-cream/90"
                 dangerouslySetInnerHTML={createMarkup(descriptionHtml)}
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-3 py-4 border-y border-gray-800" style={{ borderColor: 'rgb(197, 160, 89)' }}>
-              <div className="flex items-center gap-2" style={{ color: 'rgb(197, 160, 89)' }}>
-                <Check size={16} className="shrink-0" />
+            {/* Feature badges */}
+            <div className="grid grid-cols-3 gap-3 py-4 border-y border-white/10">
+              <div className="flex items-center gap-2 text-cream/70">
+                <Check size={14} className="text-emerald-400 shrink-0" />
                 <span className="text-xs font-medium">In Stock</span>
               </div>
-              <div className="flex items-center gap-2" style={{ color: 'rgb(197, 160, 89)' }}>
-                <Truck size={16} className="shrink-0" />
+              <div className="flex items-center gap-2 text-cream/70">
+                <Truck size={14} className="text-emerald-400 shrink-0" />
                 <span className="text-xs font-medium">Fast Ship</span>
               </div>
-              <div className="flex items-center gap-2" style={{ color: 'rgb(197, 160, 89)' }}>
-                <Award size={16} className="shrink-0" />
+              <div className="flex items-center gap-2 text-cream/70">
+                <Award size={14} className="text-emerald-400 shrink-0" />
                 <span className="text-xs font-medium">Premium</span>
               </div>
             </div>
 
+            {/* Material selector */}
             {materials.length > 1 && (
-              <div className="space-y-3">
-                <label className="text-sm font-bold uppercase tracking-wider" style={{ color: 'rgb(197, 160, 89)' }}>Material</label>
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-400/70">Material</label>
                 <div className="flex flex-wrap gap-2">
-                  {materials.map((material: any) => (
-                    <button
-                      key={typeof material === 'string' ? material : material.name}
-                      onClick={() => setSelectedMaterial(material)}
-                      className={`px-4 py-2 rounded-xl border-2 transition-all font-medium text-sm ${selectedMaterial === material
-                        ? "bg-gray-800 text-white border-gray-700"
-                        : "border-gray-700 hover:border-gray-600 text-gray-300"
-                        }`}
-                      style={selectedMaterial === material ? 
-                        { backgroundColor: 'rgb(197, 160, 89)', borderColor: 'rgb(197, 160, 89)', color: '#0f1810' } : 
-                        { borderColor: 'rgb(197, 160, 89)', color: 'rgb(197, 160, 89)' }
-                      }
-                    >
-                      {typeof material === 'string' ? material : material.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {sizes.length > 1 && (
-              <div className="space-y-3">
-                <label className="text-sm font-bold uppercase tracking-wider" style={{ color: 'rgb(197, 160, 89)' }}>Size</label>
-                <div className="flex flex-wrap gap-2">
-                  {sizes.map((size: any) => {
-                    const sizeName = typeof size === 'string' ? size : size.name;
-                    const extra = typeof size === 'object' ? size.extra : 0;
+                  {materials.map((material: any) => {
+                    const name = typeof material === 'string' ? material : material.name;
+                    const isSelected = selectedMaterial === material;
                     return (
                       <button
-                        key={sizeName}
-                        onClick={() => setSelectedSize(size)}
-                        className={`px-4 py-2 rounded-xl border-2 transition-all font-medium text-sm ${selectedSize === size
-                          ? "bg-gray-800 text-white border-gray-700"
-                          : "border-gray-700 hover:border-gray-600 text-gray-300"
-                          }`}
-                        style={selectedSize === size ? 
-                          { backgroundColor: 'rgb(197, 160, 89)', borderColor: 'rgb(197, 160, 89)', color: '#0f1810' } : 
-                          { borderColor: 'rgb(197, 160, 89)', color: 'rgb(197, 160, 89)' }
-                        }
+                        key={name}
+                        onClick={() => setSelectedMaterial(material)}
+                        className={`px-4 py-2 rounded-xl border-2 transition-all font-medium text-sm ${
+                          isSelected
+                            ? 'bg-emerald-600 border-emerald-600 text-white'
+                            : 'bg-white/5 border-white/10 text-cream/70 hover:border-emerald-500/50 hover:text-cream'
+                        }`}
                       >
-                        {sizeName}
-                        {extra > 0 && <span className="text-xs ml-1">(+{formatCurrency(extra)})</span>}
+                        {name}
                       </button>
                     );
                   })}
@@ -373,110 +315,169 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
               </div>
             )}
 
-            {colors.length > 1 && (
-              <div className="space-y-3">
-                <label className="text-sm font-bold uppercase tracking-wider" style={{ color: 'rgb(197, 160, 89)' }}>Color</label>
-                <div className="flex flex-wrap gap-3">
-                  {colors.map((color: any) => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 transition-all ${selectedColor === color
-                        ? "border-gray-700"
-                        : "border-transparent hover:border-gray-600"
+            {/* Size selector */}
+            {sizes.length > 1 && (
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-400/70">Size</label>
+                <div className="flex flex-wrap gap-2">
+                  {sizes.map((size: any) => {
+                    const sizeName = typeof size === 'string' ? size : size.name;
+                    const extra = typeof size === 'object' ? size.extra : 0;
+                    const isSelected = selectedSize === size;
+                    return (
+                      <button
+                        key={sizeName}
+                        onClick={() => setSelectedSize(size)}
+                        className={`px-4 py-2 rounded-xl border-2 transition-all font-medium text-sm ${
+                          isSelected
+                            ? 'bg-emerald-600 border-emerald-600 text-white'
+                            : 'bg-white/5 border-white/10 text-cream/70 hover:border-emerald-500/50 hover:text-cream'
                         }`}
-                      style={selectedColor === color ? 
-                        { borderColor: 'rgb(197, 160, 89)' } : 
-                        { borderColor: 'transparent' }
-                      }
-                    >
-                      <div className={`w-6 h-6 rounded-full ${getColorClass(color)}`} />
-                      <span className="text-sm font-medium" style={{ color: 'rgb(197, 160, 89)' }}>{color}</span>
-                    </button>
-                  ))}
+                      >
+                        {sizeName}
+                        {extra > 0 && <span className="text-xs ml-1 opacity-70">(+{formatCurrency(extra)})</span>}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            <div className="space-y-4 pt-4">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center border-2 border-gray-700 rounded-xl overflow-hidden">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-4 py-3 hover:bg-gray-800 transition-colors"
-                    style={{ color: 'rgb(197, 160, 89)' }}
-                  >
-                    <Minus size={16} />
-                  </button>
-                  <span className="px-6 py-3 font-bold border-x-2 border-gray-700" style={{ color: 'rgb(197, 160, 89)' }}>{quantity}</span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="px-4 py-3 hover:bg-gray-800 transition-colors"
-                    style={{ color: 'rgb(197, 160, 89)' }}
-                  >
-                    <Plus size={16} />
-                  </button>
+            {/* Color selector */}
+            {colors.length > 1 && (
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-400/70">Color</label>
+                <div className="flex flex-wrap gap-3">
+                  {colors.map((color: any) => {
+                    const isSelected = selectedColor === color;
+                    return (
+                      <button
+                        key={color}
+                        onClick={() => setSelectedColor(color)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 transition-all ${
+                          isSelected
+                            ? 'border-emerald-400 bg-white/10'
+                            : 'border-white/10 bg-white/5 hover:border-white/30'
+                        }`}
+                      >
+                        <div className={`w-5 h-5 rounded-full ${getColorClass(color)}`} />
+                        <span className="text-sm font-medium text-cream/80">{color}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
+            )}
 
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleAddToCart}
-                  className="flex-1 py-4 rounded-xl font-bold text-sm hover:opacity-90 transition-all"
-                  style={{ backgroundColor: 'rgb(197, 160, 89)', color: '#0f1810' }}
-                >
-                  Add to Cart
-                </Button>
-                <Button
-                  onClick={() => {
-                    handleAddToCart();
-                    router.push('/checkout');
-                  }}
-                  className="flex-1 py-4 rounded-xl font-bold text-sm hover:opacity-90 transition-all"
-                  style={{ backgroundColor: 'rgb(197, 160, 89)', color: '#0f1810' }}
-                >
-                  Buy Now
-                </Button>
+            {/* Quantity + CTA */}
+            <div className="space-y-4 pt-2">
+              {/* Quantity + Dimensions row */}
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4">
+                  <span className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-400/70">Qty</span>
+                  <div className="flex items-center bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="px-4 py-3 text-cream/70 hover:text-cream hover:bg-white/10 transition-colors"
+                    >
+                      <Minus size={15} />
+                    </button>
+                    <span className="px-5 py-3 font-bold text-cream border-x border-white/10">{quantity}</span>
+                    <button
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="px-4 py-3 text-cream/70 hover:text-cream hover:bg-white/10 transition-colors"
+                    >
+                      <Plus size={15} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Dimensions */}
+                {product.dimensions && (
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10">
+                    <Package2 size={14} className="text-emerald-400 shrink-0" />
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-emerald-400/70">Dimensions</p>
+                      <p className="text-sm font-semibold text-cream">{product.dimensions}</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="flex items-center gap-6 pt-2">
+              {/* ─── Preorder Gatekeeper ─── */}
+              {preorder && !userPreorderAccess?.hasAccess ? (
+                <div className="p-5 rounded-2xl border border-amber-500/20 bg-amber-500/5 space-y-3">
+                  <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
+                    <Lock size={16} />
+                    <span>Vault Release — Reserved for Priority Pass Holders</span>
+                  </div>
+                  <p className="text-xs text-cream/50 leading-relaxed">
+                    This item is in Collector Vault Access stage. Standard checkout is locked until your
+                    Priority Access Pass (₹{preorder.reservation_fee || 10}) is secured and approved.
+                  </p>
+                  <Link
+                    href={`/prebook/${preorder.id}`}
+                    className="w-full flex items-center justify-center gap-2 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-emerald-950/40"
+                  >
+                    <Sparkles size={15} />
+                    <span>GET PRIORITY ACCESS PASS (₹{preorder.reservation_fee || 10})</span>
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  {/* Approved prebooker banner */}
+                  {userPreorderAccess?.hasAccess && (
+                    <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center gap-2">
+                      <KeyRound size={15} className="shrink-0" />
+                      <span>✦ Collector Pass Approved! Your ₹{userPreorderAccess.reservationFeePaid} token is credited to your total.</span>
+                    </div>
+                  )}
+
+                  {/* Cart buttons */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleAddToCart}
+                      className="flex-1 py-4 rounded-xl font-bold text-sm bg-white/10 border border-white/10 text-cream hover:bg-white/15 hover:border-white/20 transition-all"
+                    >
+                      Add to Cart
+                    </button>
+                    <button
+                      onClick={() => { handleAddToCart(); router.push('/checkout'); }}
+                      className="flex-1 py-4 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg shadow-emerald-950/40"
+                    >
+                      Buy Now
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* Wishlist / Share */}
+              <div className="flex items-center gap-6 pt-1">
                 <button
                   onClick={() => toggle(product.id)}
-                  className="flex items-center gap-2 text-sm hover:opacity-80 transition-colors"
-                  style={{ color: 'rgb(197, 160, 89)' }}
+                  className="flex items-center gap-2 text-sm text-cream/50 hover:text-red-400 transition-colors"
                 >
-                  <Heart size={18} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
-                  Wishlist
+                  <Heart size={16} fill={isInWishlist(product.id) ? "currentColor" : "none"} className={isInWishlist(product.id) ? "text-red-400" : ""} />
+                  {isInWishlist(product.id) ? 'Wishlisted' : 'Wishlist'}
                 </button>
-                <button className="flex items-center gap-2 text-sm hover:opacity-80 transition-colors" style={{ color: 'rgb(197, 160, 89)' }}>
-                  <Share2 size={18} />
+                <button className="flex items-center gap-2 text-sm text-cream/50 hover:text-cream transition-colors">
+                  <Share2 size={16} />
                   Share
                 </button>
               </div>
             </div>
-
-            <div className="bg-gray-900/50 rounded-2xl p-6 space-y-3" style={{ borderColor: 'rgb(197, 160, 89)' }}>
-              {[ 
-                { icon: <ShieldCheck size={20} />, text: "Secure Payment" },
-                { icon: <Truck size={20} />, text: `Free shipping over ${formatCurrency(SHIPPING_FREE_THRESHOLD)}` },
-                { icon: <RotateCcw size={20} />, text: "10-Day Returns" }
-              ].map((feature, i) => (
-                <div key={i} className="flex items-center gap-3" style={{ color: 'rgb(197, 160, 89)' }}>
-                  {feature.icon}
-                  <span className="text-sm font-medium">{feature.text}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
 
+        {/* Related Products */}
         {related.items && related.items.length > 0 && (
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold mb-8" style={{ color: 'rgb(197, 160, 89)' }}>You May Also Like</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="mt-20 pt-12 border-t border-white/10">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-emerald-400/70 mb-2">You may also like</p>
+            <h2 className="text-2xl font-bold text-cream display-font mb-8">Related Pieces</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
               {related.items.slice(0, 4).map((item: any) => (
                 <Link key={item.id} href={`/products/${item.slug}`} className="group">
-                  <div className="aspect-square bg-gray-900/50 rounded-2xl overflow-hidden mb-3 border border-gray-800" style={{ borderColor: 'rgb(197, 160, 89)' }}>
+                  <div className="aspect-square bg-white/5 rounded-2xl overflow-hidden mb-3 border border-white/10 group-hover:border-emerald-500/30 transition-colors">
                     <img
                       src={item.image_url || productImage(item.slug)}
                       alt={item.name}
@@ -487,22 +488,20 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                       }}
                     />
                   </div>
-                  <h3 className="font-semibold text-sm mb-1 group-hover:opacity-80 transition-colors" style={{ color: 'rgb(197, 160, 89)' }}>
+                  <h3 className="font-semibold text-sm mb-1 text-cream group-hover:text-emerald-400 transition-colors line-clamp-1">
                     {item.name}
                   </h3>
-                  <p className="font-bold" style={{ color: 'rgb(197, 160, 89)' }}>{formatCurrency(item.price)}</p>
+                  <p className="font-bold text-emerald-400 text-sm">{formatCurrency(item.price)}</p>
                 </Link>
               ))}
             </div>
           </div>
         )}
       </div>
-      
-      {/* CSS for rich text description styling */}
+
+      {/* Rich text description styles */}
       <style jsx>{`
-        .rich-text-description {
-          line-height: 1.7;
-        }
+        .rich-text-description { line-height: 1.75; }
         .rich-text-description h1,
         .rich-text-description h2,
         .rich-text-description h3,
@@ -510,116 +509,74 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
         .rich-text-description h5,
         .rich-text-description h6 {
           font-weight: 600;
-          margin-top: 1.5rem;
-          margin-bottom: 0.75rem;
-          color: rgb(197, 160, 89);
-        }
-        .rich-text-description h1 { font-size: 1.875rem; }
-        .rich-text-description h2 { font-size: 1.5rem; }
-        .rich-text-description h3 { font-size: 1.25rem; }
-        .rich-text-description h4 { font-size: 1.125rem; }
-        .rich-text-description h5 { font-size: 1rem; }
-        .rich-text-description h6 { font-size: 0.875rem; }
-        
-        .rich-text-description p {
-          margin-bottom: 1rem;
-        }
-        
-        .rich-text-description ul,
-        .rich-text-description ol {
-          margin-left: 1.5rem;
-          margin-bottom: 1rem;
-        }
-        
-        .rich-text-description li {
+          margin-top: 1.25rem;
           margin-bottom: 0.5rem;
+          color: #6ee7b7; /* emerald-300 */
         }
-        
-        .rich-text-description ul {
-          list-style-type: disc;
-        }
-        
-        .rich-text-description ol {
-          list-style-type: decimal;
-        }
-        
-        .rich-text-description strong,
-        .rich-text-description b {
+        .rich-text-description h1 { font-size: 1.5rem; }
+        .rich-text-description h2 { font-size: 1.25rem; }
+        .rich-text-description h3 { font-size: 1.125rem; }
+        .rich-text-description p { margin-bottom: 0.875rem; }
+        .rich-text-description ul, .rich-text-description ol { margin-left: 1.25rem; margin-bottom: 0.875rem; }
+        .rich-text-description ul { list-style-type: disc; }
+        .rich-text-description ol { list-style-type: decimal; }
+        .rich-text-description li { margin-bottom: 0.375rem; }
+        .rich-text-description strong, .rich-text-description b {
           font-weight: 600;
-          color: rgb(197, 160, 89);
+          color: #a7f3d0; /* emerald-200 */
         }
-        
-        .rich-text-description em,
-        .rich-text-description i {
-          font-style: italic;
-          color: rgb(197, 160, 89);
-        }
-        
+        .rich-text-description em, .rich-text-description i { font-style: italic; }
         .rich-text-description a {
-          color: rgb(197, 160, 89);
+          color: #34d399; /* emerald-400 */
           text-decoration: underline;
-          text-decoration-color: rgba(197, 160, 89, 0.4);
+          text-decoration-color: rgba(52, 211, 153, 0.4);
         }
-        
-        .rich-text-description a:hover {
-          text-decoration-color: rgb(197, 160, 89);
-        }
-        
+        .rich-text-description a:hover { text-decoration-color: #34d399; }
         .rich-text-description blockquote {
-          border-left: 3px solid rgb(197, 160, 89);
+          border-left: 3px solid #34d399;
           padding-left: 1rem;
-          margin-left: 0;
-          margin-right: 0;
-          margin-bottom: 1rem;
+          margin: 0 0 0.875rem 0;
           font-style: italic;
-          color: rgba(197, 160, 89, 0.9);
+          opacity: 0.8;
         }
-        
         .rich-text-description code {
           font-family: 'Courier New', monospace;
-          background-color: rgba(0, 0, 0, 0.2);
-          padding: 0.125rem 0.25rem;
+          background-color: rgba(255,255,255,0.08);
+          padding: 0.125rem 0.375rem;
           border-radius: 0.25rem;
-          font-size: 0.875rem;
+          font-size: 0.85em;
+          color: #6ee7b7;
         }
-        
         .rich-text-description pre {
-          background-color: rgba(0, 0, 0, 0.2);
+          background-color: rgba(255,255,255,0.05);
           padding: 1rem;
           border-radius: 0.5rem;
           overflow-x: auto;
-          margin-bottom: 1rem;
+          margin-bottom: 0.875rem;
+          border: 1px solid rgba(255,255,255,0.1);
         }
-        
         .rich-text-description img {
           max-width: 100%;
           height: auto;
-          border-radius: 0.5rem;
+          border-radius: 0.75rem;
           margin: 1rem 0;
+          border: 1px solid rgba(255,255,255,0.1);
         }
-        
-        .rich-text-description table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-bottom: 1rem;
-        }
-        
-        .rich-text-description th,
-        .rich-text-description td {
-          border: 1px solid rgba(197, 160, 89, 0.3);
-          padding: 0.5rem;
+        .rich-text-description table { width: 100%; border-collapse: collapse; margin-bottom: 0.875rem; }
+        .rich-text-description th, .rich-text-description td {
+          border: 1px solid rgba(255,255,255,0.1);
+          padding: 0.5rem 0.75rem;
           text-align: left;
         }
-        
         .rich-text-description th {
-          background-color: rgba(197, 160, 89, 0.1);
+          background-color: rgba(52,211,153,0.1);
           font-weight: 600;
+          color: #6ee7b7;
         }
-        
         .rich-text-description hr {
           border: none;
-          border-top: 1px solid rgba(197, 160, 89, 0.3);
-          margin: 1.5rem 0;
+          border-top: 1px solid rgba(255,255,255,0.1);
+          margin: 1.25rem 0;
         }
       `}</style>
     </div>

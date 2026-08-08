@@ -249,7 +249,8 @@ export async function createProductAction(formData: FormData) {
     estimated_power_cost: estimatedPowerCost,
     estimated_packaging_cost: estimatedPackagingCost,
     estimated_total_cost: estimatedTotalCost,
-    active: formData.get("active") === "on"
+    active: formData.get("active") === "on",
+    dimensions: String(formData.get("dimensions") ?? "") || null
   });
 
   if (error) {
@@ -306,7 +307,8 @@ export async function updateProductAction(formData: FormData) {
       estimated_power_cost: Number(formData.get("estimated_power_cost") ?? 0),
       estimated_packaging_cost: Number(formData.get("estimated_packaging_cost") ?? 0),
       estimated_total_cost: (Number(formData.get("filament_weight_grams") ?? 0) * 0.80) + Number(formData.get("estimated_power_cost") ?? 0) + Number(formData.get("estimated_packaging_cost") ?? 0),
-      active: formData.get("active") === "on"
+      active: formData.get("active") === "on",
+      dimensions: String(formData.get("dimensions") ?? "") || null
     };
 
     if (imageUrl) {
