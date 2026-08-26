@@ -3,7 +3,7 @@ import { TreePine } from "lucide-react";
 
 export function Footer({ siteName = "Crafted Tale" }: { siteName?: string }) {
   return (
-    <footer className="mt-16 border-t border-forest/15 bg-card/80">
+    <footer className="mt-16 border-t border-forest/15 bg-card/80 pb-[calc(1rem+env(safe-area-inset-bottom))]">
       <div className="page-shell grid gap-8 py-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
         <div className="space-y-4">
           <div className="flex items-center gap-3">

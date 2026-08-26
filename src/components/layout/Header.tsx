@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, ShoppingCart, User, Leaf, HelpCircle, X, ChevronRight, Home } from "lucide-react";
+import { Search, ShoppingCart, User, Leaf, HelpCircle, X, ChevronRight, Home, Loader2, Sparkles, LayoutGrid, Star, Clock3 } from "lucide-react";
 import { NAV_LINKS, CUSTOMER_NAV_LINKS, ADMIN_NAV_LINKS } from "@/lib/constants";
 import { useCart } from "@/hooks/useCart";
 
@@ -18,18 +18,34 @@ export function Header({
   const totalItems = getTotalItems();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
   const mobileBreadcrumbs = buildBreadcrumbs(pathname);
+  const mobileNavItems = [
+    { type: "link" as const, href: "/", label: "Home", icon: Home },
+    { type: "link" as const, href: "/shop", label: "Shop", icon: LayoutGrid },
+    { type: "action" as const, action: "search" as const, label: "Search", icon: Search, active: searchOpen },
+    { type: "link" as const, href: "/prebook", label: "Drops", icon: Clock3 },
+    { type: "action" as const, action: "cart" as const, label: "Cart", icon: ShoppingCart, badge: totalItems > 0 ? totalItems : undefined },
+  ];
+
+  useEffect(() => {
+    setIsSearching(false);
+  }, [pathname]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/shop?q=${encodeURIComponent(searchQuery.trim())}`);
+    const query = searchQuery.trim();
+    if (!query || isSearching) return;
+
+    setIsSearching(true);
+    setTimeout(() => {
+      router.push(`/shop?q=${encodeURIComponent(query)}`);
       setSearchOpen(false);
       setSearchQuery("");
-    }
+    }, 160);
   };
 
   return (
@@ -82,10 +98,10 @@ export function Header({
           <div className="flex items-center gap-4 sm:gap-6 shrink-0">
             <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className="text-cream/70 hover:text-emerald-400 transition-colors"
+              className={`text-cream/70 hover:text-emerald-400 transition-colors ${searchOpen ? "text-emerald-400" : ""}`}
               aria-label="Search"
             >
-              <Search size={20} />
+              <Search size={20} className={searchOpen ? "animate-pulse" : ""} />
             </button>
 
             <Link href="/dashboard" className="text-cream/70 hover:text-emerald-400 transition-colors">
@@ -130,9 +146,60 @@ export function Header({
           </div>
         </nav>
 
+        <nav aria-label="Mobile navigation" className="md:hidden border-t border-white/10 bg-[#08110a]/95 backdrop-blur-md">
+          <div className="page-shell py-3">
+            <div className="mobile-nav-dock">
+              {mobileNavItems.map((item) => {
+                const Icon = item.icon;
+
+                if (item.type === "action") {
+                  const isActive = item.action === "search" ? searchOpen : false;
+                  return (
+                    <button
+                      key={item.action}
+                      type="button"
+                      onClick={() => {
+                        if (item.action === "search") {
+                          setSearchOpen((current) => !current);
+                        } else {
+                          openCart();
+                        }
+                      }}
+                      className={`mobile-nav-item mobile-nav-item-action ${isActive ? "mobile-nav-item-active" : ""}`}
+                      aria-pressed={isActive}
+                    >
+                      <span className="relative">
+                        <Icon size={16} className={item.action === "search" && searchOpen ? "animate-pulse" : ""} />
+                        {item.action === "cart" && item.badge ? (
+                          <span className="mobile-nav-badge">{item.badge}</span>
+                        ) : null}
+                      </span>
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                }
+
+                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href as any}
+                    className={`mobile-nav-item ${active ? "mobile-nav-item-active" : ""}`}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    <Icon size={16} />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </nav>
+
         {/* Search Bar */}
         {searchOpen && (
-          <div className="border-t border-white/10 bg-[#0a130c]">
+          <div className="search-panel border-t border-white/10 bg-[#0a130c]">
             <div className="page-shell py-4">
               <form onSubmit={handleSearch} className="relative">
                 <input
@@ -140,23 +207,35 @@ export function Header({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search products..."
-                  className="w-full px-4 py-3 pr-24 bg-black/30 border border-white/10 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 text-cream placeholder:text-cream/30"
+                  className="w-full px-4 py-3 pr-32 bg-black/30 border border-white/10 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 text-cream placeholder:text-cream/30 search-input"
                   autoFocus
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
                   <button
                     type="submit"
-                    className="px-4 py-1.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-500 transition-colors"
+                    disabled={isSearching}
+                    className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-500 transition-all disabled:opacity-80 disabled:cursor-wait"
                   >
-                    Search
+                    {isSearching ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin" />
+                        Searching
+                      </>
+                    ) : (
+                      <>
+                        <Search size={14} />
+                        Search
+                      </>
+                    )}
                   </button>
                   <button
                     type="button"
+                    disabled={isSearching}
                     onClick={() => {
                       setSearchOpen(false);
                       setSearchQuery("");
                     }}
-                    className="p-1.5 text-cream/50 hover:text-cream transition-colors"
+                    className="p-1.5 text-cream/50 hover:text-cream transition-colors disabled:opacity-50"
                     aria-label="Close search"
                   >
                     <X size={18} />

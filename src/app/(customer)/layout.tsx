@@ -1,6 +1,7 @@
 import type React from "react";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { PageTransition } from "@/components/layout/PageTransition";
 import { getSiteSettings } from "@/actions/settings";
 export const dynamic = "force-dynamic";
 export default async function CustomerLayout({
@@ -12,7 +13,9 @@ export default async function CustomerLayout({
   return (
     <div className="min-h-screen flex flex-col">
       <Header siteName={settings.siteName} logoUrl={settings.logoUrl} />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 pb-32 md:pb-0">
+        <PageTransition>{children}</PageTransition>
+      </main>
       <Footer siteName={settings.siteName} />
     </div>
   );
