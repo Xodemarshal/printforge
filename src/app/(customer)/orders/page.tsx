@@ -6,7 +6,7 @@ import { getCustomerOrders } from "@/actions/orders";
 import { requireUser } from "@/lib/guards";
 
 export const metadata: Metadata = {
-  title: "My Orders - PrintForge",
+  title: "My Orders - Crafted Tale",
   description: "View your order history and track shipments."
 };
 

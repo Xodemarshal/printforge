@@ -351,7 +351,7 @@ const MOCK_DATA: Record<string, Row[]> = {
       id: "setting-site-settings",
       key: "site_settings",
       value: {
-        siteName: "Forest Foundry",
+        siteName: "Crafted Tale",
         logoUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=groot&backgroundColor=2c3e2d",
         hero: {
           title: "Ideas",

@@ -23,7 +23,7 @@ export default async function AdminProductsPage({
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">ArchiveVault Admin</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">Crafted Tale Admin</p>
           <h1 className="text-3xl font-bold text-white">Products</h1>
           <p className="text-gray-400 mt-1 text-sm">
             {total !== undefined ? `${total} products` : (items ?? []).length + " products"} in catalog

@@ -4,7 +4,7 @@ import InventoryDashboard from "./InventoryDashboard";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Inventory - ArchiveVault Admin",
+  title: "Inventory - Crafted Tale Admin",
   description: "Manage material inventory and stock levels"
 };
 

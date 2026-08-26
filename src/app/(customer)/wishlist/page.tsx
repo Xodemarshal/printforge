@@ -3,7 +3,7 @@ import { WishlistClient } from "./WishlistClient";
 import { requireUser } from "@/lib/guards";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Wishlist - PrintForge",
+  title: "Wishlist - Crafted Tale",
   description: "Your saved products and favorites."
 };
 
@@ -11,6 +11,5 @@ export default async function WishlistPage() {
   await requireUser();
   return <WishlistClient />;
 }
-
 
 

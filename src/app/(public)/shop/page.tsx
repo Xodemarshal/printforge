@@ -4,7 +4,7 @@ import { getAllActivePreorderProductIds } from "@/actions/preorders";
 import { ListingPageClient } from "@/components/products/ListingPageClient";
 
 export const metadata: Metadata = {
-  title: "All Collections | ArchiveVault",
+  title: "All Collections | Crafted Tale",
   description: "Browse our wide range of handcrafted collectibles"
 };
 

@@ -37,7 +37,7 @@ export interface SiteSettings {
 }
 
 const DEFAULT_SETTINGS: SiteSettings = {
-  siteName: "PrintForge",
+  siteName: "Crafted Tale",
   logoUrl: "/design/logo.png",
   faviconUrl: "/design/logo.png",
   shippingMode: "AUTOMATIC",
@@ -65,6 +65,20 @@ const DEFAULT_SETTINGS: SiteSettings = {
   }
 };
 
+function normalizeSiteName(siteName?: string | null) {
+  const trimmed = siteName?.trim();
+  if (!trimmed) {
+    return DEFAULT_SETTINGS.siteName;
+  }
+
+  const normalized = trimmed.toLowerCase();
+  if (normalized === "archivevault" || normalized === "printforge" || normalized === "forest foundry") {
+    return DEFAULT_SETTINGS.siteName;
+  }
+
+  return trimmed;
+}
+
 export async function getSiteSettings(): Promise<SiteSettings> {
   try {
     const supabase = createAdminClient();
@@ -82,7 +96,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 
     const value = data.value as any;
     return {
-      siteName: value?.siteName || DEFAULT_SETTINGS.siteName,
+      siteName: normalizeSiteName(value?.siteName || DEFAULT_SETTINGS.siteName),
       logoUrl: value?.logoUrl || DEFAULT_SETTINGS.logoUrl,
       faviconUrl: value?.faviconUrl || DEFAULT_SETTINGS.faviconUrl,
       shippingMode: value?.shippingMode || "AUTOMATIC",

@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { DashboardClient } from "./DashboardClient";
 
 export const metadata: Metadata = {
-  title: "Dashboard - PrintForge",
+  title: "Dashboard - Crafted Tale",
   description: "Your personal dashboard for orders, wishlist, and account management."
 };
 

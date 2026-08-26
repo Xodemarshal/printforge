@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { PreOrderForm } from "../PreOrderForm";
 
 export const metadata: Metadata = {
-  title: "New Preorder Campaign | Admin — ArchiveVault"
+  title: "New Preorder Campaign | Admin — Crafted Tale"
 };
 
 export default async function NewPreorderPage() {

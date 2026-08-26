@@ -63,7 +63,7 @@ export default function RegisterPage() {
             <TreePine size={20} />
           </span>
           <h1 className="display-font text-3xl text-primary-dark font-bold">Create account</h1>
-          <p className="text-sm text-secondary-medium">Join PrintForge today</p>
+          <p className="text-sm text-secondary-medium">Join Crafted Tale today</p>
         </div>
 
         {error && (

@@ -36,7 +36,7 @@ export function HeroBanner({ settings, categories = [] }: { settings?: HeroSecti
             <div className="group relative min-h-[340px] overflow-hidden rounded-[40px] bg-cream lg:min-h-[460px]">
               <img
                 src={imageUrl}
-                alt="ArchiveVault product showcase"
+                alt="Crafted Tale product showcase"
                 className="h-full w-full object-contain transition-transform duration-1000 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />

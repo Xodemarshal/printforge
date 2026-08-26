@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Sparkles, ShoppingBag } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Preorder Early Access | ArchiveVault",
+  title: "Preorder Early Access | Crafted Tale",
   description: "Prebook upcoming exclusive products at locked early-bird discount prices."
 };
 

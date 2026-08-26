@@ -145,7 +145,7 @@ export function CheckoutClient() {
           key: result.razorpayKeyId,
           amount: Math.round(total * 100),
           currency: "INR",
-          name: "PrintForge",
+          name: "Crafted Tale",
           description: `Order #${result.orderId?.slice(0, 8)}`,
           order_id: result.razorpayOrderId,
           handler: async function (response: any) {

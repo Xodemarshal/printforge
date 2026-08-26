@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import AnalyticsDashboard from './AnalyticsDashboard';
 
 export const metadata = {
-  title: 'Analytics Dashboard - ArchiveVault Admin',
+  title: 'Analytics Dashboard - Crafted Tale Admin',
   description: 'Business analytics and KPIs'
 };
 

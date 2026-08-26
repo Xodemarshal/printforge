@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import LeadsDashboard from './LeadsDashboard';
 
 export const metadata = {
-  title: 'Leads Management - ArchiveVault Admin',
+  title: 'Leads Management - Crafted Tale Admin',
   description: 'Manage customer leads and inquiries'
 };
 

@@ -1,16 +1,18 @@
 import Link from "next/link";
 import { TreePine } from "lucide-react";
 
-export function Footer({ siteName = "ArchiveVault" }: { siteName?: string }) {
+export function Footer({ siteName = "Crafted Tale" }: { siteName?: string }) {
   return (
     <footer className="mt-16 border-t border-forest/15 bg-card/80">
       <div className="page-shell grid gap-8 py-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-forest text-cream shadow-md shadow-forest/20">
-              <TreePine size={18} />
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-forest text-cream shadow-md shadow-forest/20 shrink-0">
+              <TreePine size={20} />
             </span>
-            <p className="display-font text-2xl font-semibold text-primary-dark">{siteName || "ArchiveVault"}</p>
+            <p className="display-font brand-rainbow brand-rainbow-glow whitespace-nowrap text-[clamp(1.6rem,3vw,2.35rem)] font-semibold leading-none">
+              {siteName || "Crafted Tale"}
+            </p>
           </div>
           <p className="max-w-sm text-sm leading-6 text-secondary-medium">
             Premium design services, custom manufacturing, and a complete marketplace for creative products.
@@ -37,13 +39,13 @@ export function Footer({ siteName = "ArchiveVault" }: { siteName?: string }) {
         <div className="text-sm">
           <p className="font-semibold uppercase tracking-[0.2em] text-primary-medium">Contact</p>
           <div className="mt-4 space-y-2 text-secondary-light">
-            <p>team@archivevault.in</p>
+            <p>support@craftedtale.in</p>
             <p>Mon–Fri, 9:00 to 17:00</p>
           </div>
         </div>
       </div>
       <div className="border-t border-forest/15 py-4 text-center text-xs text-muted-light">
-        &copy; {new Date().getFullYear()} {siteName || "ArchiveVault"}. All rights reserved.
+        &copy; {new Date().getFullYear()} {siteName || "Crafted Tale"}. All rights reserved.
       </div>
     </footer>
   );

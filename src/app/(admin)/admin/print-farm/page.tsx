@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import PrintFarmDashboard from './PrintFarmDashboard';
 
 export const metadata = {
-  title: 'Print Farm - ArchiveVault Admin',
+  title: 'Print Farm - Crafted Tale Admin',
   description: 'Monitor and manage 3D print jobs'
 };
 

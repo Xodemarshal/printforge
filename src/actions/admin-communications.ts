@@ -4,7 +4,7 @@ import { Resend } from "resend";
 import { requireAdmin } from "@/lib/guards";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const MAILER_CHECK_FROM = "ArchiveVault <noreply@archivevault.in>";
+const MAILER_CHECK_FROM = "Crafted Tale <noreply@craftedtale.in>";
 
 export type MailerCheckState = {
   success: boolean;

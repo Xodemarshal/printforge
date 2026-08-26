@@ -11,6 +11,8 @@ interface WishlistContextType {
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
+const WISHLIST_STORAGE_KEY = "craftedtale-wishlist";
+const LEGACY_WISHLIST_STORAGE_KEY = "archivevault-wishlist";
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<string[]>([]);
@@ -18,7 +20,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   // Load wishlist from localStorage on mount
   useEffect(() => {
-    const savedWishlist = localStorage.getItem("archivevault-wishlist");
+    const savedWishlist = localStorage.getItem(WISHLIST_STORAGE_KEY) || localStorage.getItem(LEGACY_WISHLIST_STORAGE_KEY);
     if (savedWishlist) {
       try {
         setItems(JSON.parse(savedWishlist));
@@ -30,7 +32,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   // Save wishlist to localStorage whenever items change
   useEffect(() => {
-    localStorage.setItem("archivevault-wishlist", JSON.stringify(items));
+    localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(items));
   }, [items]);
 
   const toggle = (productId: string) => {

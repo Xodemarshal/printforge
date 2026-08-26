@@ -7,7 +7,7 @@ import type { PreOrderRow, PreOrderStatus } from "@/types";
 import { PreOrderStatusToggle } from "./PreOrderStatusToggle";
 
 export const metadata: Metadata = {
-  title: "Preorder Campaigns | Admin — ArchiveVault"
+  title: "Preorder Campaigns | Admin — Crafted Tale"
 };
 
 const STATUS_BADGE: Record<PreOrderStatus, string> = {

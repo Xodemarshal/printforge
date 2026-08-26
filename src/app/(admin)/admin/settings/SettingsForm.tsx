@@ -108,7 +108,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
               <Input
                 name="siteName"
                 defaultValue={initialSettings.siteName}
-                placeholder="e.g. ArchiveVault"
+                placeholder="e.g. Crafted Tale"
                 className="bg-black border-gray-700 text-white placeholder:text-gray-500 focus:border-forest"
                 required
               />

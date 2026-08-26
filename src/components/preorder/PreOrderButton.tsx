@@ -99,7 +99,7 @@ export function PreOrderButton({
         key: data.key || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
         amount: data.amount,
         currency: data.currency || "INR",
-        name: "ArchiveVault",
+        name: "Crafted Tale",
         description: `Priority Pass Token — ${data.productName || "Collector Edition"}`,
         order_id: data.razorpayOrderId,
         handler: async function (paymentResponse: any) {

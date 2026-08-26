@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { UploadDesignClient } from "./UploadDesignClient";
 
 export const metadata: Metadata = {
-  title: "Upload Design - ArchiveVault",
+  title: "Upload Design - Crafted Tale",
   description: "Upload your design files and get custom products made."
 };
 

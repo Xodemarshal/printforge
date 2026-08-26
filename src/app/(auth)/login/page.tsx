@@ -74,7 +74,7 @@ export default function LoginPage({
             <TreePine size={20} />
           </span>
           <h1 className="display-font text-3xl text-primary-dark font-bold">Welcome back</h1>
-          <p className="text-sm text-secondary-medium">Sign in to your PrintForge account</p>
+          <p className="text-sm text-secondary-medium">Sign in to your Crafted Tale account</p>
         </div>
 
         {params.message === "check-email" && (

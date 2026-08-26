@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Search, ShoppingCart, User, Leaf, Box, HelpCircle, Hammer, X } from "lucide-react";
-import { NAV_LINKS } from "@/lib/constants";
+import { usePathname, useRouter } from "next/navigation";
+import { Search, ShoppingCart, User, Leaf, HelpCircle, X, ChevronRight, Home } from "lucide-react";
+import { NAV_LINKS, CUSTOMER_NAV_LINKS, ADMIN_NAV_LINKS } from "@/lib/constants";
 import { useCart } from "@/hooks/useCart";
 
 export function Header({
-  siteName = "Forest Foundry",
+  siteName = "Crafted Tale",
   logoUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=groot&backgroundColor=2c3e2d"
 }: {
   siteName?: string;
@@ -18,7 +18,10 @@ export function Header({
   const totalItems = getTotalItems();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const pathname = usePathname();
   const router = useRouter();
+
+  const mobileBreadcrumbs = buildBreadcrumbs(pathname);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,22 +53,15 @@ export function Header({
 
       {/* Main Header */}
       <div className="border-b border-white/10 bg-[#0a130c]/95 backdrop-blur-md">
-        <div className="page-shell flex items-center justify-between py-4 lg:py-6">
+        <div className="page-shell flex items-center justify-between py-3 lg:py-4 min-h-[72px]">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group shrink-0">
-            <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-emerald-600 text-white group-hover:scale-105 transition-transform overflow-hidden">
+          <Link href="/" className="flex items-center gap-3 group shrink-0 min-w-0">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-2xl bg-emerald-600 text-white group-hover:scale-105 transition-transform overflow-hidden shrink-0">
               <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
             </div>
-            <div className="flex flex-col">
-              <span className="display-font text-xl font-bold tracking-tight text-emerald-400 leading-none">
-                {(siteName || "Forest Foundry").split(" ").map((part, index, arr) => (
-                  <span key={index}>
-                    {part}
-                    {index < arr.length - 1 && <br />}
-                  </span>
-                ))}
-              </span>
-            </div>
+            <span className="display-font brand-rainbow brand-rainbow-glow whitespace-nowrap text-[clamp(1.35rem,4vw,2.15rem)] font-bold tracking-tight leading-none">
+              {siteName || "Crafted Tale"}
+            </span>
           </Link>
 
           {/* Navigation - Centered */}
@@ -111,6 +107,29 @@ export function Header({
           </div>
         </div>
 
+        <nav aria-label="Breadcrumb" className="md:hidden border-t border-white/10 bg-[#0a130c]">
+          <div className="page-shell overflow-x-auto py-2">
+            <ol className="flex items-center gap-2 whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.2em] text-cream/60">
+              {mobileBreadcrumbs.map((crumb, index) => (
+                <li key={crumb.href} className="flex items-center gap-2">
+                  {index > 0 && <ChevronRight size={12} className="text-cream/30" />}
+                  {crumb.current ? (
+                    <span className="flex items-center gap-1 text-emerald-400">
+                      {index === 0 && <Home size={12} />}
+                      <span>{crumb.label}</span>
+                    </span>
+                  ) : (
+                    <Link href={crumb.href as any} className="flex items-center gap-1 hover:text-emerald-400 transition-colors">
+                      {index === 0 && <Home size={12} />}
+                      {crumb.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </div>
+        </nav>
+
         {/* Search Bar */}
         {searchOpen && (
           <div className="border-t border-white/10 bg-[#0a130c]">
@@ -150,4 +169,44 @@ export function Header({
       </div>
     </header>
   );
+}
+
+type BreadcrumbItem = {
+  href: string;
+  label: string;
+  current?: boolean;
+};
+
+function buildBreadcrumbs(pathname: string): BreadcrumbItem[] {
+  const normalizedPath = pathname?.replace(/\/+$/, "") || "/";
+  const segments = normalizedPath === "/" ? [] : normalizedPath.split("/").filter(Boolean);
+
+  const items: BreadcrumbItem[] = [{ href: "/", label: "Home", current: segments.length === 0 }];
+
+  if (segments.length === 0) {
+    return items;
+  }
+
+  const allNavLinks = [...NAV_LINKS, ...CUSTOMER_NAV_LINKS, ...ADMIN_NAV_LINKS];
+  const pathParts: string[] = [];
+
+  for (const segment of segments) {
+    pathParts.push(segment);
+    const href = `/${pathParts.join("/")}`;
+    const matchedLabel = allNavLinks.find((item) => item.href === href)?.label;
+    const label = matchedLabel || formatSegment(segment);
+    items.push({
+      href,
+      label,
+      current: href === normalizedPath
+    });
+  }
+
+  return items;
+}
+
+function formatSegment(segment: string) {
+  return decodeURIComponent(segment)
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }

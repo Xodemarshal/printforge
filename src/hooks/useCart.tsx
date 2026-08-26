@@ -27,6 +27,8 @@ interface CartContextType {
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+const CART_STORAGE_KEY = "craftedtale-cart";
+const LEGACY_CART_STORAGE_KEY = "archivevault-cart";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -35,7 +37,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Load cart from localStorage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem("archivevault-cart");
+    const savedCart = localStorage.getItem(CART_STORAGE_KEY) || localStorage.getItem(LEGACY_CART_STORAGE_KEY);
     if (savedCart) {
       try {
         setItems(JSON.parse(savedCart));
@@ -47,7 +49,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Save cart to localStorage whenever items change
   useEffect(() => {
-    localStorage.setItem("archivevault-cart", JSON.stringify(items));
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
   }, [items]);
 
   const addItem = (product: Omit<CartItem, 'quantity'> & { quantity?: number }) => {

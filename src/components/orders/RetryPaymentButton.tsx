@@ -72,7 +72,7 @@ export function RetryPaymentButton({
         key: razorpayKeyId,
         amount: Math.round(Number(amount || 0) * 100),
         currency: "INR",
-        name: "PrintForge",
+        name: "Crafted Tale",
         description: `Order #${orderId.slice(0, 8)}`,
         order_id: razorpayOrderId,
         handler: async function (response: any) {

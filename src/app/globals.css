@@ -135,7 +135,44 @@ body {
 
 .forest-inner-border {
   @apply absolute inset-2 rounded-2xl border border-forest/30 pointer-events-none;
-}/* Opti
+}
+
+@keyframes brand-rainbow-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.brand-rainbow {
+  background: linear-gradient(
+    90deg,
+    #34d399 0%,
+    #f59e0b 16%,
+    #ef4444 32%,
+    #ec4899 48%,
+    #8b5cf6 64%,
+    #06b6d4 80%,
+    #22c55e 100%
+  );
+  background-size: 300% 100%;
+  animation: brand-rainbow-shift 7s linear infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-rainbow-glow {
+  text-shadow: 0 0 18px rgba(52, 211, 153, 0.18);
+}
+
+/* Opti
 mized Typography Colors for Forest Green Theme */
 
 /* Primary Text Colors for Dark Mode */

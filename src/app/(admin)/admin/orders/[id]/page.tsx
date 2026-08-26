@@ -46,7 +46,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
     <div className="space-y-6 pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">PrintForge Admin</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-yellow-500/80 mb-1">Crafted Tale Admin</p>
           <h1 className="text-3xl font-bold text-white">Order Details</h1>
           <div className="flex items-center gap-2 text-xs text-gray-400 mt-1">
             <Link href="/admin/orders" className="hover:text-white transition-colors">Orders</Link>

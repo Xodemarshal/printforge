@@ -15,7 +15,7 @@ import { mockData } from "@/lib/mock-supabase";
 import { getSiteSettings } from "@/actions/settings";
 
 export const metadata: Metadata = {
-  title: "ArchiveVault",
+  title: "Crafted Tale",
   description: "Creative collectibles and product showcase."
 };
 
@@ -61,7 +61,7 @@ export default async function HomePage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Organization",
-            name: "ArchiveVault"
+            name: "Crafted Tale"
           })
         }}
       />

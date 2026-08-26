@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { id } = await params;
   const preorder = await getPreorderById(id);
   return {
-    title: `Edit: ${preorder?.title || "Preorder"} | Admin — ArchiveVault`
+    title: `Edit: ${preorder?.title || "Preorder"} | Admin — Crafted Tale`
   };
 }
 
