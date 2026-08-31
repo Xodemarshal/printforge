@@ -39,8 +39,9 @@ export function Footer({ siteName = "Crafted Tale" }: { siteName?: string }) {
         <div className="text-sm">
           <p className="font-semibold uppercase tracking-[0.2em] text-primary-medium">Contact</p>
           <div className="mt-4 space-y-2 text-secondary-light">
-            <p>support@craftedtale.in</p>
-            <p>Mon–Fri, 9:00 to 17:00</p>
+            <p>contact@craftedtale.in</p>
+            <p>WhatsApp: 8887369604</p>
+            <p>Mon-Fri, 9:00 to 17:00</p>
           </div>
         </div>
       </div>

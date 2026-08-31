@@ -3,7 +3,7 @@ import { FAQSection } from "@/components/home/FAQSection";
 
 export const metadata: Metadata = {
   title: "FAQ | Crafted Tale",
-  description: "Frequently asked questions about Crafted Tale."
+  description: "Frequently asked questions and support details for Crafted Tale."
 };
 
 export default function FaqPage() {
@@ -24,8 +24,17 @@ export default function FaqPage() {
           <p className="text-xs uppercase tracking-[0.3em] text-[#c5a059]/80">Need more help?</p>
           <h2 className="display-font mt-2 text-2xl">Reach support</h2>
           <p className="mt-3 text-sm leading-7 text-[#e4d8c3]">
-            Email us if you want help shaping your idea before you submit the brief.
+            Email us at contact@craftedtale.in or message us on WhatsApp at 8887369604 for help with your order,
+            a custom idea, or general support.
           </p>
+          <div className="mt-4 space-y-2 text-sm text-[#f4ecd9]">
+            <p>
+              Email: <a href="mailto:contact@craftedtale.in" className="text-[#c5a059] underline-offset-4 hover:underline">contact@craftedtale.in</a>
+            </p>
+            <p>
+              WhatsApp: <a href="https://wa.me/918887369604" className="text-[#c5a059] underline-offset-4 hover:underline">8887369604</a>
+            </p>
+          </div>
         </div>
         <div className="wood-texture rounded-[28px] border border-[#8c6f42]/20 p-6 text-[#f4ecd9]">
           <p className="text-xs uppercase tracking-[0.3em] text-[#c5a059]/80">Response time</p>
