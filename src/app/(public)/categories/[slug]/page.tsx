@@ -25,10 +25,31 @@ export async function generateMetadata({
   const { slug } = await params;
   const categories = await getCategories();
   const category = categories.find((c: any) => c.slug === slug);
+  const categoryName = category?.name || slug;
+
+  const title = categoryName;
+  const description = `Shop premium 3D printed ${categoryName.toLowerCase()} at Crafted Tale. High quality custom 3D printed collectibles, gifts, and décor.`;
+  const url = `https://craftedtale.in/categories/${slug}`;
 
   return {
-    title: `${category?.name || slug} | Crafted Tale`,
-    description: `Browse our ${category?.name || slug} collection`
+    title,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: `${categoryName} | Crafted Tale`,
+      description,
+      url,
+      siteName: "Crafted Tale",
+      locale: "en_IN",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${categoryName} | Crafted Tale`,
+      description,
+    },
   };
 }
 

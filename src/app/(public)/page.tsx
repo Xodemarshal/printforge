@@ -15,8 +15,33 @@ import { mockData } from "@/lib/mock-supabase";
 import { getSiteSettings } from "@/actions/settings";
 
 export const metadata: Metadata = {
-  title: "Crafted Tale",
-  description: "Creative collectibles and product showcase."
+  title: "Crafted Tale | Premium 3D Printed Toys, Collectibles & Décor",
+  description: "Shop premium 3D printed toys, collectibles, décor, desk accessories, gifts and custom creations from Crafted Tale.",
+  alternates: {
+    canonical: "https://craftedtale.in/",
+  },
+  openGraph: {
+    title: "Crafted Tale | Premium 3D Printed Toys, Collectibles & Décor",
+    description: "Shop premium 3D printed toys, collectibles, décor, desk accessories, gifts and custom creations from Crafted Tale.",
+    url: "https://craftedtale.in/",
+    siteName: "Crafted Tale",
+    locale: "en_IN",
+    type: "website",
+    images: [
+      {
+        url: "/design/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Crafted Tale Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Crafted Tale | Premium 3D Printed Toys, Collectibles & Décor",
+    description: "Shop premium 3D printed toys, collectibles, décor, desk accessories, gifts and custom creations from Crafted Tale.",
+    images: ["/design/logo.png"],
+  },
 };
 
 export default async function HomePage() {
