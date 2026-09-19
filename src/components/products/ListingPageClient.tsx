@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { ChevronRight, LayoutGrid, List, ChevronDown, Star, SlidersHorizontal } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 
@@ -30,6 +30,37 @@ export function ListingPageClient({
 }: ListingPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const current = Math.max(1, Number(currentPage) || 1);
+  const size = Math.max(1, Number(pageSize) || 12);
+  const totalCount = Number(total) || 0;
+  const totalPages = Math.ceil(totalCount / size);
+
+  const createPageUrl = (pageNumber: number): any => {
+    const params = new URLSearchParams(searchParams?.toString() || "");
+    if (pageNumber <= 1) {
+      params.delete("page");
+    } else {
+      params.set("page", pageNumber.toString());
+    }
+    const query = params.toString();
+    return `${pathname || ""}${query ? `?${query}` : ""}`;
+  };
+
+  const getPageNumbers = (currentPageNum: number, totalPageNum: number): (number | "...")[] => {
+    if (totalPageNum <= 5) {
+      return Array.from({ length: totalPageNum }, (_, i) => i + 1);
+    }
+    if (currentPageNum <= 3) {
+      return [1, 2, 3, 4, "...", totalPageNum];
+    }
+    if (currentPageNum >= totalPageNum - 2) {
+      return [1, "...", totalPageNum - 3, totalPageNum - 2, totalPageNum - 1, totalPageNum];
+    }
+    return [1, "...", currentPageNum - 1, currentPageNum, currentPageNum + 1, "...", totalPageNum];
+  };
+
   const formatRupees = (value: number) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -265,7 +296,7 @@ export function ListingPageClient({
             {/* Controls */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <p className="text-[11px] font-medium text-cream/40">
-                Showing <span className="text-cream">{sortedProducts.length > 0 ? 1 : 0}-{sortedProducts.length}</span> of <span className="text-emerald-400">{total}</span> products
+                Showing <span className="text-cream">{sortedProducts.length > 0 ? (current - 1) * size + 1 : 0}-{sortedProducts.length > 0 ? Math.min((current - 1) * size + sortedProducts.length, totalCount) : 0}</span> of <span className="text-emerald-400">{totalCount}</span> products
               </p>
 
               <div className="flex items-center gap-4">
@@ -346,28 +377,88 @@ export function ListingPageClient({
             )}
 
             {/* Pagination */}
-            {sortedProducts.length > 0 && Math.ceil(total / pageSize) > 1 && (
+            {sortedProducts.length > 0 && totalPages > 1 && (
               <div className="flex items-center justify-center pt-10 border-t border-white/10">
-                <div className="flex items-center gap-2">
-                  <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-cream/40 hover:text-cream transition-colors">
-                    <ChevronRight size={16} className="rotate-180" />
-                  </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-lg shadow-emerald-950/30">
-                    1
-                  </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 text-cream/60 transition-colors font-bold text-xs">
-                    2
-                  </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 text-cream/60 transition-colors font-bold text-xs">
-                    3
-                  </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 text-cream/60 transition-colors font-bold text-xs">
-                    ...
-                  </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-cream/40 hover:text-cream transition-colors">
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
+                <nav aria-label="Pagination" className="flex items-center gap-2">
+                  {/* Previous Button */}
+                  {current > 1 ? (
+                    <Link
+                      href={createPageUrl(current - 1)}
+                      scroll={true}
+                      aria-label="Previous page"
+                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-cream/60 hover:text-cream hover:bg-white/10 transition-colors"
+                    >
+                      <ChevronRight size={16} className="rotate-180" />
+                    </Link>
+                  ) : (
+                    <button
+                      disabled
+                      aria-label="Previous page"
+                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/5 text-cream/20 cursor-not-allowed"
+                    >
+                      <ChevronRight size={16} className="rotate-180" />
+                    </button>
+                  )}
+
+                  {/* Page Numbers */}
+                  {getPageNumbers(current, totalPages).map((p, idx) => {
+                    if (p === "...") {
+                      return (
+                        <span
+                          key={`ellipsis-${idx}`}
+                          className="w-10 h-10 flex items-center justify-center text-cream/40 font-bold text-xs"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+
+                    const isCurrent = p === current;
+                    if (isCurrent) {
+                      return (
+                        <span
+                          key={p}
+                          aria-current="page"
+                          className="w-10 h-10 flex items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-lg shadow-emerald-950/30 select-none"
+                        >
+                          {p}
+                        </span>
+                      );
+                    }
+
+                    return (
+                      <Link
+                        key={p}
+                        href={createPageUrl(p)}
+                        scroll={true}
+                        aria-label={`Go to page ${p}`}
+                        className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 text-cream/60 hover:text-cream transition-colors font-bold text-xs border border-transparent hover:border-white/10"
+                      >
+                        {p}
+                      </Link>
+                    );
+                  })}
+
+                  {/* Next Button */}
+                  {current < totalPages ? (
+                    <Link
+                      href={createPageUrl(current + 1)}
+                      scroll={true}
+                      aria-label="Next page"
+                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-cream/60 hover:text-cream hover:bg-white/10 transition-colors"
+                    >
+                      <ChevronRight size={16} />
+                    </Link>
+                  ) : (
+                    <button
+                      disabled
+                      aria-label="Next page"
+                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/5 text-cream/20 cursor-not-allowed"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  )}
+                </nav>
               </div>
             )}
           </section>

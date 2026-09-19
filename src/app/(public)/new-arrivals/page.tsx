@@ -9,9 +9,15 @@ export const metadata: Metadata = {
   description: "Discover the latest products."
 };
 
-export default async function NewArrivalsPage() {
+export default async function NewArrivalsPage({
+  searchParams
+}: {
+  searchParams?: Promise<{ page?: string }>;
+}) {
+  const params = searchParams ? await searchParams : {};
+  const pageNumber = Math.max(1, Number(params?.page ?? 1));
   const [{ items, total, page, pageSize }, categories, preorderProductMap] = await Promise.all([
-    getProducts({ page: 1 }),
+    getProducts({ page: pageNumber }),
     getCategories(),
     getAllActivePreorderProductIds()
   ]);

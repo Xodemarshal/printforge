@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getCategories, getProducts } from "@/actions/products";
 import { getAllActivePreorderProductIds } from "@/actions/preorders";
@@ -53,8 +54,16 @@ export async function generateMetadata({
   };
 }
 
-export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function CategoryPage({
+  params,
+  searchParams
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ page?: string }>;
+}) {
   const { slug } = await params;
+  const search = searchParams ? await searchParams : {};
+  const pageNumber = Math.max(1, Number(search?.page ?? 1));
 
   try {
     const [categories, preorderProductMap] = await Promise.all([
@@ -76,32 +85,39 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
 
     if (!category) {
       return (
-        <ListingPageClient
-          initialProducts={[]}
-          categories={categories}
-          total={0}
-          currentPage={1}
-          pageSize={12}
-          title="Category Not Found"
-          subtitle={`The category "${slug}" doesn't exist. Available categories are listed in the sidebar.`}
-          preorderProductMap={preorderProductMap}
-        />
+        <Suspense fallback={<div className="min-h-screen bg-[#0f1810]" />}>
+          <ListingPageClient
+            initialProducts={[]}
+            categories={categories}
+            total={0}
+            currentPage={1}
+            pageSize={12}
+            title="Category Not Found"
+            subtitle={`The category "${slug}" doesn't exist. Available categories are listed in the sidebar.`}
+            preorderProductMap={preorderProductMap}
+          />
+        </Suspense>
       );
     }
 
-    const { items, total, page, pageSize } = await getProducts({ category: category.id });
+    const { items, total, page, pageSize } = await getProducts({
+      category: category.id,
+      page: pageNumber
+    });
 
     return (
-      <ListingPageClient
-        initialProducts={items as any[]}
-        categories={categories}
-        total={total}
-        currentPage={page}
-        pageSize={pageSize}
-        title={category.name}
-        subtitle={`Explore our ${category.name.toLowerCase()} collection - handcrafted with precision and care.`}
-        preorderProductMap={preorderProductMap}
-      />
+      <Suspense fallback={<div className="min-h-screen bg-[#0f1810]" />}>
+        <ListingPageClient
+          initialProducts={items as any[]}
+          categories={categories}
+          total={total}
+          currentPage={page}
+          pageSize={pageSize}
+          title={category.name}
+          subtitle={`Explore our ${category.name.toLowerCase()} collection - handcrafted with precision and care.`}
+          preorderProductMap={preorderProductMap}
+        />
+      </Suspense>
     );
   } catch (error) {
     console.error('❌ ERROR loading category page:', error);

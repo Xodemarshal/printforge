@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSearchParams, usePathname } from "next/navigation";
 import { ChevronRight, LayoutGrid, List } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 
@@ -41,6 +42,38 @@ export function CollectionsPageClient({
   pageSize,
   preorderProductMap = {}
 }: CollectionsPageClientProps) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const current = Math.max(1, Number(currentPage) || 1);
+  const size = Math.max(1, Number(pageSize) || 12);
+  const totalCount = Number(total) || 0;
+  const totalPages = Math.ceil(totalCount / size);
+
+  const createPageUrl = (pageNumber: number): any => {
+    const params = new URLSearchParams(searchParams?.toString() || "");
+    if (pageNumber <= 1) {
+      params.delete("page");
+    } else {
+      params.set("page", pageNumber.toString());
+    }
+    const query = params.toString();
+    return `${pathname || ""}${query ? `?${query}` : ""}`;
+  };
+
+  const getPageNumbers = (currentPageNum: number, totalPageNum: number): (number | "...")[] => {
+    if (totalPageNum <= 5) {
+      return Array.from({ length: totalPageNum }, (_, i) => i + 1);
+    }
+    if (currentPageNum <= 3) {
+      return [1, 2, 3, 4, "...", totalPageNum];
+    }
+    if (currentPageNum >= totalPageNum - 2) {
+      return [1, "...", totalPageNum - 3, totalPageNum - 2, totalPageNum - 1, totalPageNum];
+    }
+    return [1, "...", currentPageNum - 1, currentPageNum, currentPageNum + 1, "...", totalPageNum];
+  };
+
   const formatRupees = (value: number) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -266,7 +299,7 @@ export function CollectionsPageClient({
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-2xl border border-forest/5 p-4">
               <p className="text-sm text-forest/60">
-                Showing <span className="font-semibold text-forest">1-{displayedProducts.length}</span> of <span className="font-semibold text-forest">{displayedProducts.length}</span> products
+                Showing <span className="font-semibold text-forest">{displayedProducts.length > 0 ? (current - 1) * size + 1 : 0}-{displayedProducts.length > 0 ? Math.min((current - 1) * size + displayedProducts.length, totalCount) : 0}</span> of <span className="font-semibold text-forest">{totalCount}</span> products
               </p>
 
               <div className="flex items-center gap-3">
@@ -324,29 +357,82 @@ export function CollectionsPageClient({
             )}
 
             {/* Pagination */}
-            <div className="flex items-center justify-center gap-2 py-8">
-              <button className="w-10 h-10 flex items-center justify-center rounded-xl border border-forest/10 text-forest/40 hover:text-forest hover:bg-forest/5 transition-colors">
-                <ChevronRight size={16} className="rotate-180" />
-              </button>
-              <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-forest text-white font-semibold text-sm shadow-lg shadow-forest/20">
-                1
-              </button>
-              {[2, 3, 4, 5, 6].map((page) => (
-                <button
-                  key={page}
-                  className="w-10 h-10 flex items-center justify-center rounded-xl border border-forest/10 text-forest/60 hover:text-forest hover:bg-forest/5 transition-colors text-sm"
-                >
-                  {page}
-                </button>
-              ))}
-              <span className="text-forest/40 px-2">...</span>
-              <button className="w-10 h-10 flex items-center justify-center rounded-xl border border-forest/10 text-forest/60 hover:text-forest hover:bg-forest/5 transition-colors text-sm">
-                107
-              </button>
-              <button className="w-10 h-10 flex items-center justify-center rounded-xl border border-forest/10 text-forest/40 hover:text-forest hover:bg-forest/5 transition-colors">
-                <ChevronRight size={16} />
-              </button>
-            </div>
+            {displayedProducts.length > 0 && totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 py-8">
+                {current > 1 ? (
+                  <Link
+                    href={createPageUrl(current - 1)}
+                    scroll={true}
+                    aria-label="Previous page"
+                    className="w-10 h-10 flex items-center justify-center rounded-xl border border-forest/10 text-forest/60 hover:text-forest hover:bg-forest/5 transition-colors"
+                  >
+                    <ChevronRight size={16} className="rotate-180" />
+                  </Link>
+                ) : (
+                  <button
+                    disabled
+                    aria-label="Previous page"
+                    className="w-10 h-10 flex items-center justify-center rounded-xl border border-forest/5 text-forest/20 cursor-not-allowed"
+                  >
+                    <ChevronRight size={16} className="rotate-180" />
+                  </button>
+                )}
+
+                {getPageNumbers(current, totalPages).map((p, idx) => {
+                  if (p === "...") {
+                    return (
+                      <span key={`ellipsis-${idx}`} className="text-forest/40 px-2 font-semibold text-sm">
+                        ...
+                      </span>
+                    );
+                  }
+
+                  const isCurrent = p === current;
+                  if (isCurrent) {
+                    return (
+                      <span
+                        key={p}
+                        aria-current="page"
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-forest text-white font-semibold text-sm shadow-lg shadow-forest/20 select-none"
+                      >
+                        {p}
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <Link
+                      key={p}
+                      href={createPageUrl(p)}
+                      scroll={true}
+                      aria-label={`Go to page ${p}`}
+                      className="w-10 h-10 flex items-center justify-center rounded-xl border border-forest/10 text-forest/60 hover:text-forest hover:bg-forest/5 transition-colors text-sm font-semibold"
+                    >
+                      {p}
+                    </Link>
+                  );
+                })}
+
+                {current < totalPages ? (
+                  <Link
+                    href={createPageUrl(current + 1)}
+                    scroll={true}
+                    aria-label="Next page"
+                    className="w-10 h-10 flex items-center justify-center rounded-xl border border-forest/10 text-forest/60 hover:text-forest hover:bg-forest/5 transition-colors"
+                  >
+                    <ChevronRight size={16} />
+                  </Link>
+                ) : (
+                  <button
+                    disabled
+                    aria-label="Next page"
+                    className="w-10 h-10 flex items-center justify-center rounded-xl border border-forest/5 text-forest/20 cursor-not-allowed"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                )}
+              </div>
+            )}
           </main>
         </div>
 
